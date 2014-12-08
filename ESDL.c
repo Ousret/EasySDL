@@ -1,3 +1,11 @@
+/** EasySDL Alpha
+*
+*	Author(s): TAHRI Ahmed, SIMON Jérémy
+*	Lib: EasySDL
+*	Version: 0.1
+* 	Date: 8-12-2014
+*
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>

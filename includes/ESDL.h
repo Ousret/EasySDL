@@ -1,11 +1,11 @@
 /**
- * \file STJ_SDL.h
- * \brief Librairies SDL/C 1.2
- * \author TAHRI Ahmed, SIMON Jérémy, DEZERE Florian, PROVOST Valentin
- * \version 0.2
- * \date 27 Octobre 2014
+ * \file ESDL.h
+ * \brief EasySDL header
+ * \author TAHRI Ahmed, SIMON Jérémy
+ * \version 0.1
+ * \date 08/12/2014
  *
- * Toutes les fonctions utiles la SDL
+ * Lib for creating SDL program easily.
  *
  */
  
@@ -21,6 +21,13 @@ typedef enum {
 	
 } t_typeForm;
 
+/**
+ * \struct t_object
+ * \brief Represent object, could be button or form input to be filled.
+ *
+ * t_object contain info of one object (button or form input)
+ */
+
 typedef struct {
 
 	int type;
@@ -35,6 +42,12 @@ typedef struct {
 	
 } t_object;
 
+/**
+ * \struct t_text
+ * \brief Represent text only with color and x, y pos (in pixel)
+ *
+ * t_text contain info of one text line does not support char like \n, \t, etc.. .
+ */
 typedef struct {
 	
 	SDL_Color couleur;
@@ -44,6 +57,12 @@ typedef struct {
 	
 } t_text;
 
+/**
+ * \struct t_texture
+ * \brief Keep info about one image
+ *
+ * t_texture contain info of one image, his size in pixels and his pos
+ */
 typedef struct {
 
 	char * file;
@@ -54,6 +73,12 @@ typedef struct {
 
 } t_texture;
 
+/**
+ * \struct t_window
+ * \brief This is where all data of previous struct are stored for one window
+ *
+ * t_window contain all obj, text and textures infos. Contain also window pos and size in pixels.
+ */
 typedef struct {
 
 	char * title;
@@ -73,6 +98,12 @@ typedef struct {
 	
 } t_window;
 
+/**
+ * \struct Input
+ * \brief This struct help us to keep all event with UpdateEvents
+ *
+ * Input is like mapping of what being pressed or not at t instant.
+ */
 typedef struct
 {
 	char key[SDLK_LAST];
@@ -83,14 +114,41 @@ typedef struct
     
 } Input;
 
+/**
+ * \fn SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support)
+ * \brief Init SDL with your preferences
+ *
+ * \param x Size in pixel
+ * \param y Size in pixel
+ * \param titre Title of the SDL handle
+ * \param ttf_support Decide if SDL_ttf will load up
+ * \param police_name Police filename stored in ressources/ttf/
+ * \param police_size Police size in pt
+ * \param audio_support Decide if SDL_mixer will load up
+ * \return No return value, if it fail, it'll close the program with err message.
+ */
 void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support);
 
+/**
+ * \fn int SDL_generateMenu(int nb_entree, char sommaire[N][M])
+ * \brief Generate menu with button(s)
+ *
+ * \param nb_entree Number of choise to display
+ * \param sommaire[N][M] Contain text caption
+ * \return Return the value of choise (0 - (nb_entree-1))
+ */
 int SDL_generateMenu(int nb_entree, char sommaire[N][M]);
-
-void SDL_Print_Btn(int id, char titre[30], int x, int y);
-
-void SDL_Blit_Picture(char file[50], int x, int y, int FillRect);
-
+/**
+ * \fn int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y)
+ * \brief Check if mouse is over area definied in pixel
+ *
+ * \param *window Ptr to window created with SDL_newwindow
+ * \param hauteur Height in pixel
+ * \param largeur Width in pixel
+ * \param x Pos X in pixel
+ * \param y Pos Y in pixel 
+ * \return Bool func
+ */
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
 
 void SDL_Ambiance(char musicfic[100]);

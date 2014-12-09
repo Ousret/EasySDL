@@ -29,20 +29,32 @@ SDL_Event GlobalEvent;
 char buffer = 0;
 int buffer_deliver = 1;
 
-TTF_Font *ttf_police = NULL; //ttf_police d'écriture pour le menu 
+TTF_Font *ttf_police = NULL;	
 
-int channel = 0;	
-Mix_Chunk *sound = NULL;
-
-int channel_effect = 0;	
-Mix_Chunk *effect = NULL;
-
-Mix_Chunk *music = NULL;
-int channel_music = 0;
+int channel = 0, channel_effect = 0, channel_music = 0;
+Mix_Chunk *sound = NULL, *effect = NULL, *music = NULL;
 
 int sel_menu_m = 0;
 
-Input in, tmp;
+Input in;
+
+int SDL_nbObj(t_window * window) {
+	return (window->nbObj);
+}
+
+int SDL_nbText(t_window * window) {
+	return (window->nbText);
+}
+
+int SDL_nbTexture(t_window * window) {
+	return (window->nbImg);
+}
+
+int SDL_windowEmpty(t_window * window) {
+	if (window == NULL) return 1;
+	if ((SDL_nbObj(window) + SDL_nbText(window) + SDL_nbTexture(window)) == 0) return 1;
+	return 0;
+}
 
 int SDL_IsMouseOverObj(t_window * window) {
 	
@@ -63,7 +75,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 	
 }
 
-void SDL_Ambiance(char musicfic[100]) {
+void SDL_backgroundMusic(char musicfic[100]) {
 	
 	char chemin_complet[200];
 	
@@ -519,8 +531,6 @@ void SDL_delText(t_window * window, int idtext) {
 
 void SDL_UpdateEvents(Input* in)
 {
-	
-	tmp = *in; //On prend une copie de l'Žtat d'avant.
 	
 	while(SDL_PollEvent(&GlobalEvent))
 	{

@@ -151,7 +151,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]);
  */
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
 
-void SDL_Ambiance(char musicfic[100]);
+void SDL_backgroundMusic(char musicfic[100]);
 
 void SDL_Splash(char img[100], int attente);
 
@@ -174,6 +174,11 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 void SDL_delTexture(t_window * window, int idimg);
 
 int SDL_generate(t_window * window);
+
+int SDL_nbObj(t_window * window);
+int SDL_nbText(t_window * window);
+int SDL_nbTexture(t_window * window);
+int SDL_windowEmpty(t_window * window);
 
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
 void SDL_freeWindow(t_window * window);

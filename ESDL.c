@@ -20,9 +20,9 @@
 
 SDL_Surface *screen = NULL;
 
-SDL_Color couleurRouge = {255, 0, 0};
-SDL_Color couleurBlanche = {255, 255, 255};
-SDL_Color couleurNoire = {0, 0, 0};
+SDL_Color colorRed = {255, 0, 0};
+SDL_Color colorWhite = {255, 255, 255};
+SDL_Color colorBlack = {0, 0, 0};
 
 SDL_Event GlobalEvent;
 
@@ -35,8 +35,27 @@ int channel = 0, channel_effect = 0, channel_music = 0;
 Mix_Chunk *sound = NULL, *effect = NULL, *music = NULL;
 
 int sel_menu_m = 0;
+int tff_loaded = 0, audio_loaded = 0;
 
 Input in;
+
+void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
+	
+	char filePath[150];
+	int newChannel = 0;
+	memset(filePath, 0, sizeof(filePath));
+	
+	sprintf(filePath, "ressources/snd/%s", wavfile);
+	
+	Mix_Chunk *sound = Mix_LoadWAV(filePath);
+	newChannel = Mix_PlayChannel(-1, sound, 0);
+	
+	if (channel != NULL) *channel = newChannel;
+	if (waitEnd == 1) {
+		while(Mix_Playing(newChannel) != 0);
+		Mix_FreeChunk(sound);
+	}
+}
 
 int SDL_nbObj(t_window * window) {
 	return (window->nbObj);
@@ -75,22 +94,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 	
 }
 
-void SDL_backgroundMusic(char musicfic[100]) {
-	
-	char chemin_complet[200];
-	
-	if (Mix_Playing(channel_music) == 0) {
-		
-		sprintf(chemin_complet, "ressources/snd/%s", musicfic);
-		music = Mix_LoadWAV(chemin_complet);
-		channel_music = Mix_PlayChannel(-1, music, 0);
-		Mix_Volume(channel_music, 10);
-		
-	}
-	
-}
-
-void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
+void SDL_init(int width, int height, char title[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
 	
     int sdl_start = 0;
 	char file[100]; //Generating file path
@@ -119,17 +123,17 @@ void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[1
     
 	atexit (SDL_Quit);
 
-    screen = SDL_SetVideoMode (x, y, 16, SDL_SWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
+    screen = SDL_SetVideoMode (width, height, 16, SDL_SWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
     
     if (screen == NULL)
     {
         
-        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", x, y ,SDL_GetError ());
+        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
         
     }
     
-	SDL_WM_SetCaption (titre, NULL);
+	SDL_WM_SetCaption (title, NULL);
 	
 	if (audio_support == 1) {
 		
@@ -139,7 +143,7 @@ void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[1
 		    exit (1);
 		    
 		}
-		
+		audio_loaded = 1;
 	}
 	
 	if (ttf_support == 1) {
@@ -163,12 +167,23 @@ void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[1
 		}
 		
 		ttf_police = TTF_OpenFont(file, police_size);
-		
+		tff_loaded = 1;
 	}
 	
 	SDL_EnableUNICODE(1);
 	
+	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
+	int initted=IMG_Init(flags);
+	
+	if((initted&flags) != flags) {
+    	fprintf(stdout, "[!] IMG_Init: Failed to init required jpg and png support!\n");
+    	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
+    	exit (1);
+	}
+	
 }
+
+
 
 int SDL_CaptureForm(t_window * window, int obj) {
 
@@ -636,7 +651,7 @@ void SDL_BlitObjs(t_window * window) {
 				
 				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
 	
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, couleurBlanche);
+				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				
 				positionFond.x += 20;
 				positionFond.y += 5;
@@ -666,12 +681,12 @@ void SDL_BlitObjs(t_window * window) {
 				
 				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
 	
-				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, couleurNoire);
+				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
 				positionFond.x = (window->windowObj[i].x)+10;
 				positionFond.y = (window->windowObj[i].y)+5;
 				SDL_BlitSurface(saisie_ttf, NULL, window->windowSurface, &positionFond);
 	
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, couleurBlanche);
+				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				positionFond.x = (window->windowObj[i].x)-55;
 				positionFond.y = (window->windowObj[i].y)+5;
 				SDL_BlitSurface(titre_ttf, NULL, window->windowSurface, &positionFond);
@@ -685,17 +700,19 @@ void SDL_BlitObjs(t_window * window) {
 		
 	}
 	
-	//Scan text to Blit !
-	for (i = 0; i < (window->nbText); i++) {
+	if (tff_loaded == 1) {
+		//Scan text to Blit !
+		for (i = 0; i < (window->nbText); i++) {
 		
-		textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
-		
-		positionFond.x = window->windowText[i].x;
-		positionFond.y = window->windowText[i].y;
-		
-		SDL_BlitSurface(textsurf, NULL, window->windowSurface, &positionFond);
-		SDL_FreeSurface(textsurf);
-		
+			textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+			
+			positionFond.x = window->windowText[i].x;
+			positionFond.y = window->windowText[i].y;
+			
+			SDL_BlitSurface(textsurf, NULL, window->windowSurface, &positionFond);
+			SDL_FreeSurface(textsurf);
+			
+		}
 	}
 	
 	positionFond.x = window->x;
@@ -719,8 +736,6 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
 	
-	sound = Mix_LoadWAV("ressources/snd/select.wav");
-	
 	while (1) {
 		
 		do {
@@ -741,16 +756,14 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
 			
-			channel = Mix_PlayChannel(-1, sound, 0);
+			SDL_playwav("select.wav", 1, NULL);
 			
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 		
-			sound = Mix_LoadWAV("ressources/snd/enter.wav");
-			channel = Mix_PlayChannel(-1, sound, 0);
-			while(Mix_Playing(channel) != 0);
+			SDL_playwav("enter.wav", 1, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;
@@ -771,8 +784,6 @@ int SDL_generate(t_window * window) {
 	int uniqueFrame = 0;
 	
 	if (window == NULL) return -1;
-	
-	sound = Mix_LoadWAV("ressources/snd/select.wav");
 	
 	if ((window->nbObj) == 0) {
 		uniqueFrame = 1;
@@ -809,16 +820,14 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0)) {
 			
-			channel = Mix_PlayChannel(-1, sound, 0);
+			SDL_playwav("select.wav", 1, NULL);
 			
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0) ) {
-		
-			sound = Mix_LoadWAV("ressources/snd/enter.wav");
-			channel = Mix_PlayChannel(-1, sound, 0);
-			while(Mix_Playing(channel) != 0);
+			
+			SDL_playwav("enter.wav", 1, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;

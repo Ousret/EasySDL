@@ -151,7 +151,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]);
  */
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
 
-void SDL_backgroundMusic(char musicfic[100]);
+void SDL_playwav(char * wavfile, int waitEnd, int *channel);
 
 void SDL_Splash(char img[100], int attente);
 
@@ -187,11 +187,11 @@ void SDL_freeWindow(t_window * window);
 extern SDL_Surface *screen;
 
 /** \brief Couleurs RGB */
-extern SDL_Color couleurRouge;
+extern SDL_Color colorRed;
 /** \brief Couleurs RGB */
-extern SDL_Color couleurBlanche;
+extern SDL_Color colorWhite;
 /** \brief Couleurs RGB */
-extern SDL_Color couleurNoire;
+extern SDL_Color colorBlack;
 
 /** \brief Contient la suite des événements capturés par la SDL (Clavier+Souris) */
 extern SDL_Event GlobalEvent;

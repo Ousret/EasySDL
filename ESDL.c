@@ -14,11 +14,12 @@
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <SDL_gpu.h>
 #include <string.h>
 
 #include "includes/ESDL.h"
 
-SDL_Surface *screen = NULL;
+GPU_Target* screen = NULL;
 
 SDL_Color colorRed = {255, 0, 0};
 SDL_Color colorWhite = {255, 255, 255};
@@ -96,7 +97,6 @@ int SDL_IsMouseOverObj(t_window * window) {
 
 void SDL_init(int width, int height, char title[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
 	
-    int sdl_start = 0;
 	char file[100]; //Generating file path
 	
 	memset(file, 0, sizeof(file));
@@ -106,32 +106,15 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	int audio_channels = 2;
 	int audio_buffers = 4096;
 	
-    /* Initialize SDL */
-    if (audio_support == 1) {
-    	sdl_start = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    }else {
-    	sdl_start = SDL_Init (SDL_INIT_VIDEO);
-    }
-    
-    if (sdl_start < 0)
-    {
-        
-        fprintf (stderr, "[!] SDL failed to load because of: %s\n", SDL_GetError ());
+	screen = GPU_Init(width, height, GPU_DEFAULT_INIT_FLAGS);
+	
+	if (screen == NULL) {
+		fprintf (stderr, "[!] SDL failed to load with GPU\n");
+		fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (1);
-        
-    }
+	}
     
 	atexit (SDL_Quit);
-
-    screen = SDL_SetVideoMode (width, height, 16, SDL_SWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
-    
-    if (screen == NULL)
-    {
-        
-        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
-        exit (2);
-        
-    }
     
 	SDL_WM_SetCaption (title, NULL);
 	
@@ -599,32 +582,41 @@ int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
 	
 }
 
+GPU_Image* SDL_convertTexture(SDL_Surface* surface)
+{
+    GPU_Image* image;
+    image = GPU_CopyImageFromSurface(surface);
+    
+    return image;
+}
+
+
 void SDL_BlitObjs(t_window * window) {
 
 	int i = 0;
 	
-	SDL_Rect positionFond; 
 	SDL_Surface *imageDeFond = NULL, *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
+	
+	GPU_Image* windowImage = NULL;
 	
 	char saisie_content[100], texturePath[100]; //Form ONLY
 	
 	if (window == NULL) return;
 	
-	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 32, 0, 0, 0, 0);
-	SDL_FillRect(window->windowSurface, NULL, SDL_MapRGB(window->windowSurface->format, 0, 0, 0));
+	GPU_Clear(screen);
 	
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
 		
 		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
-		imageDeFond = IMG_Load(texturePath);
 		
-		positionFond.x = window->windowImg[i].x;
-		positionFond.y = window->windowImg[i].y;
+		imageDeFond = GPU_LoadSurface(texturePath);
+        windowImage = SDL_convertTexture(imageDeFond);
+        SDL_FreeSurface(imageDeFond);
 				
-		SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
+		GPU_Blit(windowImage, NULL, window->windowSurface, window->windowImg[i].x, window->windowImg[i].y);
 		
-		SDL_FreeSurface(imageDeFond);
+		GPU_FreeImage(windowImage);
 		
 	}
 	
@@ -638,24 +630,27 @@ void SDL_BlitObjs(t_window * window) {
 				//On charge l'image concernée ++ si souris survol choix
 				if (window->windowObj[i].MouseOver == 1) {
 					
-					imageDeFond = IMG_Load("ressources/images/m_bg_s1.png");
+					imageDeFond = GPU_LoadSurface("ressources/images/m_bg_s1.png");
 					
 				}else{
 				
-					imageDeFond = IMG_Load("ressources/images/m_bg_s0.png");
+					imageDeFond = GPU_LoadSurface("ressources/images/m_bg_s0.png");
 					
 				}
 				
-				positionFond.x = window->windowObj[i].x;
-				positionFond.y = window->windowObj[i].y;
+				windowImage = SDL_convertTexture(imageDeFond);
+        		SDL_FreeSurface(imageDeFond);
 				
-				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
-	
+				//SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
+				GPU_Blit(windowImage, NULL, window->windowSurface, window->windowObj[i].x, window->windowObj[i].y);
+				GPU_FreeImage(windowImage);
+				
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				
-				positionFond.x += 20;
-				positionFond.y += 5;
-				SDL_BlitSurface(titre_ttf, NULL, window->windowSurface, &positionFond);
+				windowImage = SDL_convertTexture(titre_ttf);
+				
+				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
+				GPU_FreeImage(windowImage);
 				
 				break;
 				
@@ -674,29 +669,34 @@ void SDL_BlitObjs(t_window * window) {
 					
 				}
 				
-				imageDeFond = IMG_Load("ressources/images/ch_saisie_actif.png");
+				imageDeFond = GPU_LoadSurface("ressources/images/ch_saisie_actif.png");
 				
-				positionFond.x = window->windowObj[i].x;
-				positionFond.y = window->windowObj[i].y;
+				windowImage = SDL_convertTexture(imageDeFond);
+        		SDL_FreeSurface(imageDeFond);
 				
-				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
+				GPU_Blit(windowImage, NULL, window->windowSurface, window->windowObj[i].x, window->windowObj[i].y);
+				GPU_FreeImage(windowImage);
 	
 				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-				positionFond.x = (window->windowObj[i].x)+10;
-				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(saisie_ttf, NULL, window->windowSurface, &positionFond);
+				windowImage = SDL_convertTexture(saisie_ttf);
+				SDL_FreeSurface(saisie_ttf);
+				
+				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
+				GPU_FreeImage(windowImage);
 	
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				positionFond.x = (window->windowObj[i].x)-55;
-				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(titre_ttf, NULL, window->windowSurface, &positionFond);
+				windowImage = SDL_convertTexture(titre_ttf);
+				SDL_FreeSurface(titre_ttf);
+				
+				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
+				GPU_FreeImage(windowImage);
 				
 				break;
 				
 		}
 		
-		SDL_FreeSurface(imageDeFond);
-		SDL_FreeSurface(titre_ttf);
+		//SDL_FreeSurface(imageDeFond);
+		//SDL_FreeSurface(titre_ttf);
 		
 	}
 	
@@ -706,20 +706,18 @@ void SDL_BlitObjs(t_window * window) {
 		
 			textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
 			
-			positionFond.x = window->windowText[i].x;
-			positionFond.y = window->windowText[i].y;
-			
-			SDL_BlitSurface(textsurf, NULL, window->windowSurface, &positionFond);
+			windowImage = SDL_convertTexture(textsurf);
 			SDL_FreeSurface(textsurf);
+			GPU_Blit(windowImage, NULL, window->windowSurface, window->windowText[i].x, window->windowText[i].y);
+			
+			GPU_FreeImage(windowImage);
 			
 		}
 	}
 	
-	positionFond.x = window->x;
-	positionFond.y = window->y;
-	SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
+	//SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
+	//GPU_Blit(window->windowSurface, NULL, screen, window->x, window->y);
 	
-	SDL_FreeSurface(window->windowSurface);
 
 }
 
@@ -751,7 +749,8 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 		if (MouseOverObjPrev != MouseOverObj) {		
 			SDL_BlitObjs(menu);
-			SDL_Flip (screen);
+			GPU_Flip(menu->windowSurface);
+			GPU_FreeTarget(menu->windowSurface);
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
@@ -810,7 +809,7 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			SDL_BlitObjs(window);
-			SDL_Flip (screen);
+			GPU_Flip(screen);
 			forceFrame = 0;
 			
 			if (uniqueFrame == 1) {

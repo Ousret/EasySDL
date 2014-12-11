@@ -82,7 +82,7 @@ typedef struct {
 typedef struct {
 
 	char * title;
-	SDL_Surface * windowSurface;
+	GPU_Target * windowSurface;
 	
 	t_object * windowObj;
 	int nbObj;
@@ -183,8 +183,12 @@ int SDL_windowEmpty(t_window * window);
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
 void SDL_freeWindow(t_window * window);
 
+GPU_Image* SDL_convertTexture(SDL_Surface* surface);
+
+
 /** \brief Calque principal (sur lequel tout est superposé) */
-extern SDL_Surface *screen;
+//extern SDL_Surface *screen;
+extern GPU_Target* screen;
 
 /** \brief Couleurs RGB */
 extern SDL_Color colorRed;

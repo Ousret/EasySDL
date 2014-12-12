@@ -9,12 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-//#include <OpenGL/glu.h>
-//#include <OpenGL/glext.h>
+#include <../GL/glew.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
 #include <SDL_gpu.h>
+
 #include <string.h>
 
 #include "includes/ESDL.h"
@@ -105,12 +105,15 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2;
 	int audio_buffers = 4096;
-	
-	screen = GPU_Init(width, height, GPU_DEFAULT_INIT_FLAGS);
+	//printRenderers();
+	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
+	screen = GPU_InitRenderer(GPU_RENDERER_OPENGL_1, 800, 600, GPU_DEFAULT_INIT_FLAGS);
 	
 	if (screen == NULL) {
 		fprintf (stderr, "[!] SDL failed to load with GPU\n");
 		fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
+
+		
         exit (1);
 	}
     

@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-//#include <OpenGL/glu.h>
-//#include <OpenGL/glext.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
@@ -123,12 +123,12 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
     
 	atexit (SDL_Quit);
 
-    screen = SDL_SetVideoMode (width, height, 16, SDL_SWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
+    screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
     
     if (screen == NULL)
     {
         
-        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
+        fprintf (stderr, "[!] Unable to load window at %ix%i in 32 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
         
     }
@@ -726,7 +726,7 @@ void SDL_BlitObjs(t_window * window) {
 int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
-
+	
 	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
 	
 	for (i = 0; i < nb_entree; i++) {
@@ -773,6 +773,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		if (in.quit == 1) {
 			exit(0);
 		}
+		
 		
 	}
 	

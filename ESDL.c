@@ -186,7 +186,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 int SDL_CaptureForm(t_window * window, int obj) {
 
 	int current_len = 0;
-	
+	//Return if there's nothing to process
 	if (window == NULL) return 0;
 	
 	if ((obj != -1) && (window->windowObj[obj].dest != NULL) && (buffer_deliver == 0)) {

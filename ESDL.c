@@ -183,8 +183,6 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	
 }
 
-
-
 int SDL_CaptureForm(t_window * window, int obj) {
 
 	int current_len = 0;

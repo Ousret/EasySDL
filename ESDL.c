@@ -9,7 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-#include <../GL/glew.h>
+//#include <../GL/glew.h>
+#include <OpenGL/glu.h>
+#include <OpenGL/glext.h>
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
@@ -107,7 +109,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	int audio_buffers = 4096;
 	//printRenderers();
 	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
-	screen = GPU_InitRenderer(GPU_RENDERER_OPENGL_1, 800, 600, GPU_DEFAULT_INIT_FLAGS);
+	screen = GPU_Init(width, height, GPU_DEFAULT_INIT_FLAGS);
 	
 	if (screen == NULL) {
 		fprintf (stderr, "[!] SDL failed to load with GPU\n");
@@ -119,7 +121,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
     
 	atexit (SDL_Quit);
     
-	SDL_WM_SetCaption (title, NULL);
+	//SDL_WM_SetCaption (title, NULL);
 	
 	if (audio_support == 1) {
 		
@@ -156,7 +158,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		tff_loaded = 1;
 	}
 	
-	SDL_EnableUNICODE(1);
+	//SDL_EnableUNICODE(1);
 	
 	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
 	int initted=IMG_Init(flags);
@@ -542,7 +544,7 @@ void SDL_UpdateEvents(Input* in)
 				if (buffer_deliver == 1) {
 				
 					in->key[GlobalEvent.key.keysym.sym]=1;
-					buffer = GlobalEvent.key.keysym.unicode;
+					buffer = GlobalEvent.key.keysym.sym;
 					buffer_deliver = 0; //Need to know if char was captured..!
 				
 				}
@@ -613,11 +615,9 @@ void SDL_BlitObjs(t_window * window) {
 		
 		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
 		
-		imageDeFond = GPU_LoadSurface(texturePath);
-        windowImage = SDL_convertTexture(imageDeFond);
-        SDL_FreeSurface(imageDeFond);
+		windowImage = GPU_LoadImage(texturePath);
 				
-		GPU_Blit(windowImage, NULL, window->windowSurface, window->windowImg[i].x, window->windowImg[i].y);
+		GPU_Blit(windowImage, NULL, screen, window->windowImg[i].x, window->windowImg[i].y);
 		
 		GPU_FreeImage(windowImage);
 		
@@ -633,26 +633,22 @@ void SDL_BlitObjs(t_window * window) {
 				//On charge l'image concernée ++ si souris survol choix
 				if (window->windowObj[i].MouseOver == 1) {
 					
-					imageDeFond = GPU_LoadSurface("ressources/images/m_bg_s1.png");
+					windowImage = GPU_LoadImage("ressources/images/m_bg_s1.png");
 					
 				}else{
 				
-					imageDeFond = GPU_LoadSurface("ressources/images/m_bg_s0.png");
+					windowImage = GPU_LoadImage("ressources/images/m_bg_s0.png");
 					
 				}
 				
-				windowImage = SDL_convertTexture(imageDeFond);
-        		SDL_FreeSurface(imageDeFond);
-				
-				//SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
-				GPU_Blit(windowImage, NULL, window->windowSurface, window->windowObj[i].x, window->windowObj[i].y);
+				GPU_Blit(windowImage, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
 				GPU_FreeImage(windowImage);
 				
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				
 				windowImage = SDL_convertTexture(titre_ttf);
 				
-				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
+				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
 				GPU_FreeImage(windowImage);
 				
 				break;
@@ -672,34 +668,28 @@ void SDL_BlitObjs(t_window * window) {
 					
 				}
 				
-				imageDeFond = GPU_LoadSurface("ressources/images/ch_saisie_actif.png");
+				windowImage = GPU_LoadImage("ressources/images/ch_saisie_actif.png");
 				
-				windowImage = SDL_convertTexture(imageDeFond);
-        		SDL_FreeSurface(imageDeFond);
-				
-				GPU_Blit(windowImage, NULL, window->windowSurface, window->windowObj[i].x, window->windowObj[i].y);
+				GPU_Blit(windowImage, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
 				GPU_FreeImage(windowImage);
 	
 				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
 				windowImage = SDL_convertTexture(saisie_ttf);
 				SDL_FreeSurface(saisie_ttf);
 				
-				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
+				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
 				GPU_FreeImage(windowImage);
 	
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				windowImage = SDL_convertTexture(titre_ttf);
 				SDL_FreeSurface(titre_ttf);
 				
-				GPU_Blit(windowImage, NULL, window->windowSurface, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
+				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
 				GPU_FreeImage(windowImage);
 				
 				break;
 				
 		}
-		
-		//SDL_FreeSurface(imageDeFond);
-		//SDL_FreeSurface(titre_ttf);
 		
 	}
 	
@@ -731,11 +721,11 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
 	
 	for (i = 0; i < nb_entree; i++) {
-		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 100, 100+(50*i), 40, 230);
+		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 150, 100+(50*i), 40, 230);
 	}
 	
-	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
-	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
+	SDL_newTexture(menu, NULL, "app_bg.png", 400, 300, 600, 800);
+	SDL_newTexture(menu, NULL, "BarreLaterale.png", 170, 315, 0, 0);
 	
 	while (1) {
 		
@@ -744,7 +734,6 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 			MouseOverObjPrev = MouseOverObj;
 			SDL_UpdateEvents(&in);
 			MouseOverObj = SDL_IsMouseOverObj(menu);
-			
 			if (firstFrame == 0) { firstFrame = 1; break; }
 			SDL_Delay(50);
 			
@@ -752,8 +741,8 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 		if (MouseOverObjPrev != MouseOverObj) {		
 			SDL_BlitObjs(menu);
-			GPU_Flip(menu->windowSurface);
-			GPU_FreeTarget(menu->windowSurface);
+			GPU_Flip(screen);
+			//GPU_FreeTarget(screen);
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {

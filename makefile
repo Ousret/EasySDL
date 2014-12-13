@@ -1,8 +1,8 @@
 CC  = gcc -Wall
 BIN = libESDL.a
 INC = includes/
-CFLAGS =`sdl-config --libs --cflags` -lSDL_image -lSDL_ttf -lSDL_mixer #-lGL -lGLU
-CSDL = `sdl-config --cflags`
+CFLAGS =`sdl2-config --libs --cflags` -lSDL2_image -lSDL2_ttf -lSDL2_mixer #-lGL -lGLU
+CSDL = `sdl2-config --cflags`
 
 ESDL.o: ESDL.c $(INC)ESDL.h
 	$(CC) -c ESDL.c $(CSDL)

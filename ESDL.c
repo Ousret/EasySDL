@@ -99,7 +99,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 
 void SDL_init(int width, int height, char title[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
 	
-	char file[100]; //Generating file path
+	char file[100], msg[200]; //Generating file path
 	
 	memset(file, 0, sizeof(file));
 	
@@ -112,9 +112,11 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	screen = GPU_Init(width, height, GPU_DEFAULT_INIT_FLAGS);
 	
 	if (screen == NULL) {
-		fprintf (stderr, "[!] SDL failed to load with GPU\n");
-		fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
-
+		
+		//fprintf (stderr, "[!] SDL failed to load with GPU\n");
+		sprintf (msg, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height, SDL_GetError ());
+		
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
 		
         exit (1);
 	}
@@ -127,7 +129,8 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		
 		if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
 			
-			fprintf (stderr, "[!] Cannot load SDL audio because of: %s\n", Mix_GetError());
+			sprintf (msg, "[!] Cannot load SDL audio because of: %s\n", Mix_GetError());
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
 		    exit (1);
 		    
 		}
@@ -138,7 +141,8 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		
 		if(TTF_Init() == -1)
 		{
-	    	fprintf (stderr, "[!] Cannot load SDL_ttf, you may want to check your SDL setup !\n");
+	    	sprintf (msg, "[!] Cannot load SDL_ttf, you may want to check your SDL setup !\n");
+	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
 	        exit (1);
 		}
 		
@@ -150,7 +154,8 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		}*/
 		
 		if (police_size <= 0) {
-			fprintf(stderr, "[!] Cannot load ttf_police with size=0 !\n");
+			sprintf(msg, "[!] Cannot load ttf_police with size=0 !\n");
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
 			exit (1);
 		}
 		
@@ -164,8 +169,9 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	int initted=IMG_Init(flags);
 	
 	if((initted&flags) != flags) {
-    	fprintf(stdout, "[!] IMG_Init: Failed to init required jpg and png support!\n");
-    	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
+    	sprintf(msg, "[!] IMG_Init: Failed to init required jpg and png support!\n");
+    	//fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
+    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
     	exit (1);
 	}
 	
@@ -701,7 +707,7 @@ void SDL_BlitObjs(t_window * window) {
 			
 			windowImage = SDL_convertTexture(textsurf);
 			SDL_FreeSurface(textsurf);
-			GPU_Blit(windowImage, NULL, window->windowSurface, window->windowText[i].x, window->windowText[i].y);
+			GPU_Blit(windowImage, NULL, screen, window->windowText[i].x, window->windowText[i].y);
 			
 			GPU_FreeImage(windowImage);
 			
@@ -798,8 +804,8 @@ int SDL_generate(t_window * window) {
 			forceFrame = 1;
 		}
 		
-		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
+			
 			SDL_BlitObjs(window);
 			GPU_Flip(screen);
 			forceFrame = 0;

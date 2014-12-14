@@ -27,7 +27,6 @@ typedef enum {
  *
  * t_object contain info of one object (button or form input)
  */
-
 typedef struct {
 
 	int type;
@@ -82,7 +81,6 @@ typedef struct {
 typedef struct {
 
 	char * title;
-	GPU_Target * windowSurface;
 	
 	t_object * windowObj;
 	int nbObj;

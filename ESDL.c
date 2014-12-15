@@ -601,66 +601,41 @@ GPU_Image* SDL_convertTexture(SDL_Surface* surface)
     return image;
 }
 
-
-void SDL_BlitObjs(t_window * window) {
+void SDL_loadWindow(t_window * window) {
+/* Just keep in memory all surfaces to avoiding useless load for every frame */
 
 	int i = 0;
-	
-	SDL_Surface *imageDeFond = NULL, *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
-	
+	SDL_Surface *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
 	GPU_Image* windowImage = NULL;
 	
-	char saisie_content[100], texturePath[100]; //Form ONLY
+	char saisie_content[100], texturePath[100];
 	
-	if (window == NULL) return;
-	
-	GPU_Clear(screen);
-	
-	//Scan textures to Blit !
+	//Texture only
 	for (i = 0; i < (window->nbImg); i++) {
-		
+	
 		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
-		
-		windowImage = GPU_LoadImage(texturePath);
-				
-		GPU_Blit(windowImage, NULL, screen, window->windowImg[i].x, window->windowImg[i].y);
-		
-		GPU_FreeImage(windowImage);
-		
+		window->windowImg[i].GPU_buffer = GPU_LoadImage(texturePath);
+		if (i == 0) window->windowTarget = GPU_LoadTarget(window->windowImg[i].GPU_buffer);
+		//Need to exit on missing texture..!
+	
 	}
 	
-	//Blit OBJ ONLY
+	//Btn AND Form
 	for (i = 0; i < (window->nbObj); i++) {
 	
 		switch (window->windowObj[i].type) {
 		
-			case 0: //Simple btn
-				
-				//On charge l'image concernée ++ si souris survol choix
-				if (window->windowObj[i].MouseOver == 1) {
-					
-					windowImage = GPU_LoadImage("ressources/images/m_bg_s1.png");
-					
-				}else{
-				
-					windowImage = GPU_LoadImage("ressources/images/m_bg_s0.png");
-					
-				}
-				
-				GPU_Blit(windowImage, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
-				GPU_FreeImage(windowImage);
-				
+			case 0:
+
+				window->windowObj[i].GPU_buffer_texture = GPU_LoadImage("ressources/images/m_bg_s0.png");
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				
-				windowImage = SDL_convertTexture(titre_ttf);
-				
-				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
-				GPU_FreeImage(windowImage);
+				window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
+				SDL_FreeSurface(titre_ttf);
 				
 				break;
 				
-			case 1: //Form
-			
+			case 1:
+				
 				memset (saisie_content, 0, sizeof (saisie_content));
 				
 				if (window->windowObj[i].MouseOver == 1) {
@@ -674,49 +649,154 @@ void SDL_BlitObjs(t_window * window) {
 					
 				}
 				
-				windowImage = GPU_LoadImage("ressources/images/ch_saisie_actif.png");
-				
-				GPU_Blit(windowImage, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
-				GPU_FreeImage(windowImage);
+				window->windowObj[i].GPU_buffer_texture = GPU_LoadImage("ressources/images/ch_saisie_actif.png");
 	
 				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-				windowImage = SDL_convertTexture(saisie_ttf);
+				window->windowObj[i].GPU_buffer_content = SDL_convertTexture(saisie_ttf);
 				SDL_FreeSurface(saisie_ttf);
-				
-				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
-				GPU_FreeImage(windowImage);
 	
 				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				windowImage = SDL_convertTexture(titre_ttf);
+				window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
 				SDL_FreeSurface(titre_ttf);
-				
-				GPU_Blit(windowImage, NULL, screen, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
-				GPU_FreeImage(windowImage);
-				
+					
 				break;
 				
 		}
+	
+	}
+	
+	//Text
+	for (i = 0; i < (window->nbText); i++) {
+		
+		textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+			
+		window->windowText[i].GPU_buffer = SDL_convertTexture(textsurf);
+		SDL_FreeSurface(textsurf);
+			
+	}
+	
+
+}
+
+void SDL_BlitObjs(t_window * window, int forceAll) {
+
+	int i = 0;
+	
+	SDL_Surface *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
+	
+	GPU_Image* windowImage = NULL;
+	
+	char saisie_content[100], texturePath[100]; //Form ONLY
+	
+	if (window == NULL) return;
+	
+	//GPU_Clear(screen);
+	GPU_ClearRGBA(window->windowTarget, 255, 255, 255, 255);
+    GPU_SetCamera(window->windowTarget, NULL);
+    
+	//Scan textures to Blit !
+	for (i = 0; i < (window->nbImg); i++) {
+		
+		GPU_Blit(window->windowImg[i].GPU_buffer, NULL, window->windowTarget, window->windowImg[i].x, window->windowImg[i].y);
+		
+	}
+	
+	
+	//Blit OBJ ONLY
+	for (i = 0; i < (window->nbObj); i++) {
+	
+		if ((window->windowObj[i].MouseOver == 1) || (forceAll == 1)) {
+			
+			switch (window->windowObj[i].type) {
+		
+				case 0: //Simple btn
+				
+					//On charge l'image concernée ++ si souris survol choix
+					if (window->windowObj[i].MouseOver == 1) {
+						
+						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+
+					}else{
+					
+						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorRed);
+					
+					}
+				
+					//GPU_Blit(window->windowObj[i].GPU_buffer_texture, NULL, window->windowTarget, window->windowObj[i].x, window->windowObj[i].y);
+					
+					GPU_FreeImage(window->windowObj[i].GPU_buffer_title);
+					window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
+					SDL_FreeSurface(titre_ttf);
+					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, window->windowTarget, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
+					
+					break;
+				
+				case 1: //Form
+			
+					memset (saisie_content, 0, sizeof (saisie_content));
+				
+					if (window->windowObj[i].MouseOver == 1) {
+					
+						strcpy (saisie_content, window->windowObj[i].dest);
+  						strcat (saisie_content,"|");
+  					
+					}else{
+				
+						strcpy (saisie_content, window->windowObj[i].dest);
+					
+					}
+				
+					windowImage = GPU_LoadImage("ressources/images/ch_saisie_actif.png");
+				
+					GPU_Blit(windowImage, NULL, window->windowTarget, window->windowObj[i].x, window->windowObj[i].y);
+					GPU_FreeImage(windowImage);
+	
+					saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+					windowImage = SDL_convertTexture(saisie_ttf);
+					SDL_FreeSurface(saisie_ttf);
+				
+					GPU_Blit(windowImage, NULL, window->windowTarget, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
+					GPU_FreeImage(windowImage);
+	
+					titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+					windowImage = SDL_convertTexture(titre_ttf);
+					SDL_FreeSurface(titre_ttf);
+				
+					GPU_Blit(windowImage, NULL, window->windowTarget, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
+					GPU_FreeImage(windowImage);
+				
+					break;
+				
+			}
+			
+		}
+	
+		
 		
 	}
 	
 	if (tff_loaded == 1) {
+		
 		//Scan text to Blit !
 		for (i = 0; i < (window->nbText); i++) {
 		
-			textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+			//textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
 			
-			windowImage = SDL_convertTexture(textsurf);
-			SDL_FreeSurface(textsurf);
-			GPU_Blit(windowImage, NULL, screen, window->windowText[i].x, window->windowText[i].y);
+			//windowImage = SDL_convertTexture(textsurf);
+			//SDL_FreeSurface(textsurf);
 			
-			GPU_FreeImage(windowImage);
+			GPU_Blit(window->windowText[i].GPU_buffer, NULL, window->windowTarget, window->windowText[i].x, window->windowText[i].y);
+			
+			//GPU_FreeImage(windowImage);
 			
 		}
+	
 	}
 	
-	//SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
-	//GPU_Blit(window->windowSurface, NULL, screen, window->x, window->y);
-	
+	windowImage = GPU_CopyImageFromTarget(window->windowTarget);
+	GPU_Blit(windowImage, NULL, screen, 400, 300);
+	GPU_FreeImage(windowImage);
+	//GPU_FreeTarget(window->windowTarget);
 
 }
 
@@ -733,6 +813,8 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	SDL_newTexture(menu, NULL, "app_bg.png", 400, 300, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 170, 315, 0, 0);
 	
+	SDL_loadWindow(menu);
+	
 	while (1) {
 		
 		do {
@@ -746,8 +828,9 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (in.quit != 1));
 		
 		if (MouseOverObjPrev != MouseOverObj) {		
-			SDL_BlitObjs(menu);
+			SDL_BlitObjs(menu, firstFrame);
 			GPU_Flip(screen);
+			firstFrame = 2;
 			//GPU_FreeTarget(screen);
 		}
 		
@@ -806,7 +889,7 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			
-			SDL_BlitObjs(window);
+			//SDL_BlitObjs(window);
 			GPU_Flip(screen);
 			forceFrame = 0;
 			

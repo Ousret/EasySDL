@@ -38,6 +38,9 @@ typedef struct {
 	char * dest; //Only for form obj
 	t_typeForm typeForm; //Only for form obj
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
+	GPU_Image * GPU_buffer_title;
+	GPU_Image * GPU_buffer_texture;
+	GPU_Image * GPU_buffer_content;
 	
 } t_object;
 
@@ -53,6 +56,7 @@ typedef struct {
 	char * content;
 	int x;
 	int y;
+	GPU_Image * GPU_buffer;
 	
 } t_text;
 
@@ -69,6 +73,7 @@ typedef struct {
 	int y;
 	int height;
 	int width;
+	GPU_Image * GPU_buffer;
 
 } t_texture;
 
@@ -81,6 +86,7 @@ typedef struct {
 typedef struct {
 
 	char * title;
+	GPU_Target * windowTarget;
 	
 	t_object * windowObj;
 	int nbObj;
@@ -154,7 +160,7 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel);
 void SDL_Splash(char img[100], int attente);
 
 int SDL_IsMouseOverObj(t_window * window);
-void SDL_BlitObjs(t_window * window);
+void SDL_BlitObjs(t_window * window, int forceAll);
 void SDL_UpdateEvents(Input* in);
 int SDL_MessageBox();
 int SDL_CaptureForm(t_window * window, int obj);
@@ -182,7 +188,7 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
 void SDL_freeWindow(t_window * window);
 
 GPU_Image* SDL_convertTexture(SDL_Surface* surface);
-
+void SDL_loadWindow(t_window * window);
 
 /** \brief Calque principal (sur lequel tout est superposé) */
 //extern SDL_Surface *screen;

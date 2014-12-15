@@ -309,24 +309,24 @@ void SDL_freeWindow(t_window * window) {
 	int i = 0;
 	
 	if (window->windowObj != NULL) {
-		for (i = 0;i < (window->nbObj); i ++) {
+		/*for (i = 0;i < (window->nbObj); i ++) {
 			SDL_FreeSurface(window->windowObj[i].buffer_title);
 			SDL_FreeSurface(window->windowObj[i].buffer_content);
-		}
+		}*/
 		free (window->windowObj);
 	}
 	
 	if (window->windowText != NULL) {
-		for (i = 0;i < (window->nbText); i ++) {
+		/*for (i = 0;i < (window->nbText); i ++) {
 			SDL_FreeSurface(window->windowText[i].buffer);
-		}
+		}*/
 		free (window->windowText);
 	}
 	
 	if (window->windowImg != NULL) {
-		for (i = 0;i < (window->nbImg); i ++) {
+		/*for (i = 0;i < (window->nbImg); i ++) {
 			SDL_FreeSurface(window->windowImg[i].buffer);
-		}
+		}*/
 		free (window->windowImg);
 	}
 	

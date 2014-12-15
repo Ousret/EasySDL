@@ -9,8 +9,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
+/* NOT USING IT FOR NOW 
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
+*/
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
@@ -304,8 +306,29 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 void SDL_freeWindow(t_window * window) {
 	
 	if (window == NULL) return;
-	if (window->windowObj != NULL) free (window->windowObj);
-	if (window->windowText != NULL) free (window->windowText);
+	int i = 0;
+	
+	if (window->windowObj != NULL) {
+		for (i = 0;i < (window->nbObj); i ++) {
+			SDL_FreeSurface(window->windowObj[i].buffer_title);
+			SDL_FreeSurface(window->windowObj[i].buffer_content);
+		}
+		free (window->windowObj);
+	}
+	
+	if (window->windowText != NULL) {
+		for (i = 0;i < (window->nbText); i ++) {
+			SDL_FreeSurface(window->windowText[i].buffer);
+		}
+		free (window->windowText);
+	}
+	
+	if (window->windowImg != NULL) {
+		for (i = 0;i < (window->nbImg); i ++) {
+			SDL_FreeSurface(window->windowImg[i].buffer);
+		}
+		free (window->windowImg);
+	}
 	
 	free (window);
 	
@@ -610,7 +633,6 @@ void SDL_loadRessources() {
 	BTN_NOTOVER = IMG_Load("ressources/images/m_bg_s0.png");
 	FORM = IMG_Load("ressources/images/ch_saisie_actif.png");
 	
-	
 	SELECT = Mix_LoadWAV("ressources/snd/select.wav");
 	ENTER = Mix_LoadWAV("ressources/snd/enter.wav");
 	
@@ -840,7 +862,6 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		if (in.quit == 1) {
 			exit(0);
 		}
-		
 		
 	}
 	

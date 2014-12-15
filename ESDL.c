@@ -609,7 +609,7 @@ void SDL_loadWindow(t_window * window) {
 	GPU_Image* windowImage = NULL;
 	
 	char saisie_content[100], texturePath[100];
-	
+	//window->windowTarget = GPU_LoadTarget(NULL);
 	//Texture only
 	for (i = 0; i < (window->nbImg); i++) {
 	
@@ -705,35 +705,33 @@ void SDL_BlitObjs(t_window * window, int forceAll) {
 	//Blit OBJ ONLY
 	for (i = 0; i < (window->nbObj); i++) {
 	
-		if ((window->windowObj[i].MouseOver == 1) || (forceAll == 1)) {
 			
 			switch (window->windowObj[i].type) {
 		
 				case 0: //Simple btn
 				
 					//On charge l'image concernée ++ si souris survol choix
-					if (window->windowObj[i].MouseOver == 1) {
+					/*if (window->windowObj[i].MouseOver == 1) {
 						
-						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorRed);
 
 					}else{
 					
-						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorRed);
+						titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 					
-					}
-				
-					//GPU_Blit(window->windowObj[i].GPU_buffer_texture, NULL, window->windowTarget, window->windowObj[i].x, window->windowObj[i].y);
+					}*/
 					
-					GPU_FreeImage(window->windowObj[i].GPU_buffer_title);
-					window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
-					SDL_FreeSurface(titre_ttf);
+					GPU_Blit(window->windowObj[i].GPU_buffer_texture, NULL, window->windowTarget, window->windowObj[i].x, window->windowObj[i].y);
+					
+					//window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
+					//SDL_FreeSurface(titre_ttf);
 					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, window->windowTarget, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
 					
 					break;
 				
 				case 1: //Form
 			
-					memset (saisie_content, 0, sizeof (saisie_content));
+					/*memset (saisie_content, 0, sizeof (saisie_content));
 				
 					if (window->windowObj[i].MouseOver == 1) {
 					
@@ -764,10 +762,8 @@ void SDL_BlitObjs(t_window * window, int forceAll) {
 				
 					GPU_Blit(windowImage, NULL, window->windowTarget, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
 					GPU_FreeImage(windowImage);
-				
+					*/
 					break;
-				
-			}
 			
 		}
 	

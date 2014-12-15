@@ -789,9 +789,7 @@ void SDL_BlitObjs(t_window * window, int forceAll) {
 	
 	}
 	
-	windowImage = GPU_CopyImageFromTarget(window->windowTarget);
-	GPU_Blit(windowImage, NULL, screen, 400, 300);
-	GPU_FreeImage(windowImage);
+	GPU_Blit(window->windowTarget->image, NULL, screen, 400, 300);
 	//GPU_FreeTarget(window->windowTarget);
 
 }

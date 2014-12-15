@@ -285,8 +285,11 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 	tmp->windowImg = NULL;
 	
 	tmp->nbObj = 0;
+	tmp->nbObj_loaded = 0;
 	tmp->nbText = 0;
+	tmp->nbText_loaded = 0;
 	tmp->nbImg = 0;
+	tmp->nbImg_loaded = 0;
 	
 	tmp->x = x;
 	tmp->y = y;
@@ -618,15 +621,18 @@ void SDL_loadWindow(t_window * window) {
 	int i = 0;
 	
 	char saisie_content[100], texturePath[100]; //Form ONLY
+	window->windowSurface = NULL;
 	
-	for (i = 0; i < (window->nbImg); i++) {
+	for (i = (window->nbImg_loaded); i < (window->nbImg); i++) {
 		
 		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
 		window->windowImg[i].buffer = IMG_Load(texturePath);
 		
 	}
 	
-	for (i = 0; i < (window->nbObj); i++) {
+	window->nbImg_loaded = i;
+	
+	for (i = (window->nbObj_loaded); i < (window->nbObj); i++) {
 	
 		switch (window->windowObj[i].type) {
 		
@@ -660,11 +666,15 @@ void SDL_loadWindow(t_window * window) {
 	
 	}
 	
-	for (i = 0; i < (window->nbText); i++) {
+	window->nbObj_loaded = i;
+	
+	for (i = (window->nbText_loaded); i < (window->nbText); i++) {
 		
 		window->windowText[i].buffer = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
 			
 	}
+	
+	window->nbText_loaded = 0;
 	
 
 }
@@ -679,6 +689,7 @@ void SDL_BlitObjs(t_window * window) {
 	char saisie_content[100], texturePath[100]; //Form ONLY
 	
 	if (window == NULL) return;
+	
 	
 	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 32, 0, 0, 0, 0);
 	SDL_FillRect(window->windowSurface, NULL, SDL_MapRGB(window->windowSurface->format, 0, 0, 0));

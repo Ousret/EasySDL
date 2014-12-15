@@ -91,13 +91,13 @@ typedef struct {
 	SDL_Surface * windowSurface;
 	
 	t_object * windowObj;
-	int nbObj;
+	int nbObj, nbObj_loaded;
 	
 	t_text * windowText;
-	int nbText;
+	int nbText, nbText_loaded;
 	
 	t_texture * windowImg;
-	int nbImg;
+	int nbImg, nbImg_loaded;
 	
 	int x, y;
 	int height, width;

@@ -21,6 +21,9 @@ typedef enum {
 	
 } t_typeForm;
 
+extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
+extern Mix_Chunk *SELECT, *ENTER;
+
 /**
  * \struct t_object
  * \brief Represent object, could be button or form input to be filled.
@@ -39,6 +42,7 @@ typedef struct {
 	char * dest; //Only for form obj
 	t_typeForm typeForm; //Only for form obj
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
+	SDL_Surface *buffer_title, *buffer_content;
 	
 } t_object;
 
@@ -54,6 +58,7 @@ typedef struct {
 	char * content;
 	int x;
 	int y;
+	SDL_Surface *buffer;
 	
 } t_text;
 
@@ -70,6 +75,7 @@ typedef struct {
 	int y;
 	int height;
 	int width;
+	SDL_Surface *buffer;
 
 } t_texture;
 
@@ -182,6 +188,9 @@ int SDL_windowEmpty(t_window * window);
 
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
 void SDL_freeWindow(t_window * window);
+
+void SDL_loadWindow(t_window * window);
+void SDL_loadRessources();
 
 /** \brief Calque principal (sur lequel tout est superposé) */
 extern SDL_Surface *screen;

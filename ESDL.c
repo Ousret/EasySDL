@@ -19,6 +19,8 @@
 #include "includes/ESDL.h"
 
 SDL_Surface *screen = NULL;
+SDL_Surface *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
+Mix_Chunk *SELECT = NULL, *ENTER = NULL;
 
 SDL_Color colorRed = {255, 0, 0};
 SDL_Color colorWhite = {255, 255, 255};
@@ -180,6 +182,8 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
     	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
     	exit (1);
 	}
+	
+	SDL_loadRessources();
 	
 }
 
@@ -597,12 +601,80 @@ int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
 	
 }
 
+void SDL_loadRessources() {
+
+	BTN_OVER = IMG_Load("ressources/images/m_bg_s1.png");
+	BTN_NOTOVER = IMG_Load("ressources/images/m_bg_s0.png");
+	FORM = IMG_Load("ressources/images/ch_saisie_actif.png");
+	
+	
+	SELECT = Mix_LoadWAV("ressources/snd/select.wav");
+	ENTER = Mix_LoadWAV("ressources/snd/enter.wav");
+	
+}
+
+void SDL_loadWindow(t_window * window) {
+
+	int i = 0;
+	
+	char saisie_content[100], texturePath[100]; //Form ONLY
+	
+	for (i = 0; i < (window->nbImg); i++) {
+		
+		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
+		window->windowImg[i].buffer = IMG_Load(texturePath);
+		
+	}
+	
+	for (i = 0; i < (window->nbObj); i++) {
+	
+		switch (window->windowObj[i].type) {
+		
+			case 0: //Simple btn
+				
+				window->windowObj[i].buffer_title = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+				
+				break;
+				
+			case 1: //Form
+			
+				memset (saisie_content, 0, sizeof (saisie_content));
+				
+				if (window->windowObj[i].MouseOver == 1) {
+					
+					strcpy (saisie_content, window->windowObj[i].dest);
+  					strcat (saisie_content,"|");
+  					
+				}else{
+				
+					strcpy (saisie_content, window->windowObj[i].dest);
+					
+				}
+	
+				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+				window->windowObj[i].buffer_title = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+				
+				break;
+				
+		}
+	
+	}
+	
+	for (i = 0; i < (window->nbText); i++) {
+		
+		window->windowText[i].buffer = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+			
+	}
+	
+
+}
+
 void SDL_BlitObjs(t_window * window) {
 
 	int i = 0;
 	
 	SDL_Rect positionFond; 
-	SDL_Surface *imageDeFond = NULL, *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
+	SDL_Surface *saisie_ttf = NULL;
 	
 	char saisie_content[100], texturePath[100]; //Form ONLY
 	
@@ -614,15 +686,10 @@ void SDL_BlitObjs(t_window * window) {
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
 		
-		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
-		imageDeFond = IMG_Load(texturePath);
-		
 		positionFond.x = window->windowImg[i].x;
 		positionFond.y = window->windowImg[i].y;
 				
-		SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
-		
-		SDL_FreeSurface(imageDeFond);
+		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
 	}
 	
@@ -633,27 +700,25 @@ void SDL_BlitObjs(t_window * window) {
 		
 			case 0: //Simple btn
 				
-				//On charge l'image concernée ++ si souris survol choix
-				if (window->windowObj[i].MouseOver == 1) {
-					
-					imageDeFond = IMG_Load("ressources/images/m_bg_s1.png");
-					
-				}else{
-				
-					imageDeFond = IMG_Load("ressources/images/m_bg_s0.png");
-					
-				}
-				
 				positionFond.x = window->windowObj[i].x;
 				positionFond.y = window->windowObj[i].y;
 				
-				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
-	
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+				//On charge l'image concernée ++ si souris survol choix
+				if (window->windowObj[i].MouseOver == 1) {
+					
+					//imageDeFond = IMG_Load("ressources/images/m_bg_s1.png");
+					SDL_BlitSurface(BTN_OVER, NULL, window->windowSurface, &positionFond);
+					
+				}else{
+				
+					//imageDeFond = IMG_Load("ressources/images/m_bg_s0.png");
+					SDL_BlitSurface(BTN_NOTOVER, NULL, window->windowSurface, &positionFond);
+					
+				}
 				
 				positionFond.x += 20;
 				positionFond.y += 5;
-				SDL_BlitSurface(titre_ttf, NULL, window->windowSurface, &positionFond);
+				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
 				
 				break;
 				
@@ -672,29 +737,27 @@ void SDL_BlitObjs(t_window * window) {
 					
 				}
 				
-				imageDeFond = IMG_Load("ressources/images/ch_saisie_actif.png");
+				//imageDeFond = IMG_Load("ressources/images/ch_saisie_actif.png");
 				
 				positionFond.x = window->windowObj[i].x;
 				positionFond.y = window->windowObj[i].y;
 				
-				SDL_BlitSurface(imageDeFond, NULL, window->windowSurface, &positionFond);
-	
-				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+				SDL_BlitSurface(FORM, NULL, window->windowSurface, &positionFond);
+				
+				SDL_FreeSurface(window->windowObj[i].buffer_content);
+				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
 				positionFond.x = (window->windowObj[i].x)+10;
 				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(saisie_ttf, NULL, window->windowSurface, &positionFond);
+				SDL_BlitSurface(window->windowObj[i].buffer_content, NULL, window->windowSurface, &positionFond);
 	
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+				//titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
 				positionFond.x = (window->windowObj[i].x)-55;
 				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(titre_ttf, NULL, window->windowSurface, &positionFond);
+				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
 				
 				break;
 				
 		}
-		
-		SDL_FreeSurface(imageDeFond);
-		SDL_FreeSurface(titre_ttf);
 		
 	}
 	
@@ -702,13 +765,12 @@ void SDL_BlitObjs(t_window * window) {
 		//Scan text to Blit !
 		for (i = 0; i < (window->nbText); i++) {
 		
-			textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+			//textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
 			
 			positionFond.x = window->windowText[i].x;
 			positionFond.y = window->windowText[i].y;
 			
-			SDL_BlitSurface(textsurf, NULL, window->windowSurface, &positionFond);
-			SDL_FreeSurface(textsurf);
+			SDL_BlitSurface(window->windowText[i].buffer, NULL, window->windowSurface, &positionFond);
 			
 		}
 	}
@@ -734,6 +796,8 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
 	
+	SDL_loadWindow(menu);
+	
 	while (1) {
 		
 		do {
@@ -754,14 +818,15 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
 			
-			SDL_playwav("select.wav", 1, NULL);
-			
+			//SDL_playwav("select.wav", 1, NULL);
+			Mix_PlayChannel(-1, SELECT, 0);
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 		
-			SDL_playwav("enter.wav", 1, NULL);
+			//SDL_playwav("enter.wav", 1, NULL);
+			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;
@@ -787,6 +852,8 @@ int SDL_generate(t_window * window) {
 	if ((window->nbObj) == 0) {
 		uniqueFrame = 1;
 	}
+	
+	SDL_loadWindow(window);
 	
 	while (1) {
 		

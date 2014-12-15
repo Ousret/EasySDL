@@ -675,7 +675,6 @@ void SDL_loadWindow(t_window * window) {
 	}
 	
 	window->nbText_loaded = 0;
-	
 
 }
 
@@ -684,12 +683,9 @@ void SDL_BlitObjs(t_window * window) {
 	int i = 0;
 	
 	SDL_Rect positionFond; 
-	SDL_Surface *saisie_ttf = NULL;
-	
-	char saisie_content[100], texturePath[100]; //Form ONLY
+	char saisie_content[100]; //Form ONLY
 	
 	if (window == NULL) return;
-	
 	
 	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 32, 0, 0, 0, 0);
 	SDL_FillRect(window->windowSurface, NULL, SDL_MapRGB(window->windowSurface->format, 0, 0, 0));
@@ -828,15 +824,12 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
-			
-			//SDL_playwav("select.wav", 1, NULL);
 			Mix_PlayChannel(-1, SELECT, 0);
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 		
-			//SDL_playwav("enter.wav", 1, NULL);
 			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
@@ -897,14 +890,14 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0)) {
 			
-			SDL_playwav("select.wav", 1, NULL);
+			Mix_PlayChannel(-1, SELECT, 0);
 			
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0) ) {
 			
-			SDL_playwav("enter.wav", 1, NULL);
+			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;

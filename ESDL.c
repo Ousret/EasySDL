@@ -282,6 +282,8 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 	t_window * tmp = malloc(sizeof(t_window));
 	tmp->title = title;
 	
+	tmp->windowSurface = NULL;
+	
 	tmp->windowObj = NULL;
 	tmp->windowText = NULL;
 	tmp->windowImg = NULL;
@@ -307,26 +309,34 @@ void SDL_freeWindow(t_window * window) {
 	
 	if (window == NULL) return;
 	int i = 0;
-	
+	//fprintf(stdout, "Free"
 	if (window->windowObj != NULL) {
-		/*for (i = 0;i < (window->nbObj); i ++) {
-			SDL_FreeSurface(window->windowObj[i].buffer_title);
-			SDL_FreeSurface(window->windowObj[i].buffer_content);
-		}*/
+		for (i = 0;i < (window->nbObj); i ++) {
+			if (window->windowObj[i].buffer_title)
+				SDL_FreeSurface(window->windowObj[i].buffer_title);
+				window->windowObj[i].buffer_title = NULL;
+			if (window->windowObj[i].buffer_content)
+				SDL_FreeSurface(window->windowObj[i].buffer_content);
+				window->windowObj[i].buffer_content = NULL;
+		}
 		free (window->windowObj);
 	}
 	
 	if (window->windowText != NULL) {
-		/*for (i = 0;i < (window->nbText); i ++) {
-			SDL_FreeSurface(window->windowText[i].buffer);
-		}*/
+		for (i = 0;i < (window->nbText); i ++) {
+			if (window->windowText[i].buffer)
+				SDL_FreeSurface(window->windowText[i].buffer);
+				window->windowText[i].buffer = NULL;
+		}
 		free (window->windowText);
 	}
 	
 	if (window->windowImg != NULL) {
-		/*for (i = 0;i < (window->nbImg); i ++) {
-			SDL_FreeSurface(window->windowImg[i].buffer);
-		}*/
+		for (i = 0;i < (window->nbImg); i ++) {
+			if (window->windowImg[i].buffer)
+				SDL_FreeSurface(window->windowImg[i].buffer);
+				window->windowImg[i].buffer = NULL;
+		}
 		free (window->windowImg);
 	}
 	
@@ -357,6 +367,8 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	window->windowObj[window->nbObj].height = height;
 	window->windowObj[window->nbObj].width = width;
 	window->windowObj[window->nbObj].MouseOver = 0;
+	window->windowObj[window->nbObj].buffer_title = NULL;
+	window->windowObj[window->nbObj].buffer_content = NULL;
 	
 	strcpy(window->windowObj[window->nbObj].title, title);
 	
@@ -410,6 +422,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	window->windowImg[window->nbImg].y = y;
 	window->windowImg[window->nbImg].height = height;
 	window->windowImg[window->nbImg].width = width;
+	window->windowImg[window->nbImg].buffer = NULL;
 	
 	if (id != NULL) *id = (window->nbImg);
 	
@@ -843,6 +856,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		if (MouseOverObjPrev != MouseOverObj) {		
 			SDL_BlitObjs(menu);
 			SDL_Flip (screen);
+			SDL_FreeSurface(screen);
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
@@ -902,6 +916,7 @@ int SDL_generate(t_window * window) {
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			SDL_BlitObjs(window);
 			SDL_Flip (screen);
+			SDL_FreeSurface(screen);
 			forceFrame = 0;
 			
 			if (uniqueFrame == 1) {

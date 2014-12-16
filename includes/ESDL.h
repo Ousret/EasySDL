@@ -88,7 +88,7 @@ typedef struct {
 typedef struct {
 
 	char * title;
-	GPU_Target * windowTarget;
+	//GPU_Target * windowTarget;
 	
 	t_object * windowObj;
 	int nbObj;

@@ -684,7 +684,7 @@ void SDL_loadWindow(t_window * window) {
 
 }
 
-void SDL_BlitObjs(t_window * window, int forceAll) {
+void SDL_BlitObjs(t_window * window) {
 
 	int i = 0;
 	
@@ -836,6 +836,8 @@ int SDL_generate(t_window * window) {
 		uniqueFrame = 1;
 	}
 	
+	SDL_loadWindow(window);
+	
 	while (1) {
 		
 		do {
@@ -856,7 +858,7 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			
-			//SDL_BlitObjs(window);
+			SDL_BlitObjs(window);
 			GPU_Flip(screen);
 			forceFrame = 0;
 			

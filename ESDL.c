@@ -309,7 +309,7 @@ void SDL_freeWindow(t_window * window) {
 	
 	if (window == NULL) return;
 	int i = 0;
-	//fprintf(stdout, "Free"
+	
 	if (window->windowObj != NULL) {
 		for (i = 0;i < (window->nbObj); i ++) {
 			if (window->windowObj[i].buffer_title)

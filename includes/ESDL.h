@@ -21,6 +21,9 @@ typedef enum {
 	
 } t_typeForm;
 
+GPU_Image *BTNOVER = NULL, *BTNNOTOVER = NULL, *FORM = NULL;
+Mix_Chunk *SELECT = NULL, *ENTER = NULL;
+
 /**
  * \struct t_object
  * \brief Represent object, could be button or form input to be filled.
@@ -39,7 +42,6 @@ typedef struct {
 	t_typeForm typeForm; //Only for form obj
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	GPU_Image * GPU_buffer_title;
-	GPU_Image * GPU_buffer_texture;
 	GPU_Image * GPU_buffer_content;
 	
 } t_object;
@@ -160,7 +162,7 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel);
 void SDL_Splash(char img[100], int attente);
 
 int SDL_IsMouseOverObj(t_window * window);
-void SDL_BlitObjs(t_window * window, int forceAll);
+void SDL_BlitObjs(t_window * window);
 void SDL_UpdateEvents(Input* in);
 int SDL_MessageBox();
 int SDL_CaptureForm(t_window * window, int obj);
@@ -189,6 +191,7 @@ void SDL_freeWindow(t_window * window);
 
 GPU_Image* SDL_convertTexture(SDL_Surface* surface);
 void SDL_loadWindow(t_window * window);
+void SDL_loadRessources();
 
 /** \brief Calque principal (sur lequel tout est superposé) */
 //extern SDL_Surface *screen;

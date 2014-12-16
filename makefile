@@ -2,7 +2,6 @@ UNAME := $(shell gcc -dumpmachine)
 CC  = gcc -Wall
 BIN = libESDL.a
 INC = includes/
-CFLAGS =`sdl-config --libs --cflags` -lSDL_image -lSDL_ttf -lSDL_mixer #-lGL -lGLU
 CSDL = `sdl-config --cflags`
 
 ESDL.o: ESDL.c $(INC)ESDL.h
@@ -11,7 +10,6 @@ ESDL.o: ESDL.c $(INC)ESDL.h
 	@echo Your OS is $(UNAME)
 
 clean:
-	@echo Cleanup EasySDL
 	@rm -f *.o
 
 install:

@@ -125,7 +125,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
         
     }
     
-	atexit (SDL_Quit);
+	atexit (SDL_unload);
 
     screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
     
@@ -671,6 +671,17 @@ void SDL_loadRessources() {
 	
 }
 
+void SDL_unload() {
+	
+	IMG_Quit();
+	TTF_Quit();
+	Mix_Quit();
+	SDL_Quit();
+	
+	exit(0);
+
+}
+
 void SDL_loadWindow(t_window * window) {
 
 	int i = 0;
@@ -933,7 +944,6 @@ int SDL_generate(t_window * window) {
 			SDL_CaptureForm(window, MouseOverObj);
 			forceFrame = 1;
 		}
-		
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			SDL_BlitObjs(window);

@@ -888,12 +888,14 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-
+			
+			SDL_freeWindow(menu);
 			return MouseOverObj;
 		
 		}
 		
 		if (in.quit == 1) {
+			SDL_freeWindow(menu);
 			exit(0);
 		}
 		

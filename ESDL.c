@@ -1,6 +1,6 @@
 /** EasySDL Alpha
 *
-*	Author(s): TAHRI Ahmed, SIMON JŽrŽmy
+*	Author(s): TAHRI Ahmed, SIMON Jérémy
 *	Lib: EasySDL
 *	Version: 0.1
 * 	Date: 8-12-2014

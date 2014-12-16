@@ -674,8 +674,8 @@ void SDL_loadRessources() {
 void SDL_unload() {
 	
 	IMG_Quit();
-	TTF_Quit();
-	Mix_Quit();
+	if (tff_loaded) TTF_Quit();
+	if (audio_loaded) Mix_Quit();
 	SDL_Quit();
 	
 	exit(0);

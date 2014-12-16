@@ -191,6 +191,7 @@ void SDL_freeWindow(t_window * window);
 
 void SDL_loadWindow(t_window * window);
 void SDL_loadRessources();
+void SDL_unload();
 
 /** \brief Calque principal (sur lequel tout est superposé) */
 extern SDL_Surface *screen;

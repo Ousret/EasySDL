@@ -456,6 +456,11 @@ void SDL_delTexture(t_window * window, int idimg) {
 	
 	int i = 0;
 	
+	if (window->windowImg[i].buffer) {
+		SDL_FreeSurface(window->windowImg[i].buffer);
+		window->windowImg[i].buffer = NULL;
+	}
+	
 	for (i = idimg; i < window->nbImg; i++) {
 	
 		window->windowImg[i] = window->windowImg[i+1];
@@ -508,6 +513,16 @@ void SDL_delObj(t_window * window, int obj) {
 	if (window->windowObj == NULL) return;
 	
 	int i = 0;
+	
+	if (window->windowObj[i].buffer_title) {
+		SDL_FreeSurface(window->windowObj[i].buffer_title);
+		window->windowObj[i].buffer_title = NULL;
+	}
+	
+	if (window->windowObj[i].buffer_content) {
+		SDL_FreeSurface(window->windowObj[i].buffer_content);
+		window->windowObj[i].buffer_content = NULL;
+	}
 	
 	for (i = obj; i < (window->nbObj); i++) {
 	
@@ -573,6 +588,11 @@ void SDL_delText(t_window * window, int idtext) {
 	if (window->windowText == NULL) return;
 	
 	int i = 0;
+	
+	if (window->windowText[i].buffer) {
+		SDL_FreeSurface(window->windowText[i].buffer);
+		window->windowText[i].buffer = NULL;
+	}
 	
 	for (i = idtext; i < (window->nbText); i++) {
 	

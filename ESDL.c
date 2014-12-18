@@ -320,16 +320,17 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 		
 	}
 	
-	window->windowObj[window->nbObj].x = x;
-	window->windowObj[window->nbObj].y = y;
+	window->windowObj[window->nbObj].x = x+(width/2);
+	window->windowObj[window->nbObj].y = y+(height/2);
+	
 	window->windowObj[window->nbObj].height = height;
 	window->windowObj[window->nbObj].width = width;
+	
 	window->windowObj[window->nbObj].MouseOver = 0;
 	
 	strcpy(window->windowObj[window->nbObj].title, title);
 	
 	window->windowObj[window->nbObj].type = type;
-	
 	
 	if (type == 1) {
 		
@@ -344,7 +345,6 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	}
 	
 	if (id != NULL) *id = window->nbObj;
-	
 	window->nbObj = (window->nbObj+1);
 	
 	return;
@@ -374,8 +374,8 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	}
 	
 	window->windowImg[window->nbImg].file = file;
-	window->windowImg[window->nbImg].x = x;
-	window->windowImg[window->nbImg].y = y;
+	window->windowImg[window->nbImg].x = x+(width/2);
+	window->windowImg[window->nbImg].y = y+(height/2);
 	window->windowImg[window->nbImg].height = height;
 	window->windowImg[window->nbImg].width = width;
 	
@@ -394,8 +394,8 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 	if (window->nbImg < idimg) return;
 	
 	window->windowImg[idimg].file = file;
-	window->windowImg[idimg].x = x;
-	window->windowImg[idimg].y = y;
+	window->windowImg[idimg].x = x+(width/2);
+	window->windowImg[idimg].y = y+(height/2);
 	window->windowImg[idimg].height = height;
 	window->windowImg[idimg].width = width;
 	
@@ -429,8 +429,8 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 	if (window->nbObj < obj) return;
 	if (window->windowObj == NULL) return;
 	
-	window->windowObj[obj].x = x;
-	window->windowObj[obj].y = y;
+	window->windowObj[obj].x = x+(width/2);
+	window->windowObj[obj].y = y+(height/2);
 	window->windowObj[obj].height = height;
 	window->windowObj[obj].width = width;
 	window->windowObj[obj].MouseOver = 0;
@@ -438,7 +438,6 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 	strcpy(window->windowObj[obj].title, title);
 	
 	window->windowObj[obj].type = type;
-	
 	
 	if (type == 1) {
 		
@@ -587,7 +586,7 @@ void SDL_UpdateEvents(Input* in)
 
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
 	
-	if ( (in.mousey-(window->y)) > y && (in.mousey-(window->y)) <= y+hauteur && (in.mousex-(window->x)) > x && (in.mousex-(window->x)) <= x+largeur ) {
+	if ( (in.mousey-(window->y)) > y-(hauteur/2) && (in.mousey-(window->y)) <= y+hauteur-(hauteur/2) && (in.mousex-(window->x)) > x-(largeur/2) && (in.mousex-(window->x)) <= x+largeur-(largeur/2) ) {
 		return 1;
 	}else{
 		return 0;
@@ -698,6 +697,8 @@ void SDL_BlitObjs(t_window * window) {
 	//GPU_ClearRGBA(screen, 255, 255, 255, 255);
     //GPU_SetCamera(screen, NULL);
     
+    //GPU_Blit(window->windowSnap, NULL, screen, 400, 300);
+    
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
 		
@@ -718,7 +719,7 @@ void SDL_BlitObjs(t_window * window) {
 						GPU_Blit(BTNNOTOVER, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
 					}
 					
-					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, screen, (window->windowObj[i].x)+20, (window->windowObj[i].y)+5);
+					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, screen, (window->windowObj[i].x), (window->windowObj[i].y));
 					
 					break;
 				
@@ -766,21 +767,22 @@ void SDL_BlitObjs(t_window * window) {
 	}
 	
 	//GPU_Blit(window->windowTarget->image, NULL, screen, 400, 300);
-
+	window->windowSnap = GPU_CopyImageFromTarget(screen);
+	
 }
 
 int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
-
+	
 	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
 	
 	for (i = 0; i < nb_entree; i++) {
-		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 150, 100+(50*i), 40, 230);
+		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 100, 100+(50*i), 40, 230);
 	}
 	
-	SDL_newTexture(menu, NULL, "app_bg.png", 400, 300, 600, 800);
-	SDL_newTexture(menu, NULL, "BarreLaterale.png", 170, 315, 0, 0);
+	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
+	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 580, 338);
 	
 	SDL_loadWindow(menu);
 	

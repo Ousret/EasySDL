@@ -38,6 +38,8 @@ TTF_Font *ttf_police = NULL;
 int channel = 0, channel_effect = 0, channel_music = 0;
 Mix_Chunk *sound = NULL, *effect = NULL, *music = NULL;
 
+int nbSnd = 0;
+
 int sel_menu_m = 0;
 int tff_loaded = 0, audio_loaded = 0;
 
@@ -51,13 +53,29 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	
 	sprintf(filePath, "ressources/snd/%s", wavfile);
 	
-	Mix_Chunk *sound = Mix_LoadWAV(filePath);
-	newChannel = Mix_PlayChannel(-1, sound, 0);
+	int i = 0, alreadyLoaded = -1;
+	for (i = 0; i < nbSnd; i++) {
+		if (strcmp(MIXTEMP[i].file, filePath) == 0) 
+			alreadyLoaded = i;
+			break;
+	}
+	
+	if (alreadyLoaded != -1) {
+	
+		newChannel = Mix_PlayChannel(-1, MIXTEMP[alreadyLoaded].MIX_BUF, 0);
+		
+	}else{
+		
+		MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
+		strcpy(MIXTEMP[nbSnd].file, filePath);
+		newChannel = Mix_PlayChannel(-1, MIXTEMP[nbSnd].MIX_BUF, 0);
+		nbSnd++;
+		
+	}
 	
 	if (channel != NULL) *channel = newChannel;
 	if (waitEnd == 1) {
 		while(Mix_Playing(newChannel) != 0);
-		Mix_FreeChunk(sound);
 	}
 }
 
@@ -335,6 +353,18 @@ void SDL_freeWindow(t_window * window) {
 				window->windowImg[i].buffer = NULL;
 		}
 		free (window->windowImg);
+	}
+	
+	if (nbSnd > 0) {
+	
+		for (i = 0; i < nbSnd; i++) {
+			
+			if (MIXTEMP[i].MIX_BUF) Mix_FreeChunk(MIXTEMP[i].MIX_BUF);
+			
+		}
+	
+		nbSnd = 0;
+	
 	}
 	
 	free (window);
@@ -711,7 +741,7 @@ void SDL_unload() {
 }
 
 void SDL_BlitObjs(t_window * window) {
-
+	
 	int i = 0;
 	
 	SDL_Rect positionFond; 

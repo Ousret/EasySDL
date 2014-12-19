@@ -21,9 +21,6 @@ typedef enum {
 	
 } t_typeForm;
 
-extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
-extern Mix_Chunk *SELECT, *ENTER;
-
 /**
  * \struct t_object
  * \brief Represent object, could be button or form input to be filled.
@@ -79,12 +76,12 @@ typedef struct {
 
 } t_texture;
 
-/*typedef struct {
+typedef struct {
 	
-	char * file;
+	char file[150];
 	Mix_Chunk * MIX_BUF;
 	
-} t_audio; */
+} t_audio;
 
 /**
  * \struct t_window
@@ -194,11 +191,16 @@ int SDL_nbTexture(t_window * window);
 int SDL_windowEmpty(t_window * window);
 
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
+
 void SDL_freeWindow(t_window * window);
 
-void SDL_loadWindow(t_window * window);
 void SDL_loadRessources();
 void SDL_unload();
+
+extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
+extern Mix_Chunk *SELECT, *ENTER;
+t_audio MIXTEMP[50];
+extern int nbSnd;
 
 /** \brief Calque principal (sur lequel tout est superposé) */
 extern SDL_Surface *screen;

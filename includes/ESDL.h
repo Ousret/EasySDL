@@ -79,6 +79,13 @@ typedef struct {
 
 } t_texture;
 
+/*typedef struct {
+	
+	char * file;
+	Mix_Chunk * MIX_BUF;
+	
+} t_audio; */
+
 /**
  * \struct t_window
  * \brief This is where all data of previous struct are stored for one window
@@ -91,13 +98,13 @@ typedef struct {
 	SDL_Surface * windowSurface;
 	
 	t_object * windowObj;
-	int nbObj, nbObj_loaded;
+	int nbObj;
 	
 	t_text * windowText;
-	int nbText, nbText_loaded;
+	int nbText;
 	
 	t_texture * windowImg;
-	int nbImg, nbImg_loaded;
+	int nbImg;
 	
 	int x, y;
 	int height, width;

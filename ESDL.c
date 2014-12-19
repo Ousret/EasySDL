@@ -289,11 +289,8 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 	tmp->windowImg = NULL;
 	
 	tmp->nbObj = 0;
-	tmp->nbObj_loaded = 0;
 	tmp->nbText = 0;
-	tmp->nbText_loaded = 0;
 	tmp->nbImg = 0;
-	tmp->nbImg_loaded = 0;
 	
 	tmp->x = x;
 	tmp->y = y;
@@ -367,7 +364,7 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	window->windowObj[window->nbObj].height = height;
 	window->windowObj[window->nbObj].width = width;
 	window->windowObj[window->nbObj].MouseOver = 0;
-	window->windowObj[window->nbObj].buffer_title = NULL;
+	window->windowObj[window->nbObj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 	window->windowObj[window->nbObj].buffer_content = NULL;
 	
 	strcpy(window->windowObj[window->nbObj].title, title);
@@ -397,6 +394,8 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 
 void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
 
+	char texturePath[150];
+	
 	if (window == NULL) return;
 	
 	if (window->nbImg == 0) {
@@ -422,7 +421,9 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	window->windowImg[window->nbImg].y = y;
 	window->windowImg[window->nbImg].height = height;
 	window->windowImg[window->nbImg].width = width;
-	window->windowImg[window->nbImg].buffer = NULL;
+	
+	sprintf(texturePath, "ressources/images/%s", file);
+	window->windowImg[window->nbImg].buffer = IMG_Load(texturePath);
 	
 	if (id != NULL) *id = (window->nbImg);
 	
@@ -433,7 +434,9 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 }
 
 void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
-
+	
+	char texturePath[150];
+	
 	if (window == NULL) return;
 	if (window->windowImg == NULL) return;
 	if (window->nbImg < idimg) return;
@@ -443,6 +446,14 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 	window->windowImg[idimg].y = y;
 	window->windowImg[idimg].height = height;
 	window->windowImg[idimg].width = width;
+	
+	if (window->windowImg[idimg].buffer) {
+		SDL_FreeSurface(window->windowImg[idimg].buffer);
+		window->windowImg[idimg].buffer = NULL;
+	}
+	
+	sprintf(texturePath, "ressources/images/%s", file);
+	window->windowImg[idimg].buffer = IMG_Load(texturePath);
 	
 	return;
 
@@ -489,7 +500,6 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 	
 	window->windowObj[obj].type = type;
 	
-	
 	if (type == 1) {
 		
 		window->windowObj[obj].dest = dest;
@@ -501,6 +511,17 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 		window->windowObj[obj].typeForm = ALL;
 		
 	}
+	
+	if (window->windowObj[obj].buffer_title) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_title);
+		window->windowObj[obj].buffer_title = NULL;
+	}
+	if (window->windowObj[obj].buffer_content) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_content);
+		window->windowObj[obj].buffer_content = NULL;
+	}
+	
+	window->windowObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 	
 	return;
 	
@@ -558,6 +579,8 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 	window->windowText[window->nbText].x = x;
 	window->windowText[window->nbText].y = y;
 	
+	window->windowText[window->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
+	
 	if (id != NULL) *id = (window->nbText);
 	window->nbText = (window->nbText)+1;
 	
@@ -576,6 +599,11 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 	
 	window->windowText[idtext].x = x;
 	window->windowText[idtext].y = y;
+	
+	//Free old buffer
+	if(window->windowText[idtext].buffer) SDL_FreeSurface(window->windowText[idtext].buffer);
+	
+	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	return;
 
@@ -679,68 +707,6 @@ void SDL_unload() {
 	SDL_Quit();
 	
 	exit(0);
-
-}
-
-void SDL_loadWindow(t_window * window) {
-
-	int i = 0;
-	
-	char saisie_content[100], texturePath[100]; //Form ONLY
-	window->windowSurface = NULL;
-	
-	for (i = (window->nbImg_loaded); i < (window->nbImg); i++) {
-		
-		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
-		window->windowImg[i].buffer = IMG_Load(texturePath);
-		
-	}
-	
-	window->nbImg_loaded = i;
-	
-	for (i = (window->nbObj_loaded); i < (window->nbObj); i++) {
-	
-		switch (window->windowObj[i].type) {
-		
-			case 0: //Simple btn
-				
-				window->windowObj[i].buffer_title = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				
-				break;
-				
-			case 1: //Form
-			
-				memset (saisie_content, 0, sizeof (saisie_content));
-				
-				if (window->windowObj[i].MouseOver == 1) {
-					
-					strcpy (saisie_content, window->windowObj[i].dest);
-  					strcat (saisie_content,"|");
-  					
-				}else{
-				
-					strcpy (saisie_content, window->windowObj[i].dest);
-					
-				}
-	
-				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-				window->windowObj[i].buffer_title = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				
-				break;
-				
-		}
-	
-	}
-	
-	window->nbObj_loaded = i;
-	
-	for (i = (window->nbText_loaded); i < (window->nbText); i++) {
-		
-		window->windowText[i].buffer = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
-			
-	}
-	
-	window->nbText_loaded = 0;
 
 }
 
@@ -869,7 +835,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
 	
-	SDL_loadWindow(menu);
+	//SDL_loadWindow(menu);
 	
 	while (1) {
 		
@@ -925,7 +891,7 @@ int SDL_generate(t_window * window) {
 		uniqueFrame = 1;
 	}
 	
-	SDL_loadWindow(window);
+	//SDL_loadWindow(window);
 	
 	while (1) {
 		

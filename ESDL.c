@@ -1,9 +1,9 @@
-/** EasySDL Alpha
+/** EasySDL Beta
 *
-*	Author(s): TAHRI Ahmed, SIMON Jérémy
+*	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.1
-* 	Date: 8-12-2014
+*	Version: 0.4.2
+* 	Date: 20-12-2014
 *
 */
 #include <stdio.h>
@@ -20,7 +20,7 @@
 
 #include "includes/ESDL.h"
 
-SDL_Surface *screen = NULL;
+SDL_Surface *screen = NULL; //Shared
 SDL_Surface *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
 Mix_Chunk *SELECT = NULL, *ENTER = NULL;
 
@@ -33,10 +33,7 @@ SDL_Event GlobalEvent;
 char buffer = 0;
 int buffer_deliver = 1;
 
-TTF_Font *ttf_police = NULL;	
-
-int channel = 0, channel_effect = 0, channel_music = 0;
-Mix_Chunk *sound = NULL, *effect = NULL, *music = NULL;
+TTF_Font *ttf_police = NULL;
 
 int nbSnd = 0;
 
@@ -75,7 +72,7 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	
 	if (channel != NULL) *channel = newChannel;
 	if (waitEnd == 1) {
-		while(Mix_Playing(newChannel) != 0);
+		while(Mix_Playing(newChannel) != 0) SDL_Delay(50);
 	}
 }
 
@@ -145,7 +142,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
     
 	atexit (SDL_unload);
 
-    screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN
+    screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN 
     
     if (screen == NULL)
     {
@@ -198,7 +195,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	int initted=IMG_Init(flags);
 	
 	if((initted&flags) != flags) {
-    	fprintf(stdout, "[!] IMG_Init: Failed to init required jpg and png support!\n");
+    	fprintf(stdout, "[!] IMG_Init: Failed to init required support!\n");
     	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
     	exit (1);
 	}
@@ -772,21 +769,15 @@ void SDL_BlitObjs(t_window * window) {
 				positionFond.x = window->windowObj[i].x;
 				positionFond.y = window->windowObj[i].y;
 				
-				//On charge l'image concernée ++ si souris survol choix
 				if (window->windowObj[i].MouseOver == 1) {
-					
-					//imageDeFond = IMG_Load("ressources/images/m_bg_s1.png");
 					SDL_BlitSurface(BTN_OVER, NULL, window->windowSurface, &positionFond);
-					
 				}else{
-				
-					//imageDeFond = IMG_Load("ressources/images/m_bg_s0.png");
 					SDL_BlitSurface(BTN_NOTOVER, NULL, window->windowSurface, &positionFond);
-					
 				}
 				
 				positionFond.x += 20;
 				positionFond.y += 5;
+				
 				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
 				
 				break;
@@ -813,13 +804,16 @@ void SDL_BlitObjs(t_window * window) {
 				
 				SDL_BlitSurface(FORM, NULL, window->windowSurface, &positionFond);
 				
-				SDL_FreeSurface(window->windowObj[i].buffer_content);
+				if (window->windowObj[i].buffer_content) {
+					SDL_FreeSurface(window->windowObj[i].buffer_content);
+					window->windowObj[i].buffer_content = NULL;
+				}
+				
 				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
 				positionFond.x = (window->windowObj[i].x)+10;
 				positionFond.y = (window->windowObj[i].y)+5;
 				SDL_BlitSurface(window->windowObj[i].buffer_content, NULL, window->windowSurface, &positionFond);
-	
-				//titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
+				
 				positionFond.x = (window->windowObj[i].x)-55;
 				positionFond.y = (window->windowObj[i].y)+5;
 				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);

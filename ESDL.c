@@ -46,11 +46,12 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	
 	char filePath[150];
 	int newChannel = 0;
+	int i = 0, alreadyLoaded = -1;
+	
 	memset(filePath, 0, sizeof(filePath));
 	
 	sprintf(filePath, "ressources/snd/%s", wavfile);
 	
-	int i = 0, alreadyLoaded = -1;
 	for (i = 0; i < nbSnd; i++) {
 		if (strcmp(MIXTEMP[i].file, filePath) == 0) 
 			alreadyLoaded = i;
@@ -113,17 +114,16 @@ int SDL_IsMouseOverObj(t_window * window) {
 	
 }
 
-void SDL_init(int width, int height, char title[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
+void SDL_init(int width, int height, int fullscreen, char * title, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
 	char file[100]; //Generating file path
-	
-	memset(file, 0, sizeof(file));
-	
 	int audio_rate = 22050;
 	Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2;
 	int audio_buffers = 4096;
+	
+	memset(file, 0, sizeof(file));
 	
     /* Initialize SDL */
     if (audio_support == 1) {
@@ -141,8 +141,12 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
     }
     
 	atexit (SDL_unload);
-
-    screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF); // | SDL_FULLSCREEN 
+	
+	if (fullscreen == 1) {
+		screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
+	}else{
+		screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+	}
     
     if (screen == NULL)
     {
@@ -267,8 +271,6 @@ int SDL_CaptureForm(t_window * window, int obj) {
 					
 					}
 					
-					
-					
 				}
 				
 			}
@@ -383,7 +385,7 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 		
 	}else{
 	
-		window->windowObj = realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+2));
+		window->windowObj = realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+1));
 		
 	}
 	
@@ -412,7 +414,6 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	}
 	
 	if (id != NULL) *id = window->nbObj;
-	
 	window->nbObj = (window->nbObj+1);
 	
 	return;
@@ -439,7 +440,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	
 	}else{
 	
-		window->windowImg = realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 2));
+		window->windowImg = realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 1));
 	
 	}
 	
@@ -597,7 +598,7 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 		}
 	
 	}else{
-		 window->windowText = realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 2));
+		 window->windowText = realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 1));
 	}
 	
 	window->windowText[window->nbText].couleur = couleur;
@@ -629,7 +630,6 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 	
 	//Free old buffer
 	if(window->windowText[idtext].buffer) SDL_FreeSurface(window->windowText[idtext].buffer);
-	
 	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	return;
@@ -688,13 +688,9 @@ void SDL_UpdateEvents(Input* in)
 				}
 			
 				break;
-			
 			case SDL_KEYUP:
-			
 				in->key[GlobalEvent.key.keysym.sym]=0;
-				
 				break;
-			
 			case SDL_MOUSEMOTION:
 				in->mousex=GlobalEvent.motion.x;
 				in->mousey=GlobalEvent.motion.y;
@@ -808,8 +804,6 @@ void SDL_BlitObjs(t_window * window) {
 					
 				}
 				
-				//imageDeFond = IMG_Load("ressources/images/ch_saisie_actif.png");
-				
 				positionFond.x = window->windowObj[i].x;
 				positionFond.y = window->windowObj[i].y;
 				
@@ -835,18 +829,14 @@ void SDL_BlitObjs(t_window * window) {
 		
 	}
 	
-	if (tff_loaded == 1) {
-		//Scan text to Blit !
-		for (i = 0; i < (window->nbText); i++) {
+	//For each surface that correspond to text, blit !
+	for (i = 0; i < (window->nbText); i++) {
 		
-			//textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
+		positionFond.x = window->windowText[i].x;
+		positionFond.y = window->windowText[i].y;
+		
+		SDL_BlitSurface(window->windowText[i].buffer, NULL, window->windowSurface, &positionFond);
 			
-			positionFond.x = window->windowText[i].x;
-			positionFond.y = window->windowText[i].y;
-			
-			SDL_BlitSurface(window->windowText[i].buffer, NULL, window->windowSurface, &positionFond);
-			
-		}
 	}
 	
 	positionFond.x = window->x;
@@ -854,23 +844,21 @@ void SDL_BlitObjs(t_window * window) {
 	SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
 	
 	SDL_FreeSurface(window->windowSurface);
-
+	
 }
 
-int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
+int SDL_generateMenu(int nbEntries, char captions[][M]) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
 	
 	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
 	
-	for (i = 0; i < nb_entree; i++) {
-		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 100, 100+(50*i), 40, 230);
+	for (i = 0; i < nbEntries; i++) {
+		SDL_newObj(menu, NULL, 0, captions[i], NULL, ALL, 100, 100+(50*i), 40, 230);
 	}
 	
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
-	
-	//SDL_loadWindow(menu);
 	
 	while (1) {
 		
@@ -895,15 +883,19 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 			Mix_PlayChannel(-1, SELECT, 0);
 		}
 		
-		//If user clic (left btn)
+		//If user clic with left btn on object
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 		
 			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-			
 			SDL_freeWindow(menu);
+			
 			return MouseOverObj;
 		
+		}else if((in.mousebuttons[SDL_BUTTON_LEFT])) { //Solve bug with SDL 2 when user clic on top bar (just for SDL_generateMenu)
+		
+			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
+			
 		}
 		
 		if (in.quit == 1) {

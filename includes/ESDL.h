@@ -130,6 +130,7 @@ typedef struct
  *
  * \param x Size in pixel
  * \param y Size in pixel
+ * \param fullscreen Enable fullscreen or not
  * \param titre Title of the SDL handle
  * \param ttf_support Decide if SDL_ttf will load up
  * \param police_name Police filename stored in ressources/ttf/
@@ -137,7 +138,7 @@ typedef struct
  * \param audio_support Decide if SDL_mixer will load up
  * \return No return value, if it fail, it'll close the program with err message.
  */
-void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support);
+void SDL_init(int x, int y, int fullscreen, char * titre, int ttf_support, char * police_name, int police_size, int audio_support);
 
 /**
  * \fn int SDL_generateMenu(int nb_entree, char sommaire[N][M])
@@ -147,7 +148,7 @@ void SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[1
  * \param sommaire[N][M] Contain text caption
  * \return Return the value of choise (0 - (nb_entree-1))
  */
-int SDL_generateMenu(int nb_entree, char sommaire[N][M]);
+int SDL_generateMenu(int nb_entree, char captions[][M]);
 /**
  * \fn int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y)
  * \brief Check if mouse is over area definied in pixel

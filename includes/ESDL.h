@@ -196,6 +196,7 @@ void SDL_freeWindow(t_window * window);
 
 void SDL_loadRessources();
 void SDL_unload();
+int SDL_isKeyPressed(int key);
 
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern Mix_Chunk *SELECT, *ENTER;

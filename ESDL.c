@@ -371,6 +371,7 @@ void SDL_freeWindow(t_window * window) {
 void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 	
 	if (window == NULL) return;
+	if (strlen(title) == 0) return;
 	
 	if (window->nbObj == 0) {
 		
@@ -397,7 +398,6 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	strcpy(window->windowObj[window->nbObj].title, title);
 	
 	window->windowObj[window->nbObj].type = type;
-	
 	
 	if (type == 1) {
 		
@@ -660,6 +660,16 @@ void SDL_delText(t_window * window, int idtext) {
 	return;
 }
 
+int SDL_isKeyPressed(int KEY_S) {
+	if ((in.key[KEY_S])==1) return 1;
+	return 0;
+}
+
+int SDL_isMousePressed(int MOUSE_S) {
+	if (in.mousebuttons[MOUSE_S]==1) return 1;
+	return 0;
+}
+
 void SDL_UpdateEvents(Input* in)
 {
 	
@@ -682,6 +692,7 @@ void SDL_UpdateEvents(Input* in)
 			case SDL_KEYUP:
 			
 				in->key[GlobalEvent.key.keysym.sym]=0;
+				
 				break;
 			
 			case SDL_MOUSEMOTION:
@@ -754,7 +765,7 @@ void SDL_BlitObjs(t_window * window) {
 		
 		positionFond.x = window->windowImg[i].x;
 		positionFond.y = window->windowImg[i].y;
-				
+			
 		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
 	}

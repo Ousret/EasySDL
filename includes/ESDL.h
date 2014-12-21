@@ -190,7 +190,6 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
 void SDL_freeWindow(t_window * window);
 
 GPU_Image* SDL_convertTexture(SDL_Surface* surface);
-void SDL_loadWindow(t_window * window);
 void SDL_loadRessources();
 
 /** \brief Calque principal (sur lequel tout est superposé) */

@@ -180,7 +180,6 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 }
 
 
-
 int SDL_CaptureForm(t_window * window, int obj) {
 
 	int current_len = 0;
@@ -304,6 +303,8 @@ void SDL_freeWindow(t_window * window) {
 
 void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 	
+	SDL_Surface *titre_ttf = NULL;
+	
 	if (window == NULL) return;
 	
 	if (window->nbObj == 0) {
@@ -344,6 +345,11 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 		
 	}
 	
+	
+	titre_ttf = TTF_RenderText_Blended(ttf_police, title, colorWhite);
+	window->windowObj[window->nbObj].GPU_buffer_title = SDL_convertTexture(titre_ttf);
+	SDL_FreeSurface(titre_ttf);
+	
 	if (id != NULL) *id = window->nbObj;
 	window->nbObj = (window->nbObj+1);
 	
@@ -353,6 +359,8 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 
 void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
 
+	char texturePath[150];
+	
 	if (window == NULL) return;
 	
 	if (window->nbImg == 0) {
@@ -374,10 +382,13 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	}
 	
 	window->windowImg[window->nbImg].file = file;
-	window->windowImg[window->nbImg].x = x+(width/2);
-	window->windowImg[window->nbImg].y = y+(height/2);
+	window->windowImg[window->nbImg].x = window->x+(x+(width/2));
+	window->windowImg[window->nbImg].y = window->y+(y+(height/2));
 	window->windowImg[window->nbImg].height = height;
 	window->windowImg[window->nbImg].width = width;
+	
+	sprintf(texturePath, "ressources/images/%s", file);
+	window->windowImg[window->nbImg].GPU_buffer = GPU_LoadImage(texturePath);
 	
 	if (id != NULL) *id = (window->nbImg);
 	
@@ -388,7 +399,9 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 }
 
 void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
-
+	
+	char texturePath[150];
+	
 	if (window == NULL) return;
 	if (window->windowImg == NULL) return;
 	if (window->nbImg < idimg) return;
@@ -398,6 +411,14 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 	window->windowImg[idimg].y = y+(height/2);
 	window->windowImg[idimg].height = height;
 	window->windowImg[idimg].width = width;
+	
+	if (window->windowImg[idimg].GPU_buffer) {
+		GPU_FreeImage(window->windowImg[idimg].GPU_buffer);
+		window->windowImg[idimg].GPU_buffer = NULL;
+	}
+	
+	sprintf(texturePath, "ressources/images/%s", file);
+	window->windowImg[idimg].GPU_buffer = GPU_LoadImage(texturePath);
 	
 	return;
 
@@ -456,12 +477,12 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 }
 
 void SDL_delObj(t_window * window, int obj) {
-
+	
+	int i = 0;
+	
 	if (window == NULL) return;
 	if (window->nbObj < obj) return;
 	if (window->windowObj == NULL) return;
-	
-	int i = 0;
 	
 	for (i = obj; i < (window->nbObj); i++) {
 	
@@ -476,6 +497,8 @@ void SDL_delObj(t_window * window, int obj) {
 }
 
 void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
+	
+	SDL_Surface *textsurf = NULL;
 
 	if (window == NULL) return;
 	
@@ -497,6 +520,10 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 	window->windowText[window->nbText].x = x;
 	window->windowText[window->nbText].y = y;
 	
+	textsurf = TTF_RenderText_Blended(ttf_police, content, couleur);
+	window->windowText[window->nbText].GPU_buffer = SDL_convertTexture(textsurf);
+	SDL_FreeSurface(textsurf);
+	
 	if (id != NULL) *id = (window->nbText);
 	window->nbText = (window->nbText)+1;
 	
@@ -505,7 +532,9 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 }
 
 void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
-
+	
+	SDL_Surface *textsurf = NULL;
+	
 	if (window == NULL) return;
 	if (window->nbText < idtext) return;
 	if (window->windowText == NULL) return;
@@ -515,6 +544,15 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 	
 	window->windowText[idtext].x = x;
 	window->windowText[idtext].y = y;
+	
+	if (window->windowText[idtext].GPU_buffer) {
+		GPU_FreeImage(window->windowText[idtext].GPU_buffer);
+		window->windowText[idtext].GPU_buffer = NULL;
+	}
+	
+	textsurf = TTF_RenderText_Blended(ttf_police, content, couleur);
+	window->windowText[idtext].GPU_buffer = SDL_convertTexture(textsurf);
+	SDL_FreeSurface(textsurf);
 	
 	return;
 
@@ -610,76 +648,6 @@ void SDL_loadRessources() {
 	
 	SELECT = Mix_LoadWAV("ressources/snd/select.wav");
 	ENTER = Mix_LoadWAV("ressources/snd/enter.wav");
-
-}
-
-void SDL_loadWindow(t_window * window) {
-/* Just keep in memory all surfaces to avoiding useless load for every frame */
-
-	int i = 0;
-	SDL_Surface *titre_ttf = NULL, *saisie_ttf = NULL, *textsurf = NULL;
-	
-	char saisie_content[100], texturePath[100];
-	
-	//Texture only
-	for (i = 0; i < (window->nbImg); i++) {
-	
-		sprintf(texturePath, "ressources/images/%s", window->windowImg[i].file);
-		window->windowImg[i].GPU_buffer = GPU_LoadImage(texturePath);
-	
-	}
-	
-	//Btn AND Form
-	for (i = 0; i < (window->nbObj); i++) {
-	
-		switch (window->windowObj[i].type) {
-		
-			case 0:
-
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
-				SDL_FreeSurface(titre_ttf);
-				
-				break;
-				
-			case 1:
-				
-				memset (saisie_content, 0, sizeof (saisie_content));
-				
-				if (window->windowObj[i].MouseOver == 1) {
-					
-					strcpy (saisie_content, window->windowObj[i].dest);
-  					strcat (saisie_content,"|");
-  					
-				}else{
-				
-					strcpy (saisie_content, window->windowObj[i].dest);
-					
-				}
-				
-				saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-				window->windowObj[i].GPU_buffer_content = SDL_convertTexture(saisie_ttf);
-				SDL_FreeSurface(saisie_ttf);
-	
-				titre_ttf = TTF_RenderText_Blended(ttf_police, window->windowObj[i].title, colorWhite);
-				window->windowObj[i].GPU_buffer_title = SDL_convertTexture(titre_ttf);
-				SDL_FreeSurface(titre_ttf);
-					
-				break;
-				
-		}
-	
-	}
-	
-	//Text
-	for (i = 0; i < (window->nbText); i++) {
-		
-		textsurf = TTF_RenderText_Blended(ttf_police, window->windowText[i].content, window->windowText[i].couleur);
-		window->windowText[i].GPU_buffer = SDL_convertTexture(textsurf);
-		SDL_FreeSurface(textsurf);
-			
-	}
-	
 
 }
 
@@ -784,7 +752,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
 	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 580, 338);
 	
-	SDL_loadWindow(menu);
+	//SDL_loadWindow(menu);
 	
 	while (1) {
 		
@@ -838,7 +806,7 @@ int SDL_generate(t_window * window) {
 		uniqueFrame = 1;
 	}
 	
-	SDL_loadWindow(window);
+	//SDL_loadWindow(window);
 	
 	while (1) {
 		

@@ -8,6 +8,11 @@
  * Lib for creating SDL program easily.
  *
  */
+
+#include <SDL.h>
+#include <SDL_mixer.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
  
 #define N 10
 #define M 50
@@ -138,7 +143,7 @@ typedef struct
  * \param audio_support Decide if SDL_mixer will load up
  * \return No return value, if it fail, it'll close the program with err message.
  */
-void SDL_init(int x, int y, int fullscreen, char * titre, int ttf_support, char * police_name, int police_size, int audio_support);
+void SDL_init(int x, int y, int fullscreen, char * titre, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support);
 
 /**
  * \fn int SDL_generateMenu(int nb_entree, char sommaire[N][M])

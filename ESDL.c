@@ -129,7 +129,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 	
 }
 
-void SDL_init(int width, int height, int fullscreen, char * title, int ttf_support, char * police_name, int police_size, int audio_support) {
+void SDL_init(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
 	char file[150]; //Generating file path
@@ -172,6 +172,10 @@ void SDL_init(int width, int height, int fullscreen, char * title, int ttf_suppo
     }
     
 	SDL_WM_SetCaption (title, NULL);
+	
+	if (icon_name) {
+		SDL_WM_SetIcon(IMG_Load(icon_name), NULL);
+	}
 	
 	if (audio_support == 1) {
 		

@@ -13,7 +13,7 @@
 #define M 50
 
 typedef enum {
-
+	
 	NUMERIC,
 	VARCHAR,
 	NUMCHAR,
@@ -29,7 +29,7 @@ typedef enum {
  */
 
 typedef struct {
-
+	
 	int type;
 	int x;
 	int y;
@@ -275,25 +275,13 @@ extern SDL_Color colorBlack;
 extern SDL_Event GlobalEvent;
 /* Fin pointeur SDL */
 
-/* Variable pour le mixage */
-extern int channel;	
-/** \brief Mixage du son */
-extern Mix_Chunk *sound;
-
-extern Mix_Chunk *music;
-/** \brief Mixage du son */
-extern int channel_music;
-
-extern int channel_effect;	
-/** \brief Mixage du son */
-extern Mix_Chunk *effect;
-
 //SDL_mutex *MutexEcran = NULL; Inutile pour l'instant.. Faut s'en passer.. :D
 //extern FILE * fichier_db;
 /** \brief Identifiant du bouton survolé */
 extern int sel_menu_m; //Indice du choix (menu) survolé à un moment t.
 
 extern char buffer; //Where we will keep last char from keyboard !
+
 extern int buffer_deliver;
 
 extern Input in, tmp;

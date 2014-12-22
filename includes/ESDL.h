@@ -2,8 +2,8 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.1
- * \date 08/12/2014
+ * \version 0.4.4
+ * \date 22/12/2014
  *
  * Lib for creating SDL program easily.
  *

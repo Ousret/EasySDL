@@ -2,8 +2,8 @@
 *
 *	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.4.2
-* 	Date: 20-12-2014
+*	Version: 0.4.4
+* 	Date: 22-12-2014
 *
 */
 #include <stdio.h>

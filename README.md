@@ -1,4 +1,4 @@
-ESDL Software rendering 0.4.1
+ESDL Software rendering 0.4.4
 ===========================
 
 SDL lib, EasySDL permit to create program with SDL 1.2 easily.

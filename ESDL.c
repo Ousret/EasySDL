@@ -24,9 +24,9 @@ SDL_Surface *screen = NULL; //Shared
 SDL_Surface *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
 Mix_Chunk *SELECT = NULL, *ENTER = NULL;
 
-SDL_Color colorRed = {255, 0, 0};
-SDL_Color colorWhite = {255, 255, 255};
-SDL_Color colorBlack = {0, 0, 0};
+SDL_Color colorRed = {255, 0, 0, 0};
+SDL_Color colorWhite = {255, 255, 255, 0};
+SDL_Color colorBlack = {0, 0, 0, 0};
 
 SDL_Event GlobalEvent;
 
@@ -296,7 +296,7 @@ int SDL_CaptureForm(t_window * window, int obj) {
 
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 
-	t_window * tmp = malloc(sizeof(t_window));
+	t_window * tmp = (t_window*) malloc(sizeof(t_window));
 	tmp->title = title;
 	
 	tmp->windowSurface = NULL;
@@ -378,14 +378,14 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	if (window->nbObj == 0) {
 		
 		if (window->windowObj == NULL) {
-			window->windowObj = malloc(sizeof(t_object));
+			window->windowObj = (t_object*) malloc(sizeof(t_object));
 		}else{
 			return;
 		}
 		
 	}else{
 	
-		window->windowObj = realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+1));
+		window->windowObj = (t_object*) realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+1));
 		
 	}
 	
@@ -430,7 +430,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	
 		if (window->windowImg == NULL) {
 		
-			window->windowImg = malloc(sizeof(t_texture));
+			window->windowImg = (t_texture*) malloc(sizeof(t_texture));
 			
 		}else{
 			
@@ -440,7 +440,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	
 	}else{
 	
-		window->windowImg = realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 1));
+		window->windowImg = (t_texture*) realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 1));
 	
 	}
 	
@@ -592,13 +592,13 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 	if (window->nbText == 0) {
 	
 		if (window->windowText == NULL) {
-			window->windowText = malloc(sizeof(t_text));
+			window->windowText = (t_text*) malloc(sizeof(t_text));
 		}else{
 			return;
 		}
 	
 	}else{
-		 window->windowText = realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 1));
+		 window->windowText = (t_text*) realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 1));
 	}
 	
 	window->windowText[window->nbText].couleur = couleur;
@@ -754,7 +754,6 @@ void SDL_BlitObjs(t_window * window) {
 	if (window == NULL) return;
 	
 	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 32, 0, 0, 0, 0);
-	SDL_FillRect(window->windowSurface, NULL, SDL_MapRGB(window->windowSurface->format, 0, 0, 0));
 	
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
@@ -917,8 +916,6 @@ int SDL_generate(t_window * window) {
 	if ((window->nbObj) == 0) {
 		uniqueFrame = 1;
 	}
-	
-	//SDL_loadWindow(window);
 	
 	while (1) {
 		

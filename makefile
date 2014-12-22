@@ -1,5 +1,5 @@
 UNAME := $(shell gcc -dumpmachine)
-CC  = gcc -Wall -Wextra
+CC  = gcc -Wall -Wextra -g
 BIN = libESDL.a
 INC = includes/
 CSDL = `sdl-config --cflags`

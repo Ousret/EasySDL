@@ -455,7 +455,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	
 	}else{
 	
-		n_realloc = (t_texture*) realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 1));
+		n_realloc = (t_texture*) realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg)+1));
 		if (n_realloc) {
 			window->windowImg = n_realloc;
 		}else{
@@ -620,7 +620,7 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 		}
 	
 	}else{
-		  n_realloc = (t_text*) realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 1));
+		  n_realloc = (t_text*) realloc(window->windowText, sizeof(t_text) * ((window->nbText)+1));
 		  
 		  if (n_realloc) {
 		  	window->windowText = n_realloc;
@@ -792,7 +792,7 @@ void SDL_BlitObjs(t_window * window) {
 		
 		positionFond.x = window->windowImg[i].x;
 		positionFond.y = window->windowImg[i].y;
-			
+		
 		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
 	}
@@ -821,7 +821,7 @@ void SDL_BlitObjs(t_window * window) {
 				break;
 				
 			case 1: //Form
-			
+				
 				memset (saisie_content, 0, sizeof (saisie_content));
 				
 				if (window->windowObj[i].MouseOver == 1) {
@@ -830,7 +830,7 @@ void SDL_BlitObjs(t_window * window) {
   					strcat (saisie_content,"|");
   					
 				}else{
-				
+					
 					strcpy (saisie_content, window->windowObj[i].dest);
 					
 				}
@@ -995,6 +995,7 @@ int SDL_generate(t_window * window) {
 		}
 		
 		if (in.quit == 1) {
+			SDL_freeWindow(window);
 			exit(0);
 		}
 		

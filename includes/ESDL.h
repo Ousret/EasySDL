@@ -2,7 +2,7 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.4.4
+ * \version 0.4.5
  * \date 22/12/2014
  *
  * Lib for creating SDL program easily.
@@ -234,17 +234,17 @@ int SDL_CaptureForm(t_window * window, int obj);
  * \param width Width in pixel
  * \return void
  */
-void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
-void SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
-void SDL_delObj(t_window * window, int obj);
+int SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
+int SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
+int SDL_delObj(t_window * window, int obj);
 
-void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y);
-void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y);
-void SDL_delText(t_window * window, int idtext);
+int SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y);
+int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y);
+int SDL_delText(t_window * window, int idtext);
 
-void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width);
-void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width);
-void SDL_delTexture(t_window * window, int idimg);
+int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width);
+int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width);
+int SDL_delTexture(t_window * window, int idimg);
 
 int SDL_generate(t_window * window);
 

@@ -2,7 +2,7 @@
 *
 *	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.4.4
+*	Version: 0.4.5
 * 	Date: 22-12-2014
 *
 */
@@ -396,19 +396,19 @@ void SDL_freeWindow(t_window * window) {
 	
 }
 
-void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 	
 	t_object * n_realloc = NULL;
 	
-	if (window == NULL) return;
-	if (strlen(title) == 0) return;
+	if (window == NULL) return 0;
+	if (strlen(title) == 0) return 0;
 	
 	if (window->nbObj == 0) {
 		
 		if (window->windowObj == NULL) {
 			window->windowObj = (t_object*) malloc(sizeof(t_object));
 		}else{
-			return;
+			return 0;
 		}
 		
 	}else{
@@ -417,7 +417,7 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 		if (n_realloc) {
 			window->windowObj = n_realloc;
 		}else{
-			return; /* Out of memory */
+			return 0; /* Out of memory */
 		}
 		
 	}
@@ -449,16 +449,16 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 	if (id != NULL) *id = window->nbObj;
 	window->nbObj = (window->nbObj+1);
 	
-	return;
+	return 1;
 	
 }
 
-void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
+int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
 
 	char texturePath[150];
 	t_texture * n_realloc = NULL;
 	
-	if (window == NULL) return;
+	if (window == NULL) return 0;
 	
 	if (window->nbImg == 0) {
 	
@@ -468,7 +468,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 			
 		}else{
 			
-			return;
+			return 0;
 			
 		}
 	
@@ -478,7 +478,7 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 		if (n_realloc) {
 			window->windowImg = n_realloc;
 		}else{
-			return;
+			return 0;
 		}
 		
 	}
@@ -496,17 +496,17 @@ void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int 
 	
 	window->nbImg = (window->nbImg)+1;
 	
-	return;
+	return 1;
 
 }
 
-void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
+int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
 	
 	char texturePath[150];
 	
-	if (window == NULL) return;
-	if (window->windowImg == NULL) return;
-	if (window->nbImg <= idimg) return;
+	if (window == NULL) return 0;
+	if (window->windowImg == NULL) return 0;
+	if (window->nbImg <= idimg) return 0;
 	
 	window->windowImg[idimg].file = file;
 	window->windowImg[idimg].x = x;
@@ -522,15 +522,15 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 	sprintf(texturePath, "ressources/images/%s", file);
 	window->windowImg[idimg].buffer = IMG_Load(texturePath);
 	
-	return;
+	return 1;
 
 }
 
-void SDL_delTexture(t_window * window, int idimg) {
+int SDL_delTexture(t_window * window, int idimg) {
 
-	if (window == NULL) return;
-	if (window->windowImg == NULL) return;
-	if (window->nbImg <= idimg) return;
+	if (window == NULL) return 0;
+	if (window->windowImg == NULL) return 0;
+	if (window->nbImg <= idimg) return 0;
 	
 	int i = 0;
 	
@@ -549,15 +549,15 @@ void SDL_delTexture(t_window * window, int idimg) {
 	
 	window->windowImg = (t_texture*) realloc(window->windowImg, sizeof(t_texture)*(window->nbImg));
 	
-	return;
+	return 1;
 
 }
 
-void SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 
-	if (window == NULL) return;
-	if (window->nbObj <= obj) return;
-	if (window->windowObj == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbObj <= obj) return 0;
+	if (window->windowObj == NULL) return 0;
 	
 	window->windowObj[obj].x = x;
 	window->windowObj[obj].y = y;
@@ -593,15 +593,15 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 	
 	window->windowObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 	
-	return;
+	return 1;
 	
 }
 
-void SDL_delObj(t_window * window, int obj) {
+int SDL_delObj(t_window * window, int obj) {
 
-	if (window == NULL) return;
-	if (window->nbObj <= obj) return;
-	if (window->windowObj == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbObj <= obj) return 0;
+	if (window->windowObj == NULL) return 0;
 	
 	int i = 0;
 	
@@ -625,22 +625,22 @@ void SDL_delObj(t_window * window, int obj) {
 	
 	window->windowObj = (t_object*) realloc(window->windowObj, sizeof(t_object)*(window->nbObj));
 	
-	return;
+	return 1;
 
 }
 
-void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
+int SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
 	
 	t_text * n_realloc = NULL;
 	
-	if (window == NULL) return;
+	if (window == NULL) return 0;
 	
 	if (window->nbText == 0) {
 	
 		if (window->windowText == NULL) {
 			window->windowText = (t_text*) malloc(sizeof(t_text));
 		}else{
-			return;
+			return 0;
 		}
 	
 	}else{
@@ -649,7 +649,7 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 		  if (n_realloc) {
 		  	window->windowText = n_realloc;
 		  }else{
-		  	return;
+		  	return 0;
 		  }
 		  
 	}
@@ -665,15 +665,15 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 	if (id != NULL) *id = (window->nbText);
 	window->nbText = (window->nbText)+1;
 	
-	return;
+	return 1;
 
 }
 
-void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
+int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
 
-	if (window == NULL) return;
-	if (window->nbText <= idtext) return;
-	if (window->windowText == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbText <= idtext) return 0;
+	if (window->windowText == NULL) return 0;
 	
 	window->windowText[idtext].couleur = couleur;
 	window->windowText[idtext].content = content;
@@ -689,15 +689,15 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 	
 	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
-	return;
+	return 1;
 
 }
 
-void SDL_delText(t_window * window, int idtext) {
+int SDL_delText(t_window * window, int idtext) {
 
-	if (window == NULL) return;
-	if (window->nbText <= idtext) return;
-	if (window->windowText == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbText <= idtext) return 0;
+	if (window->windowText == NULL) return 0;
 	
 	int i = 0;
 	
@@ -715,7 +715,7 @@ void SDL_delText(t_window * window, int idtext) {
 	window->nbText = (window->nbText)-1;
 	window->windowText = (t_text*) realloc(window->windowText, sizeof(t_text)*(window->nbText));
 	
-	return;
+	return 1;
 }
 
 int SDL_isKeyPressed(int KEY_S) {

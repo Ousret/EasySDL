@@ -77,6 +77,21 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	}
 }
 
+void SDL_preloadwav(char * wavfile) {
+	
+	char filePath[150];
+	memset(filePath, 0, sizeof(filePath));
+	sprintf(filePath, "ressources/snd/%s", wavfile);
+	
+	MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
+	
+	if (MIXTEMP[nbSnd].MIX_BUF) {
+		strcpy(MIXTEMP[nbSnd].file, filePath);
+		nbSnd++;
+	}
+	
+}
+
 int SDL_nbObj(t_window * window) {
 	return (window->nbObj);
 }
@@ -143,15 +158,15 @@ void SDL_init(int width, int height, int fullscreen, char * title, int ttf_suppo
 	atexit (SDL_unload);
 	
 	if (fullscreen == 1) {
-		screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
+		screen = SDL_SetVideoMode (width, height, 16, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
 	}else{
-		screen = SDL_SetVideoMode (width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+		screen = SDL_SetVideoMode (width, height, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	}
     
     if (screen == NULL)
     {
         
-        fprintf (stderr, "[!] Unable to load window at %ix%i in 32 bits': %s\n", width, height ,SDL_GetError ());
+        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
         
     }
@@ -772,7 +787,20 @@ void SDL_loadRessources() {
 	
 }
 
+void SDL_unloadRessources() {
+	
+	if (BTN_OVER) SDL_FreeSurface(BTN_OVER);
+	if (BTN_NOTOVER) SDL_FreeSurface(BTN_NOTOVER);
+	if (FORM) SDL_FreeSurface(FORM);
+	
+	if (SELECT) Mix_FreeChunk(SELECT);
+	if (ENTER) Mix_FreeChunk(ENTER);
+	
+}
+
 void SDL_unload() {
+	
+	SDL_unloadRessources();
 	
 	IMG_Quit();
 	if (tff_loaded) TTF_Quit();

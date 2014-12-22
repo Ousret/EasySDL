@@ -125,7 +125,7 @@ typedef struct
 } Input;
 
 /**
- * \fn SDL_init(int x, int y, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support)
+ * \fn SDL_init(int x, int y, int fullscreen, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support)
  * \brief Init SDL with your preferences
  *
  * \param x Size in pixel
@@ -149,6 +149,7 @@ void SDL_init(int x, int y, int fullscreen, char * titre, int ttf_support, char 
  * \return Return the value of choise (0 - (nb_entree-1))
  */
 int SDL_generateMenu(int nb_entree, char captions[][M]);
+
 /**
  * \fn int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y)
  * \brief Check if mouse is over area definied in pixel
@@ -162,16 +163,72 @@ int SDL_generateMenu(int nb_entree, char captions[][M]);
  */
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
 
+/**
+ * \fn void SDL_playwav(char * wavfile, int waitEnd, int *channel);
+ * \brief Play wav file
+ *
+ * \param wavfile Name of the wav file to play (must be in ressources/snd/)
+ * \param waitEnd Stop the current thread until playing is over
+ * \param channel Channel used by SDL_Mixer to play WAV. (PTR)
+ * \return void
+ */
 void SDL_playwav(char * wavfile, int waitEnd, int *channel);
 
 void SDL_Splash(char img[100], int attente);
 
+/**
+ * \fn int SDL_IsMouseOverObj(t_window * window);
+ * \brief Check if mouse is over an object and return his obj id
+ *
+ * \param window Window name (created with newWindow())
+ * \return Obj id or -1
+ */
 int SDL_IsMouseOverObj(t_window * window);
+
+/**
+ * \fn void SDL_BlitObjs(t_window * window);
+ * \brief Print on the screen specific window data
+ *
+ * \param window Window name (created with newWindow())
+ * \return void
+ */
 void SDL_BlitObjs(t_window * window);
+
+/**
+ * \fn void SDL_UpdateEvents(Input* in);
+ * \brief Get at t instant event from input
+ *
+ * \param in Input struct that contains key mapping with 0/1 for pressed or not
+ * \return void
+ */
 void SDL_UpdateEvents(Input* in);
-int SDL_MessageBox();
+
+/**
+ * \fn int SDL_CaptureForm(t_window * window, int obj);
+ * \brief Copy buffer (key.unicode) to form obj if mouse is over his area
+ *
+ * \param window Window that contain form obj
+ * \param obj ObjID (form) dest for buffer cpy
+ * \return void
+ */
 int SDL_CaptureForm(t_window * window, int obj);
 
+/**
+ * \fn void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
+ * \brief Create a new object into *window data buffer
+ *
+ * \param window Window target
+ * \param id Get the ID of this new obj if created
+ * \param type 0 = Button, 1 = Form to fill
+ * \param title Caption of this new object
+ * \param dest Addr of char * var if type = 1
+ * \param typeForm If type=1, you need to precise the mask
+ * \param x Pos X, relative to window
+ * \param y Pos Y, relative to window
+ * \param height Height in pixel
+ * \param width Width in pixel
+ * \return void
+ */
 void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
 void SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
 void SDL_delObj(t_window * window, int obj);
@@ -201,10 +258,10 @@ int SDL_isKeyPressed(int key);
 
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern Mix_Chunk *SELECT, *ENTER;
+
 t_audio MIXTEMP[50];
 extern int nbSnd;
 
-/** \brief Calque principal (sur lequel tout est superposé) */
 extern SDL_Surface *screen;
 
 /** \brief Couleurs RGB */

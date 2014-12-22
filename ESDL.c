@@ -117,7 +117,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 void SDL_init(int width, int height, int fullscreen, char * title, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
-	char file[100]; //Generating file path
+	char file[150]; //Generating file path
 	int audio_rate = 22050;
 	Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2;

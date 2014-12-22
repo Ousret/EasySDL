@@ -324,17 +324,17 @@ void SDL_freeWindow(t_window * window) {
 	if (window == NULL) return;
 	int i = 0;
 	
-	fprintf(stdout, "Need to set mem to free for window %s\n", window->title);
-	fprintf(stdout, "It's seem that we have %i snd loaded into memory captain !\n", nbSnd);
+	//fprintf(stdout, "Need to set mem to free for window %s\n", window->title);
+	//fprintf(stdout, "It's seem that we have %i snd loaded into memory captain !\n", nbSnd);
 	
 	if (window->windowObj != NULL) {
 		for (i = 0;i < (window->nbObj); i ++) {
 			if (window->windowObj[i].buffer_title)
-				fprintf(stdout, "Obj id %i surface free (title)\n", i);
+				//fprintf(stdout, "Obj id %i surface free (title)\n", i);
 				SDL_FreeSurface(window->windowObj[i].buffer_title);
 				window->windowObj[i].buffer_title = NULL;
 			if (window->windowObj[i].buffer_content)
-				fprintf(stdout, "Obj id %i surface free (content)\n", i);
+				//fprintf(stdout, "Obj id %i surface free (content)\n", i);
 				SDL_FreeSurface(window->windowObj[i].buffer_content);
 				window->windowObj[i].buffer_content = NULL;
 		}
@@ -344,7 +344,7 @@ void SDL_freeWindow(t_window * window) {
 	if (window->windowText != NULL) {
 		for (i = 0;i < (window->nbText); i ++) {
 			if (window->windowText[i].buffer)
-				fprintf(stdout, "Text id %i surface free\n", i);
+				//fprintf(stdout, "Text id %i surface free\n", i);
 				SDL_FreeSurface(window->windowText[i].buffer);
 				window->windowText[i].buffer = NULL;
 		}
@@ -354,7 +354,7 @@ void SDL_freeWindow(t_window * window) {
 	if (window->windowImg != NULL) {
 		for (i = 0;i < (window->nbImg); i ++) {
 			if (window->windowImg[i].buffer)
-				fprintf(stdout, "Texture id %i surface free\n", i);
+				//fprintf(stdout, "Texture id %i surface free\n", i);
 				SDL_FreeSurface(window->windowImg[i].buffer);
 				window->windowImg[i].buffer = NULL;
 		}
@@ -365,7 +365,7 @@ void SDL_freeWindow(t_window * window) {
 	
 		for (i = 0; i < nbSnd; i++) {
 			
-			if (MIXTEMP[i].MIX_BUF) Mix_FreeChunk(MIXTEMP[i].MIX_BUF); fprintf(stdout, "Mix id %i free\n", i);
+			if (MIXTEMP[i].MIX_BUF) Mix_FreeChunk(MIXTEMP[i].MIX_BUF);
 			
 		}
 	
@@ -487,7 +487,7 @@ void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int
 	
 	if (window == NULL) return;
 	if (window->windowImg == NULL) return;
-	if (window->nbImg < idimg) return;
+	if (window->nbImg <= idimg) return;
 	
 	window->windowImg[idimg].file = file;
 	window->windowImg[idimg].x = x;
@@ -511,7 +511,7 @@ void SDL_delTexture(t_window * window, int idimg) {
 
 	if (window == NULL) return;
 	if (window->windowImg == NULL) return;
-	if (window->nbImg < idimg) return;
+	if (window->nbImg <= idimg) return;
 	
 	int i = 0;
 	
@@ -528,6 +528,8 @@ void SDL_delTexture(t_window * window, int idimg) {
 	
 	window->nbImg = (window->nbImg)-1;
 	
+	window->windowImg = (t_texture*) realloc(window->windowImg, sizeof(t_texture)*(window->nbImg));
+	
 	return;
 
 }
@@ -535,7 +537,7 @@ void SDL_delTexture(t_window * window, int idimg) {
 void SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 
 	if (window == NULL) return;
-	if (window->nbObj < obj) return;
+	if (window->nbObj <= obj) return;
 	if (window->windowObj == NULL) return;
 	
 	window->windowObj[obj].x = x;
@@ -564,6 +566,7 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 		SDL_FreeSurface(window->windowObj[obj].buffer_title);
 		window->windowObj[obj].buffer_title = NULL;
 	}
+	
 	if (window->windowObj[obj].buffer_content) {
 		SDL_FreeSurface(window->windowObj[obj].buffer_content);
 		window->windowObj[obj].buffer_content = NULL;
@@ -578,7 +581,7 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 void SDL_delObj(t_window * window, int obj) {
 
 	if (window == NULL) return;
-	if (window->nbObj < obj) return;
+	if (window->nbObj <= obj) return;
 	if (window->windowObj == NULL) return;
 	
 	int i = 0;
@@ -600,6 +603,8 @@ void SDL_delObj(t_window * window, int obj) {
 	}
 	
 	window->nbObj = (window->nbObj)-1;
+	
+	window->windowObj = (t_object*) realloc(window->windowObj, sizeof(t_object)*(window->nbObj));
 	
 	return;
 
@@ -648,7 +653,7 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
 
 	if (window == NULL) return;
-	if (window->nbText < idtext) return;
+	if (window->nbText <= idtext) return;
 	if (window->windowText == NULL) return;
 	
 	window->windowText[idtext].couleur = couleur;
@@ -662,6 +667,7 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 		SDL_FreeSurface(window->windowText[idtext].buffer);
 		window->windowText[idtext].buffer = NULL;
 	}
+	
 	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	return;
@@ -671,7 +677,7 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 void SDL_delText(t_window * window, int idtext) {
 
 	if (window == NULL) return;
-	if (window->nbText < idtext) return;
+	if (window->nbText <= idtext) return;
 	if (window->windowText == NULL) return;
 	
 	int i = 0;
@@ -688,6 +694,7 @@ void SDL_delText(t_window * window, int idtext) {
 	}
 	
 	window->nbText = (window->nbText)-1;
+	window->windowText = (t_text*) realloc(window->windowText, sizeof(t_text)*(window->nbText));
 	
 	return;
 }

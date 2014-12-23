@@ -343,41 +343,43 @@ void SDL_freeWindow(t_window * window) {
 	if (window == NULL) return;
 	int i = 0;
 	
-	//fprintf(stdout, "Need to set mem to free for window %s\n", window->title);
-	//fprintf(stdout, "It's seem that we have %i snd loaded into memory captain !\n", nbSnd);
-	
-	if (window->windowObj != NULL) {
+	if (window->windowObj) {
 		for (i = 0;i < (window->nbObj); i ++) {
 			if (window->windowObj[i].buffer_title)
-				//fprintf(stdout, "Obj id %i surface free (title)\n", i);
 				SDL_FreeSurface(window->windowObj[i].buffer_title);
 				window->windowObj[i].buffer_title = NULL;
 			if (window->windowObj[i].buffer_content)
-				//fprintf(stdout, "Obj id %i surface free (content)\n", i);
 				SDL_FreeSurface(window->windowObj[i].buffer_content);
 				window->windowObj[i].buffer_content = NULL;
 		}
 		free (window->windowObj);
 	}
 	
-	if (window->windowText != NULL) {
+	if (window->windowText) {
 		for (i = 0;i < (window->nbText); i ++) {
 			if (window->windowText[i].buffer)
-				//fprintf(stdout, "Text id %i surface free\n", i);
 				SDL_FreeSurface(window->windowText[i].buffer);
 				window->windowText[i].buffer = NULL;
 		}
 		free (window->windowText);
 	}
 	
-	if (window->windowImg != NULL) {
+	if (window->windowImg) {
 		for (i = 0;i < (window->nbImg); i ++) {
 			if (window->windowImg[i].buffer)
-				//fprintf(stdout, "Texture id %i surface free\n", i);
 				SDL_FreeSurface(window->windowImg[i].buffer);
 				window->windowImg[i].buffer = NULL;
 		}
 		free (window->windowImg);
+	}
+	
+	if (window->windowSprite) {
+		for (i = 0; i < (window->nbSprite); i++) {
+			if (window->windowSprite[i].buffer)
+				SDL_FreeSurface(window->windowSprite[i].buffer);
+				window->windowSprite[i].buffer = NULL;
+		}
+		free (window->windowSprite);
 	}
 	
 	if (nbSnd > 0) {
@@ -396,7 +398,7 @@ void SDL_freeWindow(t_window * window) {
 	
 }
 
-int SDL_newSprite(t_window *window, char * filename, int height, int width, int x, int y, int nb_elem, int current) {
+int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int nb_elem, int current) {
 	
 	t_sprite * n_realloc = NULL;
 	char texturePath[150];
@@ -424,8 +426,14 @@ int SDL_newSprite(t_window *window, char * filename, int height, int width, int 
 	sprintf(texturePath, "ressources/images/%s", filename);
 	window->windowSprite[window->nbSprite].buffer = IMG_Load(texturePath);
 	
+	SDL_SetColorKey( window->windowSprite[window->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( window->windowSprite[window->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	
 	window->windowSprite[window->nbSprite].height = height;
 	window->windowSprite[window->nbSprite].width = width;
+	
+	window->windowSprite[window->nbSprite].sp_height = sp_height;
+	window->windowSprite[window->nbSprite].sp_width = sp_width;
+	
 	window->windowSprite[window->nbSprite].x = x;
 	window->windowSprite[window->nbSprite].y = y;
 	window->windowSprite[window->nbSprite].nb_elem = nb_elem;
@@ -562,7 +570,6 @@ int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int h
 		
 	}
 	
-	window->windowImg[window->nbImg].file = file;
 	window->windowImg[window->nbImg].x = x;
 	window->windowImg[window->nbImg].y = y;
 	window->windowImg[window->nbImg].height = height;
@@ -587,7 +594,6 @@ int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int 
 	if (window->windowImg == NULL) return 0;
 	if (window->nbImg <= idimg) return 0;
 	
-	window->windowImg[idimg].file = file;
 	window->windowImg[idimg].x = x;
 	window->windowImg[idimg].y = y;
 	window->windowImg[idimg].height = height;
@@ -898,7 +904,7 @@ void SDL_BlitObjs(t_window * window) {
 	
 	int i = 0;
 	
-	SDL_Rect positionFond; 
+	SDL_Rect positionFond, spritePos; 
 	char saisie_content[100]; //Form ONLY
 	
 	if (window == NULL) return;
@@ -913,6 +919,25 @@ void SDL_BlitObjs(t_window * window) {
 		
 		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
+	}
+	
+	//Scan for active sprite..
+	for (i = 0; i < (window->nbSprite); i++) {
+	
+		if (window->windowSprite[i].current) {
+			
+			//Animation .. Orientation
+			spritePos.x = ((window->windowSprite[i].current % (window->windowSprite[i].width / window->windowSprite[i].sp_width)) * (window->windowSprite[i].sp_width));
+    		spritePos.y = ((window->windowSprite[i].current / (window->windowSprite[i].width / window->windowSprite[i].sp_width)) * (window->windowSprite[i].sp_height));
+    		spritePos.w = window->windowSprite[i].sp_width;
+    		spritePos.h = window->windowSprite[i].sp_height;
+    		
+    		positionFond.x = window->windowSprite[i].x;
+			positionFond.y = window->windowSprite[i].y;
+    		
+    		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
+    		
+		}
 	}
 	
 	//Blit OBJ ONLY

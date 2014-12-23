@@ -255,7 +255,7 @@ int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur
 int SDL_delText(t_window * window, int idtext);
 
 int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width);
-int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width);
+int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width);
 int SDL_delTexture(t_window * window, int idimg);
 
 int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide);

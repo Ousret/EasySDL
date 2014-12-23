@@ -594,7 +594,7 @@ int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int h
 
 }
 
-int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
+int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width) {
 	
 	char texturePath[150];
 	
@@ -606,14 +606,6 @@ int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int 
 	window->windowImg[idimg].y = y;
 	window->windowImg[idimg].height = height;
 	window->windowImg[idimg].width = width;
-	
-	if (window->windowImg[idimg].buffer) {
-		SDL_FreeSurface(window->windowImg[idimg].buffer);
-		window->windowImg[idimg].buffer = NULL;
-	}
-	
-	sprintf(texturePath, "ressources/images/%s", file);
-	window->windowImg[idimg].buffer = IMG_Load(texturePath);
 	
 	return 1;
 

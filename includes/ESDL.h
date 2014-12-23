@@ -93,9 +93,9 @@ typedef struct {
 	SDL_Color transparancy;
 	int height, width;
 	int sp_height, sp_width;
-	int nb_elem;
 	int x, y;
-	int current;
+	int position, animation;
+	int hide;
 
 } t_sprite;
 
@@ -258,8 +258,8 @@ int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int h
 int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width);
 int SDL_delTexture(t_window * window, int idimg);
 
-int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int nb_elem, int current);
-int SDL_modSprite(t_window *window, int idSprite, int x, int y, int current);
+int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
+int SDL_modSprite(t_window *window, int idSprite, int x, int y, int position, int animation, int hide);
 int SDL_delSprite(t_window *window, int idSprite);
 
 int SDL_generate(t_window * window);

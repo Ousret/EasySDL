@@ -27,7 +27,7 @@ Mix_Chunk *SELECT = NULL, *ENTER = NULL;
 SDL_Color colorRed = {255, 0, 0, 0};
 SDL_Color colorWhite = {255, 255, 255, 0};
 SDL_Color colorBlack = {0, 0, 0, 0};
-SDL_Color colorGreenLight = {88, 167, 122, 0};
+SDL_Color colorGreenLight = {90, 169, 120, 0};
 
 SDL_Event GlobalEvent;
 
@@ -401,14 +401,14 @@ void SDL_freeWindow(t_window * window) {
 	
 }
 
-int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int nb_elem, int current) {
+int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
 	
 	t_sprite * n_realloc = NULL;
 	char texturePath[150];
 	
 	if (!window) return 0;
 	if (!strlen(filename)) return 0;
-	if (!height || !width || !nb_elem) return 0;
+	if (!height || !width) return 0;
 	
 	if (!(window->nbSprite)) {
 		if (!(window->windowSprite)) {
@@ -429,7 +429,8 @@ int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int
 	sprintf(texturePath, "ressources/images/%s", filename);
 	window->windowSprite[window->nbSprite].buffer = IMG_Load(texturePath);
 	
-	SDL_SetColorKey( window->windowSprite[window->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( window->windowSprite[window->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	//SDL_SetColorKey( window->windowSprite[window->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( window->windowSprite[window->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	/* Does not work for now.. need help for this one */
 	
 	window->windowSprite[window->nbSprite].height = height;
 	window->windowSprite[window->nbSprite].width = width;
@@ -439,23 +440,27 @@ int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int
 	
 	window->windowSprite[window->nbSprite].x = x;
 	window->windowSprite[window->nbSprite].y = y;
-	window->windowSprite[window->nbSprite].nb_elem = nb_elem;
-	window->windowSprite[window->nbSprite].current = current;
+	window->windowSprite[window->nbSprite].position = position;
+	window->windowSprite[window->nbSprite].animation = animation;
+	window->windowSprite[window->nbSprite].hide = hide;
 	
 	window->nbSprite = (window->nbSprite)+1;
 	
 	return 1;
 }
 
-int SDL_modSprite(t_window *window, int idSprite, int x, int y, int current) {
+int SDL_modSprite(t_window *window, int idSprite, int x, int y, int position, int animation, int hide) {
 
 	if (!window) return 0;
 	if (idSprite >= (window->nbSprite)) return 0;
 	
-	window->windowSprite[window->nbSprite].x = x;
-	window->windowSprite[window->nbSprite].y = y;
+	window->windowSprite[idSprite].x = x;
+	window->windowSprite[idSprite].y = y;
 	
-	window->windowSprite[window->nbSprite].current = current;
+	window->windowSprite[idSprite].position = position;
+	window->windowSprite[idSprite].animation = animation;
+	
+	window->windowSprite[idSprite].hide = hide;
 	
 	return 1;
 	
@@ -912,7 +917,7 @@ void SDL_BlitObjs(t_window * window) {
 	
 	if (window == NULL) return;
 	
-	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 32, 0, 0, 0, 0);
+	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 16, 0, 0, 0, 0);
 	
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
@@ -926,12 +931,12 @@ void SDL_BlitObjs(t_window * window) {
 	
 	//Scan for active sprite..
 	for (i = 0; i < (window->nbSprite); i++) {
-	
-		if (window->windowSprite[i].current) {
+		
+		if (!(window->windowSprite[i].hide)) {
 			
 			//Animation .. Orientation
-			spritePos.x = ((window->windowSprite[i].current % (window->windowSprite[i].width / window->windowSprite[i].sp_width)) * (window->windowSprite[i].sp_width));
-    		spritePos.y = ((window->windowSprite[i].current / (window->windowSprite[i].width / window->windowSprite[i].sp_width)) * (window->windowSprite[i].sp_height));
+			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width));
+    		spritePos.y = ((window->windowSprite[i].position % ((window->windowSprite[i].height) / (window->windowSprite[i].sp_height))) * (window->windowSprite[i].sp_height));
     		spritePos.w = window->windowSprite[i].sp_width;
     		spritePos.h = window->windowSprite[i].sp_height;
     		
@@ -939,9 +944,11 @@ void SDL_BlitObjs(t_window * window) {
 			positionFond.y = window->windowSprite[i].y;
     		
     		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
-    		
 		}
 	}
+	
+	positionFond.w = 0;
+	positionFond.h = 0;
 	
 	//Blit OBJ ONLY
 	for (i = 0; i < (window->nbObj); i++) {

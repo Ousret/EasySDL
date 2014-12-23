@@ -396,6 +396,85 @@ void SDL_freeWindow(t_window * window) {
 	
 }
 
+int SDL_newSprite(t_window *window, char * filename, int height, int width, int x, int y, int nb_elem, int current) {
+	
+	t_sprite * n_realloc = NULL;
+	char texturePath[150];
+	
+	if (!window) return 0;
+	if (!strlen(filename)) return 0;
+	if (!height || !width || !nb_elem) return 0;
+	
+	if (!(window->nbSprite)) {
+		if (!(window->windowSprite)) {
+			window->windowSprite = (t_sprite*) malloc(sizeof(t_sprite));
+		}else{
+			return 0;
+		}
+	}else{
+		n_realloc = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite) * ((window->nbSprite)+1));
+		
+		if (n_realloc) {
+			window->windowSprite = n_realloc;
+		}else{
+			return 0;
+		}
+	}
+	
+	sprintf(texturePath, "ressources/images/%s", filename);
+	window->windowSprite[window->nbSprite].buffer = IMG_Load(texturePath);
+	
+	window->windowSprite[window->nbSprite].height = height;
+	window->windowSprite[window->nbSprite].width = width;
+	window->windowSprite[window->nbSprite].x = x;
+	window->windowSprite[window->nbSprite].y = y;
+	window->windowSprite[window->nbSprite].nb_elem = nb_elem;
+	window->windowSprite[window->nbSprite].current = current;
+	
+	window->nbSprite = (window->nbSprite)+1;
+	
+	return 1;
+}
+
+int SDL_modSprite(t_window *window, int idSprite, int x, int y, int current) {
+
+	if (!window) return 0;
+	if (idSprite >= (window->nbSprite)) return 0;
+	
+	window->windowSprite[window->nbSprite].x = x;
+	window->windowSprite[window->nbSprite].y = y;
+	
+	window->windowSprite[window->nbSprite].current = current;
+	
+	return 1;
+	
+}
+
+int SDL_delSprite(t_window *window, int idSprite) {
+
+	int i = 0;
+
+	if (!window) return 0;
+	if (idSprite >= (window->nbSprite)) return 0;
+	
+	if (window->windowSprite[idSprite].buffer) {
+		SDL_FreeSurface(window->windowSprite[idSprite].buffer);
+		window->windowSprite[idSprite].buffer = NULL;
+	}
+	
+	for (i = idSprite; i < window->nbSprite; i++) {
+	
+		window->windowSprite[i] = window->windowSprite[i+1];
+	
+	}
+	
+	window->nbSprite = (window->nbSprite)-1;
+	
+	window->windowSprite = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite)*(window->nbSprite));
+	
+	return 1;
+}
+
 int SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 	
 	t_object * n_realloc = NULL;
@@ -534,9 +613,9 @@ int SDL_delTexture(t_window * window, int idimg) {
 	
 	int i = 0;
 	
-	if (window->windowImg[i].buffer) {
-		SDL_FreeSurface(window->windowImg[i].buffer);
-		window->windowImg[i].buffer = NULL;
+	if (window->windowImg[idimg].buffer) {
+		SDL_FreeSurface(window->windowImg[idimg].buffer);
+		window->windowImg[idimg].buffer = NULL;
 	}
 	
 	for (i = idimg; i < window->nbImg; i++) {
@@ -605,14 +684,14 @@ int SDL_delObj(t_window * window, int obj) {
 	
 	int i = 0;
 	
-	if (window->windowObj[i].buffer_title) {
-		SDL_FreeSurface(window->windowObj[i].buffer_title);
-		window->windowObj[i].buffer_title = NULL;
+	if (window->windowObj[obj].buffer_title) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_title);
+		window->windowObj[obj].buffer_title = NULL;
 	}
 	
-	if (window->windowObj[i].buffer_content) {
-		SDL_FreeSurface(window->windowObj[i].buffer_content);
-		window->windowObj[i].buffer_content = NULL;
+	if (window->windowObj[obj].buffer_content) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_content);
+		window->windowObj[obj].buffer_content = NULL;
 	}
 	
 	for (i = obj; i < (window->nbObj); i++) {
@@ -701,9 +780,9 @@ int SDL_delText(t_window * window, int idtext) {
 	
 	int i = 0;
 	
-	if (window->windowText[i].buffer) {
-		SDL_FreeSurface(window->windowText[i].buffer);
-		window->windowText[i].buffer = NULL;
+	if (window->windowText[idtext].buffer) {
+		SDL_FreeSurface(window->windowText[idtext].buffer);
+		window->windowText[idtext].buffer = NULL;
 	}
 	
 	for (i = idtext; i < (window->nbText); i++) {

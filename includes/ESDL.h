@@ -88,6 +88,16 @@ typedef struct {
 	
 } t_audio;
 
+typedef struct {
+
+	SDL_Surface *buffer;
+	int height, width;
+	int nb_elem;
+	int x, y;
+	int current;
+
+} t_sprite;
+
 /**
  * \struct t_window
  * \brief This is where all data of previous struct are stored for one window
@@ -107,6 +117,9 @@ typedef struct {
 	
 	t_texture * windowImg;
 	int nbImg;
+	
+	t_sprite * windowSprite;
+	int nbSprite;
 	
 	int x, y;
 	int height, width;
@@ -245,6 +258,10 @@ int SDL_delText(t_window * window, int idtext);
 int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width);
 int SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width);
 int SDL_delTexture(t_window * window, int idimg);
+
+int SDL_newSprite(t_window *window, char * filename, int height, int width, int x, int y, int nb_elem, int current);
+int SDL_modSprite(t_window *window, int idSprite, int x, int y, int current);
+int SDL_delSprite(t_window *window, int idSprite);
 
 int SDL_generate(t_window * window);
 

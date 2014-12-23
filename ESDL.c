@@ -936,7 +936,7 @@ void SDL_BlitObjs(t_window * window) {
 			
 			//Animation .. Orientation
 			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width))-(window->windowSprite[i].sp_width);
-    		spritePos.y = ((window->windowSprite[i].position % ((window->windowSprite[i].height) / (window->windowSprite[i].sp_height))) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
+    		spritePos.y = ((window->windowSprite[i].position) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
     		spritePos.w = window->windowSprite[i].sp_width;
     		spritePos.h = window->windowSprite[i].sp_height;
     		

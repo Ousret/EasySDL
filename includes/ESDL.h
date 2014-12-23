@@ -193,8 +193,6 @@ int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
  */
 void SDL_playwav(char * wavfile, int waitEnd, int *channel);
 
-void SDL_Splash(char img[100], int attente);
-
 /**
  * \fn int SDL_IsMouseOverObj(t_window * window);
  * \brief Check if mouse is over an object and return his obj id
@@ -295,6 +293,8 @@ extern SDL_Color colorRed;
 extern SDL_Color colorWhite;
 /** \brief Couleurs RGB */
 extern SDL_Color colorBlack;
+
+extern SDL_Color colorGreenLight;
 
 /** \brief Contient la suite des événements capturés par la SDL (Clavier+Souris) */
 extern SDL_Event GlobalEvent;

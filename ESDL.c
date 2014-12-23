@@ -27,6 +27,7 @@ Mix_Chunk *SELECT = NULL, *ENTER = NULL;
 SDL_Color colorRed = {255, 0, 0, 0};
 SDL_Color colorWhite = {255, 255, 255, 0};
 SDL_Color colorBlack = {0, 0, 0, 0};
+SDL_Color colorGreenLight = {88, 167, 122, 0};
 
 SDL_Event GlobalEvent;
 
@@ -323,10 +324,12 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 	tmp->windowObj = NULL;
 	tmp->windowText = NULL;
 	tmp->windowImg = NULL;
+	tmp->windowSprite = NULL;
 	
 	tmp->nbObj = 0;
 	tmp->nbText = 0;
 	tmp->nbImg = 0;
+	tmp->nbSprite = 0;
 	
 	tmp->x = x;
 	tmp->y = y;
@@ -483,7 +486,7 @@ int SDL_delSprite(t_window *window, int idSprite) {
 	return 1;
 }
 
-int SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_newObj(t_window * window, int * id, int type, char * title, char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 	
 	t_object * n_realloc = NULL;
 	
@@ -1145,4 +1148,3 @@ int SDL_generate(t_window * window) {
 	}
 	
 }
-

@@ -1,41 +1,46 @@
-/** EasySDL Alpha
+/** EasySDL Beta
 *
-*	Author(s): TAHRI Ahmed, SIMON Jérémy
+*	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.1
-* 	Date: 8-12-2014
+*	Version: 0.4.5
+* 	Date: 22-12-2014
 *
 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <SDL.h>
-//#include <../GL/glew.h>
+/* NOT USING IT FOR NOW 
 #include <OpenGL/glu.h>
 #include <OpenGL/glext.h>
+*/
 #include <SDL_mixer.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
-#include <SDL_gpu.h>
-
 #include <string.h>
 
 #include "includes/ESDL.h"
 
-GPU_Target* screen = NULL;
+SDL_Window *screen = NULL; //Shared
+SDL_Renderer *renderer = NULL; //Shared
 
-SDL_Color colorRed = {255, 0, 0};
-SDL_Color colorWhite = {255, 255, 255};
-SDL_Color colorBlack = {0, 0, 0};
+Uint32 *myPixels = NULL;
+
+SDL_Surface *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
+Mix_Chunk *SELECT = NULL, *ENTER = NULL;
+
+SDL_Color colorRed = {255, 0, 0, 0};
+SDL_Color colorWhite = {255, 255, 255, 0};
+SDL_Color colorBlack = {0, 0, 0, 0};
+SDL_Color colorGreenLight = {90, 169, 120, 0};
 
 SDL_Event GlobalEvent;
 
 char buffer = 0;
 int buffer_deliver = 1;
 
-TTF_Font *ttf_police = NULL;	
+TTF_Font *ttf_police = NULL;
 
-int channel = 0, channel_effect = 0, channel_music = 0;
-Mix_Chunk *sound = NULL, *effect = NULL, *music = NULL;
+int nbSnd = 0;
 
 int sel_menu_m = 0;
 int tff_loaded = 0, audio_loaded = 0;
@@ -46,18 +51,50 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	
 	char filePath[150];
 	int newChannel = 0;
+	int i = 0, alreadyLoaded = -1;
+	
 	memset(filePath, 0, sizeof(filePath));
 	
 	sprintf(filePath, "ressources/snd/%s", wavfile);
 	
-	Mix_Chunk *sound = Mix_LoadWAV(filePath);
-	newChannel = Mix_PlayChannel(-1, sound, 0);
+	for (i = 0; i < nbSnd; i++) {
+		if (strcmp(MIXTEMP[i].file, filePath) == 0) 
+			alreadyLoaded = i;
+			break;
+	}
+	
+	if (alreadyLoaded != -1) {
+		
+		newChannel = Mix_PlayChannel(-1, MIXTEMP[alreadyLoaded].MIX_BUF, 0);
+		
+	}else{
+		
+		MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
+		strcpy(MIXTEMP[nbSnd].file, filePath);
+		newChannel = Mix_PlayChannel(-1, MIXTEMP[nbSnd].MIX_BUF, 0);
+		nbSnd++;
+		
+	}
 	
 	if (channel != NULL) *channel = newChannel;
 	if (waitEnd == 1) {
-		while(Mix_Playing(newChannel) != 0);
-		Mix_FreeChunk(sound);
+		while(Mix_Playing(newChannel) != 0) SDL_Delay(50);
 	}
+}
+
+void SDL_preloadwav(char * wavfile) {
+	
+	char filePath[150];
+	memset(filePath, 0, sizeof(filePath));
+	sprintf(filePath, "ressources/snd/%s", wavfile);
+	
+	MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
+	
+	if (MIXTEMP[nbSnd].MIX_BUF) {
+		strcpy(MIXTEMP[nbSnd].file, filePath);
+		nbSnd++;
+	}
+	
 }
 
 int SDL_nbObj(t_window * window) {
@@ -97,40 +134,67 @@ int SDL_IsMouseOverObj(t_window * window) {
 	
 }
 
-void SDL_init(int width, int height, char title[100], int ttf_support, char police_name[100], int police_size, int audio_support) {
+void SDL_init(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
-	char file[100], msg[200]; //Generating file path
-	
-	memset(file, 0, sizeof(file));
-	
+    int sdl_start = 0;
+	char file[150]; //Generating file path
 	int audio_rate = 22050;
 	Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2;
 	int audio_buffers = 4096;
-	//printRenderers();
-	GPU_SetDebugLevel(GPU_DEBUG_LEVEL_MAX);
-	screen = GPU_Init(width, height, GPU_DEFAULT_INIT_FLAGS);
 	
-	if (screen == NULL) {
-		
-		//fprintf (stderr, "[!] SDL failed to load with GPU\n");
-		sprintf (msg, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height, SDL_GetError ());
-		
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
-		
+	memset(file, 0, sizeof(file));
+	
+    /* Initialize SDL */
+    if (audio_support == 1) {
+    	sdl_start = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+    }else {
+    	sdl_start = SDL_Init (SDL_INIT_VIDEO);
+    }
+    
+    if (sdl_start < 0)
+    {
+        
+        fprintf (stderr, "[!] SDL failed to load because of: %s\n", SDL_GetError ());
         exit (1);
+        
+    }
+    
+	atexit (SDL_unload);
+	
+	
+	
+	if (fullscreen == 1) {
+		screen = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+	}else{
+		screen = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, SDL_WINDOW_OPENGL);
 	}
     
-	atexit (SDL_Quit);
+    if (!screen)
+    {
+        
+        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
+        exit (2);
+        
+    }
     
-	//SDL_WM_SetCaption (title, NULL);
+    renderer = SDL_CreateRenderer(screen, -1, 0);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+	
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+	SDL_RenderSetLogicalSize(renderer, 800, 600);
+	
+	/*SDL_WM_SetCaption (title, NULL);
+	
+	if (icon_name) {
+		SDL_WM_SetIcon(IMG_Load(icon_name), NULL);
+	}*/
 	
 	if (audio_support == 1) {
 		
 		if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
 			
-			sprintf (msg, "[!] Cannot load SDL audio because of: %s\n", Mix_GetError());
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
+			fprintf (stderr, "[!] Cannot load SDL audio because of: %s\n", Mix_GetError());
 		    exit (1);
 		    
 		}
@@ -141,8 +205,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		
 		if(TTF_Init() == -1)
 		{
-	    	sprintf (msg, "[!] Cannot load SDL_ttf, you may want to check your SDL setup !\n");
-	    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
+	    	fprintf (stderr, "[!] Cannot load SDL_ttf, you may want to check your SDL setup !\n");
 	        exit (1);
 		}
 		
@@ -154,8 +217,7 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		}*/
 		
 		if (police_size <= 0) {
-			sprintf(msg, "[!] Cannot load ttf_police with size=0 !\n");
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
+			fprintf(stderr, "[!] Cannot load ttf_police with size=0 !\n");
 			exit (1);
 		}
 		
@@ -163,15 +225,12 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 		tff_loaded = 1;
 	}
 	
-	//SDL_EnableUNICODE(1);
-	
 	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
 	int initted=IMG_Init(flags);
 	
 	if((initted&flags) != flags) {
-    	sprintf(msg, "[!] IMG_Init: Failed to init required jpg and png support!\n");
-    	//fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
-    	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ESDL Fatal", msg, NULL);
+    	fprintf(stdout, "[!] IMG_Init: Failed to init required support!\n");
+    	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
     	exit (1);
 	}
 	
@@ -179,11 +238,10 @@ void SDL_init(int width, int height, char title[100], int ttf_support, char poli
 	
 }
 
-
 int SDL_CaptureForm(t_window * window, int obj) {
 
 	int current_len = 0;
-	
+	//Return if there's nothing to process
 	if (window == NULL) return 0;
 	
 	if ((obj != -1) && (window->windowObj[obj].dest != NULL) && (buffer_deliver == 0)) {
@@ -243,8 +301,6 @@ int SDL_CaptureForm(t_window * window, int obj) {
 					
 					}
 					
-					
-					
 				}
 				
 			}
@@ -270,16 +326,22 @@ int SDL_CaptureForm(t_window * window, int obj) {
 
 t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 
-	t_window * tmp = malloc(sizeof(t_window));
+	t_window * tmp = (t_window*) malloc(sizeof(t_window));
 	tmp->title = title;
+	
+	tmp->windowSurface = NULL;
+	
+	tmp->windowRd = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, 800, 600);
 	
 	tmp->windowObj = NULL;
 	tmp->windowText = NULL;
 	tmp->windowImg = NULL;
+	tmp->windowSprite = NULL;
 	
 	tmp->nbObj = 0;
 	tmp->nbText = 0;
 	tmp->nbImg = 0;
+	tmp->nbSprite = 0;
 	
 	tmp->x = x;
 	tmp->y = y;
@@ -294,40 +356,186 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 void SDL_freeWindow(t_window * window) {
 	
 	if (window == NULL) return;
-	if (window->windowObj != NULL) free (window->windowObj);
-	if (window->windowText != NULL) free (window->windowText);
+	int i = 0;
+	
+	if (window->windowObj) {
+		for (i = 0;i < (window->nbObj); i ++) {
+			if (window->windowObj[i].buffer_title)
+				SDL_FreeSurface(window->windowObj[i].buffer_title);
+				window->windowObj[i].buffer_title = NULL;
+			if (window->windowObj[i].buffer_content)
+				SDL_FreeSurface(window->windowObj[i].buffer_content);
+				window->windowObj[i].buffer_content = NULL;
+		}
+		free (window->windowObj);
+	}
+	
+	if (window->windowText) {
+		for (i = 0;i < (window->nbText); i ++) {
+			if (window->windowText[i].buffer)
+				SDL_FreeSurface(window->windowText[i].buffer);
+				window->windowText[i].buffer = NULL;
+		}
+		free (window->windowText);
+	}
+	
+	if (window->windowImg) {
+		for (i = 0;i < (window->nbImg); i ++) {
+			if (window->windowImg[i].buffer)
+				SDL_FreeSurface(window->windowImg[i].buffer);
+				window->windowImg[i].buffer = NULL;
+		}
+		free (window->windowImg);
+	}
+	
+	if (window->windowSprite) {
+		for (i = 0; i < (window->nbSprite); i++) {
+			if (window->windowSprite[i].buffer)
+				SDL_FreeSurface(window->windowSprite[i].buffer);
+				window->windowSprite[i].buffer = NULL;
+		}
+		free (window->windowSprite);
+	}
+	
+	if (nbSnd > 0) {
+	
+		for (i = 0; i < nbSnd; i++) {
+			
+			if (MIXTEMP[i].MIX_BUF) Mix_FreeChunk(MIXTEMP[i].MIX_BUF);
+			
+		}
+	
+		nbSnd = 0;
+	
+	}
 	
 	free (window);
 	
 }
 
-void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
 	
-	SDL_Surface *titre_ttf = NULL;
+	t_sprite * n_realloc = NULL;
+	char texturePath[150];
 	
-	if (window == NULL) return;
+	if (!window) return 0;
+	if (!strlen(filename)) return 0;
+	if (!height || !width) return 0;
+	
+	if (!(window->nbSprite)) {
+		if (!(window->windowSprite)) {
+			window->windowSprite = (t_sprite*) malloc(sizeof(t_sprite));
+		}else{
+			return 0;
+		}
+	}else{
+		n_realloc = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite) * ((window->nbSprite)+1));
+		
+		if (n_realloc) {
+			window->windowSprite = n_realloc;
+		}else{
+			return 0;
+		}
+	}
+	
+	sprintf(texturePath, "ressources/images/%s", filename);
+	window->windowSprite[window->nbSprite].buffer = IMG_Load(texturePath);
+	
+	//SDL_SetColorKey( window->windowSprite[window->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( window->windowSprite[window->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	/* Does not work for now.. need help for this one */
+	
+	window->windowSprite[window->nbSprite].height = height;
+	window->windowSprite[window->nbSprite].width = width;
+	
+	window->windowSprite[window->nbSprite].sp_height = sp_height;
+	window->windowSprite[window->nbSprite].sp_width = sp_width;
+	
+	window->windowSprite[window->nbSprite].x = x;
+	window->windowSprite[window->nbSprite].y = y;
+	window->windowSprite[window->nbSprite].position = position;
+	window->windowSprite[window->nbSprite].animation = animation;
+	window->windowSprite[window->nbSprite].hide = hide;
+	
+	window->nbSprite = (window->nbSprite)+1;
+	
+	return 1;
+}
+
+int SDL_modSprite(t_window *window, int idSprite, int x, int y, int position, int animation, int hide) {
+
+	if (!window) return 0;
+	if (idSprite >= (window->nbSprite)) return 0;
+	
+	window->windowSprite[idSprite].x = x;
+	window->windowSprite[idSprite].y = y;
+	
+	window->windowSprite[idSprite].position = position;
+	window->windowSprite[idSprite].animation = animation;
+	
+	window->windowSprite[idSprite].hide = hide;
+	
+	return 1;
+	
+}
+
+int SDL_delSprite(t_window *window, int idSprite) {
+
+	int i = 0;
+
+	if (!window) return 0;
+	if (idSprite >= (window->nbSprite)) return 0;
+	
+	if (window->windowSprite[idSprite].buffer) {
+		SDL_FreeSurface(window->windowSprite[idSprite].buffer);
+		window->windowSprite[idSprite].buffer = NULL;
+	}
+	
+	for (i = idSprite; i < window->nbSprite; i++) {
+	
+		window->windowSprite[i] = window->windowSprite[i+1];
+	
+	}
+	
+	window->nbSprite = (window->nbSprite)-1;
+	
+	window->windowSprite = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite)*(window->nbSprite));
+	
+	return 1;
+}
+
+int SDL_newObj(t_window * window, int * id, int type, char * title, char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+	
+	t_object * n_realloc = NULL;
+	
+	if (window == NULL) return 0;
+	if (strlen(title) == 0) return 0;
 	
 	if (window->nbObj == 0) {
 		
 		if (window->windowObj == NULL) {
-			window->windowObj = malloc(sizeof(t_object));
+			window->windowObj = (t_object*) malloc(sizeof(t_object));
 		}else{
-			return;
+			return 0;
 		}
 		
 	}else{
-	
-		window->windowObj = realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+2));
+		
+		n_realloc = (t_object*) realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+1));
+		if (n_realloc) {
+			window->windowObj = n_realloc;
+		}else{
+			return 0; /* Out of memory */
+		}
 		
 	}
 	
-	window->windowObj[window->nbObj].x = x+(width/2);
-	window->windowObj[window->nbObj].y = y+(height/2);
-	
+	window->windowObj[window->nbObj].x = x;
+	window->windowObj[window->nbObj].y = y;
 	window->windowObj[window->nbObj].height = height;
 	window->windowObj[window->nbObj].width = width;
-	
 	window->windowObj[window->nbObj].MouseOver = 0;
+	window->windowObj[window->nbObj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
+	window->windowObj[window->nbObj].buffer_content = NULL;
 	
 	strcpy(window->windowObj[window->nbObj].title, title);
 	
@@ -345,92 +553,86 @@ void SDL_newObj(t_window * window, int * id, int type, char title[50], char * de
 		
 	}
 	
-	
-	titre_ttf = TTF_RenderText_Blended(ttf_police, title, colorWhite);
-	window->windowObj[window->nbObj].GPU_buffer_title = SDL_convertTexture(titre_ttf);
-	SDL_FreeSurface(titre_ttf);
-	
 	if (id != NULL) *id = window->nbObj;
 	window->nbObj = (window->nbObj+1);
 	
-	return;
+	return 1;
 	
 }
 
-void SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
+int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
 
 	char texturePath[150];
+	t_texture * n_realloc = NULL;
 	
-	if (window == NULL) return;
+	if (window == NULL) return 0;
 	
 	if (window->nbImg == 0) {
 	
 		if (window->windowImg == NULL) {
 		
-			window->windowImg = malloc(sizeof(t_texture));
+			window->windowImg = (t_texture*) malloc(sizeof(t_texture));
 			
 		}else{
 			
-			return;
+			return 0;
 			
 		}
 	
 	}else{
 	
-		window->windowImg = realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg) + 2));
-	
+		n_realloc = (t_texture*) realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg)+1));
+		if (n_realloc) {
+			window->windowImg = n_realloc;
+		}else{
+			return 0;
+		}
+		
 	}
 	
-	window->windowImg[window->nbImg].file = file;
-	window->windowImg[window->nbImg].x = window->x+(x+(width/2));
-	window->windowImg[window->nbImg].y = window->y+(y+(height/2));
+	window->windowImg[window->nbImg].x = x;
+	window->windowImg[window->nbImg].y = y;
 	window->windowImg[window->nbImg].height = height;
 	window->windowImg[window->nbImg].width = width;
 	
 	sprintf(texturePath, "ressources/images/%s", file);
-	window->windowImg[window->nbImg].GPU_buffer = GPU_LoadImage(texturePath);
+	window->windowImg[window->nbImg].buffer = IMG_Load(texturePath);
 	
 	if (id != NULL) *id = (window->nbImg);
 	
 	window->nbImg = (window->nbImg)+1;
 	
-	return;
+	return 1;
 
 }
 
-void SDL_modTexture(t_window * window, int idimg, char * file, int x, int y, int height, int width) {
+int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width) {
 	
-	char texturePath[150];
+	if (window == NULL) return 0;
+	if (window->windowImg == NULL) return 0;
+	if (window->nbImg <= idimg) return 0;
 	
-	if (window == NULL) return;
-	if (window->windowImg == NULL) return;
-	if (window->nbImg < idimg) return;
-	
-	window->windowImg[idimg].file = file;
-	window->windowImg[idimg].x = x+(width/2);
-	window->windowImg[idimg].y = y+(height/2);
+	window->windowImg[idimg].x = x;
+	window->windowImg[idimg].y = y;
 	window->windowImg[idimg].height = height;
 	window->windowImg[idimg].width = width;
 	
-	if (window->windowImg[idimg].GPU_buffer) {
-		GPU_FreeImage(window->windowImg[idimg].GPU_buffer);
-		window->windowImg[idimg].GPU_buffer = NULL;
-	}
-	
-	sprintf(texturePath, "ressources/images/%s", file);
-	window->windowImg[idimg].GPU_buffer = GPU_LoadImage(texturePath);
-	
-	return;
+	return 1;
 
 }
 
-void SDL_delTexture(t_window * window, int idimg) {
+int SDL_delTexture(t_window * window, int idimg) {
 
-	if (window == NULL) return;
-	if (window->windowImg == NULL) return;
-	if (window->nbImg < idimg) return;
+	if (window == NULL) return 0;
+	if (window->windowImg == NULL) return 0;
+	if (window->nbImg <= idimg) return 0;
 	
 	int i = 0;
+	
+	if (window->windowImg[idimg].buffer) {
+		SDL_FreeSurface(window->windowImg[idimg].buffer);
+		window->windowImg[idimg].buffer = NULL;
+	}
 	
 	for (i = idimg; i < window->nbImg; i++) {
 	
@@ -440,18 +642,20 @@ void SDL_delTexture(t_window * window, int idimg) {
 	
 	window->nbImg = (window->nbImg)-1;
 	
-	return;
+	window->windowImg = (t_texture*) realloc(window->windowImg, sizeof(t_texture)*(window->nbImg));
+	
+	return 1;
 
 }
 
-void SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
 
-	if (window == NULL) return;
-	if (window->nbObj < obj) return;
-	if (window->windowObj == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbObj <= obj) return 0;
+	if (window->windowObj == NULL) return 0;
 	
-	window->windowObj[obj].x = x+(width/2);
-	window->windowObj[obj].y = y+(height/2);
+	window->windowObj[obj].x = x;
+	window->windowObj[obj].y = y;
 	window->windowObj[obj].height = height;
 	window->windowObj[obj].width = width;
 	window->windowObj[obj].MouseOver = 0;
@@ -472,17 +676,39 @@ void SDL_modObj(t_window * window, int obj, int type, char title[50], char * des
 		
 	}
 	
-	return;
+	if (window->windowObj[obj].buffer_title) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_title);
+		window->windowObj[obj].buffer_title = NULL;
+	}
+	
+	if (window->windowObj[obj].buffer_content) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_content);
+		window->windowObj[obj].buffer_content = NULL;
+	}
+	
+	window->windowObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
+	
+	return 1;
 	
 }
 
-void SDL_delObj(t_window * window, int obj) {
+int SDL_delObj(t_window * window, int obj) {
+
+	if (window == NULL) return 0;
+	if (window->nbObj <= obj) return 0;
+	if (window->windowObj == NULL) return 0;
 	
 	int i = 0;
 	
-	if (window == NULL) return;
-	if (window->nbObj < obj) return;
-	if (window->windowObj == NULL) return;
+	if (window->windowObj[obj].buffer_title) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_title);
+		window->windowObj[obj].buffer_title = NULL;
+	}
+	
+	if (window->windowObj[obj].buffer_content) {
+		SDL_FreeSurface(window->windowObj[obj].buffer_content);
+		window->windowObj[obj].buffer_content = NULL;
+	}
 	
 	for (i = obj; i < (window->nbObj); i++) {
 	
@@ -492,26 +718,35 @@ void SDL_delObj(t_window * window, int obj) {
 	
 	window->nbObj = (window->nbObj)-1;
 	
-	return;
+	window->windowObj = (t_object*) realloc(window->windowObj, sizeof(t_object)*(window->nbObj));
+	
+	return 1;
 
 }
 
-void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
+int SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
 	
-	SDL_Surface *textsurf = NULL;
-
-	if (window == NULL) return;
+	t_text * n_realloc = NULL;
+	
+	if (window == NULL) return 0;
 	
 	if (window->nbText == 0) {
 	
 		if (window->windowText == NULL) {
-			window->windowText = malloc(sizeof(t_text));
+			window->windowText = (t_text*) malloc(sizeof(t_text));
 		}else{
-			return;
+			return 0;
 		}
 	
 	}else{
-		 window->windowText = realloc(window->windowText, sizeof(t_text) * ((window->nbText) + 2));
+		  n_realloc = (t_text*) realloc(window->windowText, sizeof(t_text) * ((window->nbText)+1));
+		  
+		  if (n_realloc) {
+		  	window->windowText = n_realloc;
+		  }else{
+		  	return 0;
+		  }
+		  
 	}
 	
 	window->windowText[window->nbText].couleur = couleur;
@@ -520,24 +755,20 @@ void SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur,
 	window->windowText[window->nbText].x = x;
 	window->windowText[window->nbText].y = y;
 	
-	textsurf = TTF_RenderText_Blended(ttf_police, content, couleur);
-	window->windowText[window->nbText].GPU_buffer = SDL_convertTexture(textsurf);
-	SDL_FreeSurface(textsurf);
+	window->windowText[window->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	if (id != NULL) *id = (window->nbText);
 	window->nbText = (window->nbText)+1;
 	
-	return;
+	return 1;
 
 }
 
-void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
-	
-	SDL_Surface *textsurf = NULL;
-	
-	if (window == NULL) return;
-	if (window->nbText < idtext) return;
-	if (window->windowText == NULL) return;
+int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
+
+	if (window == NULL) return 0;
+	if (window->nbText <= idtext) return 0;
+	if (window->windowText == NULL) return 0;
 	
 	window->windowText[idtext].couleur = couleur;
 	window->windowText[idtext].content = content;
@@ -545,26 +776,30 @@ void SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleu
 	window->windowText[idtext].x = x;
 	window->windowText[idtext].y = y;
 	
-	if (window->windowText[idtext].GPU_buffer) {
-		GPU_FreeImage(window->windowText[idtext].GPU_buffer);
-		window->windowText[idtext].GPU_buffer = NULL;
+	//Free old buffer
+	if(window->windowText[idtext].buffer) {
+		SDL_FreeSurface(window->windowText[idtext].buffer);
+		window->windowText[idtext].buffer = NULL;
 	}
 	
-	textsurf = TTF_RenderText_Blended(ttf_police, content, couleur);
-	window->windowText[idtext].GPU_buffer = SDL_convertTexture(textsurf);
-	SDL_FreeSurface(textsurf);
+	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
-	return;
+	return 1;
 
 }
 
-void SDL_delText(t_window * window, int idtext) {
+int SDL_delText(t_window * window, int idtext) {
 
-	if (window == NULL) return;
-	if (window->nbText < idtext) return;
-	if (window->windowText == NULL) return;
+	if (window == NULL) return 0;
+	if (window->nbText <= idtext) return 0;
+	if (window->windowText == NULL) return 0;
 	
 	int i = 0;
+	
+	if (window->windowText[idtext].buffer) {
+		SDL_FreeSurface(window->windowText[idtext].buffer);
+		window->windowText[idtext].buffer = NULL;
+	}
 	
 	for (i = idtext; i < (window->nbText); i++) {
 	
@@ -573,8 +808,19 @@ void SDL_delText(t_window * window, int idtext) {
 	}
 	
 	window->nbText = (window->nbText)-1;
+	window->windowText = (t_text*) realloc(window->windowText, sizeof(t_text)*(window->nbText));
 	
-	return;
+	return 1;
+}
+
+int SDL_isKeyPressed(int KEY_S) {
+	if ((in.key[KEY_S])==1) return 1;
+	return 0;
+}
+
+int SDL_isMousePressed(int MOUSE_S) {
+	if (in.mousebuttons[MOUSE_S]==1) return 1;
+	return 0;
 }
 
 void SDL_UpdateEvents(Input* in)
@@ -585,22 +831,21 @@ void SDL_UpdateEvents(Input* in)
 		switch (GlobalEvent.type)
 		{
 			case SDL_KEYDOWN:
-			
+				
+				in->key[GlobalEvent.key.keysym.sym]=1;
+				
 				if (buffer_deliver == 1) {
 				
-					in->key[GlobalEvent.key.keysym.sym]=1;
+					
 					buffer = GlobalEvent.key.keysym.sym;
 					buffer_deliver = 0; //Need to know if char was captured..!
 				
 				}
 			
 				break;
-			
 			case SDL_KEYUP:
-			
 				in->key[GlobalEvent.key.keysym.sym]=0;
 				break;
-			
 			case SDL_MOUSEMOTION:
 				in->mousex=GlobalEvent.motion.x;
 				in->mousey=GlobalEvent.motion.y;
@@ -624,7 +869,7 @@ void SDL_UpdateEvents(Input* in)
 
 int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
 	
-	if ( (in.mousey-(window->y)) > y-(hauteur/2) && (in.mousey-(window->y)) <= y+hauteur-(hauteur/2) && (in.mousex-(window->x)) > x-(largeur/2) && (in.mousex-(window->x)) <= x+largeur-(largeur/2) ) {
+	if ( (in.mousey-(window->y)) > y && (in.mousey-(window->y)) <= y+hauteur && (in.mousex-(window->x)) > x && (in.mousex-(window->x)) <= x+largeur ) {
 		return 1;
 	}else{
 		return 0;
@@ -632,127 +877,183 @@ int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
 	
 }
 
-GPU_Image* SDL_convertTexture(SDL_Surface* surface)
-{
-    GPU_Image* image;
-    image = GPU_CopyImageFromSurface(surface);
-    
-    return image;
-}
-
 void SDL_loadRessources() {
 
-	BTNNOTOVER = GPU_LoadImage("ressources/images/m_bg_s0.png");
-	BTNOVER = GPU_LoadImage("ressources/images/m_bg_s1.png");
-	FORM = GPU_LoadImage("ressources/images/ch_saisie_actif.png");
+	BTN_OVER = IMG_Load("ressources/images/m_bg_s1.png");
+	BTN_NOTOVER = IMG_Load("ressources/images/m_bg_s0.png");
+	FORM = IMG_Load("ressources/images/ch_saisie_actif.png");
 	
 	SELECT = Mix_LoadWAV("ressources/snd/select.wav");
 	ENTER = Mix_LoadWAV("ressources/snd/enter.wav");
+	
+}
+
+void SDL_unloadRessources() {
+	
+	if (BTN_OVER) SDL_FreeSurface(BTN_OVER);
+	if (BTN_NOTOVER) SDL_FreeSurface(BTN_NOTOVER);
+	if (FORM) SDL_FreeSurface(FORM);
+	
+	if (SELECT) Mix_FreeChunk(SELECT);
+	if (ENTER) Mix_FreeChunk(ENTER);
+	
+}
+
+void SDL_unload() {
+	
+	SDL_unloadRessources();
+	
+	IMG_Quit();
+	if (tff_loaded) TTF_Quit();
+	if (audio_loaded) Mix_Quit();
+	SDL_Quit();
+	
+	exit(0);
 
 }
 
 void SDL_BlitObjs(t_window * window) {
-
+	
 	int i = 0;
 	
-	SDL_Surface *saisie_ttf = NULL;
-	
+	SDL_Rect positionFond, spritePos; 
 	char saisie_content[100]; //Form ONLY
 	
 	if (window == NULL) return;
-	//window->windowTarget=GPU_LoadTarget(FORM);
-	GPU_Clear(screen);
-	//GPU_ClearRGBA(screen, 255, 255, 255, 255);
-    //GPU_SetCamera(screen, NULL);
-    
-    //GPU_Blit(window->windowSnap, NULL, screen, 400, 300);
-    
+	
+	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 16, 0, 0, 0, 0);
+	
 	//Scan textures to Blit !
 	for (i = 0; i < (window->nbImg); i++) {
 		
-		GPU_Blit(window->windowImg[i].GPU_buffer, NULL, screen, window->windowImg[i].x, window->windowImg[i].y);
+		positionFond.x = window->windowImg[i].x;
+		positionFond.y = window->windowImg[i].y;
+		
+		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
 	}
+	
+	//Scan for active sprite..
+	for (i = 0; i < (window->nbSprite); i++) {
+		
+		if (!(window->windowSprite[i].hide)) {
+			
+			//Animation .. Orientation
+			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width))-(window->windowSprite[i].sp_width);
+    		spritePos.y = ((window->windowSprite[i].position) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
+    		spritePos.w = window->windowSprite[i].sp_width;
+    		spritePos.h = window->windowSprite[i].sp_height;
+    		
+    		positionFond.x = window->windowSprite[i].x;
+			positionFond.y = window->windowSprite[i].y;
+    		
+    		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
+		}
+	}
+	
+	positionFond.w = 0;
+	positionFond.h = 0;
 	
 	//Blit OBJ ONLY
 	for (i = 0; i < (window->nbObj); i++) {
-			
-			switch (window->windowObj[i].type) {
+	
+		switch (window->windowObj[i].type) {
 		
-				case 0: //Simple btn
-					
-					if (window->windowObj[i].MouseOver == 1) {
-						GPU_Blit(BTNOVER, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
-					}else{
-						GPU_Blit(BTNNOTOVER, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
-					}
-					
-					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, screen, (window->windowObj[i].x), (window->windowObj[i].y));
-					
-					break;
+			case 0: //Simple btn
 				
-				case 1: //Form
-			
-					memset (saisie_content, 0, sizeof (saisie_content));
+				positionFond.x = window->windowObj[i].x;
+				positionFond.y = window->windowObj[i].y;
 				
-					if (window->windowObj[i].MouseOver == 1) {
+				if (window->windowObj[i].MouseOver == 1) {
+					SDL_BlitSurface(BTN_OVER, NULL, window->windowSurface, &positionFond);
+				}else{
+					SDL_BlitSurface(BTN_NOTOVER, NULL, window->windowSurface, &positionFond);
+				}
+				
+				positionFond.x += 20;
+				positionFond.y += 5;
+				
+				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
+				
+				break;
+				
+			case 1: //Form
+				
+				memset (saisie_content, 0, sizeof (saisie_content));
+				
+				if (window->windowObj[i].MouseOver == 1) {
 					
-						strcpy (saisie_content, window->windowObj[i].dest);
-  						strcat (saisie_content,"|");
+					strcpy (saisie_content, window->windowObj[i].dest);
+  					strcat (saisie_content,"|");
   					
-					}else{
-				
-						strcpy (saisie_content, window->windowObj[i].dest);
+				}else{
 					
-					}
-				
-					GPU_Blit(FORM, NULL, screen, window->windowObj[i].x, window->windowObj[i].y);
-	
-					saisie_ttf = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-					window->windowObj[i].GPU_buffer_content = SDL_convertTexture(saisie_ttf);
-					SDL_FreeSurface(saisie_ttf);
-				
-					GPU_Blit(window->windowObj[i].GPU_buffer_content, NULL, screen, (window->windowObj[i].x)+10, (window->windowObj[i].y)+5);
-					GPU_Blit(window->windowObj[i].GPU_buffer_title, NULL, screen, (window->windowObj[i].x)-55, (window->windowObj[i].y)+5);
+					strcpy (saisie_content, window->windowObj[i].dest);
 					
-					break;
-			
+				}
+				
+				positionFond.x = window->windowObj[i].x;
+				positionFond.y = window->windowObj[i].y;
+				
+				SDL_BlitSurface(FORM, NULL, window->windowSurface, &positionFond);
+				
+				if (window->windowObj[i].buffer_content) {
+					SDL_FreeSurface(window->windowObj[i].buffer_content);
+					window->windowObj[i].buffer_content = NULL;
+				}
+				
+				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+				positionFond.x = (window->windowObj[i].x)+10;
+				positionFond.y = (window->windowObj[i].y)+5;
+				SDL_BlitSurface(window->windowObj[i].buffer_content, NULL, window->windowSurface, &positionFond);
+				
+				positionFond.x = (window->windowObj[i].x)-55;
+				positionFond.y = (window->windowObj[i].y)+5;
+				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
+				
+				break;
+				
 		}
-	
-		
 		
 	}
 	
-	if (tff_loaded == 1) {
+	//For each surface that correspond to text, blit !
+	for (i = 0; i < (window->nbText); i++) {
 		
-		//Scan text to Blit !
-		for (i = 0; i < (window->nbText); i++) {
+		positionFond.x = window->windowText[i].x;
+		positionFond.y = window->windowText[i].y;
+		
+		SDL_BlitSurface(window->windowText[i].buffer, NULL, window->windowSurface, &positionFond);
 			
-			GPU_Blit(window->windowText[i].GPU_buffer, NULL, screen, window->windowText[i].x, window->windowText[i].y);
-			
-		}
-	
 	}
 	
-	//GPU_Blit(window->windowTarget->image, NULL, screen, 400, 300);
-	window->windowSnap = GPU_CopyImageFromTarget(screen);
+	positionFond.x = window->x;
+	positionFond.y = window->y;
+	
+	if (window->windowRd) {
+		SDL_DestroyTexture(window->windowRd);
+		window->windowRd = NULL;
+	}
+	
+	window->windowRd = SDL_CreateTextureFromSurface(renderer, window->windowSurface);
+	SDL_UpdateTexture(window->windowRd, NULL, myPixels, 800 * sizeof (Uint32));
+	SDL_RenderCopy(renderer, window->windowRd, NULL, NULL);
+	SDL_FreeSurface(window->windowSurface);
 	
 }
 
-int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
+int SDL_generateMenu(int nbEntries, char captions[][M]) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
 	
 	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
 	
-	for (i = 0; i < nb_entree; i++) {
-		SDL_newObj(menu, NULL, 0, sommaire[i], NULL, ALL, 100, 100+(50*i), 40, 230);
+	for (i = 0; i < nbEntries; i++) {
+		SDL_newObj(menu, NULL, 0, captions[i], NULL, ALL, 100, 100+(50*i), 40, 230);
 	}
 	
 	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
-	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 580, 338);
-	
-	//SDL_loadWindow(menu);
+	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
 	
 	while (1) {
 		
@@ -761,6 +1062,7 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 			MouseOverObjPrev = MouseOverObj;
 			SDL_UpdateEvents(&in);
 			MouseOverObj = SDL_IsMouseOverObj(menu);
+			
 			if (firstFrame == 0) { firstFrame = 1; break; }
 			SDL_Delay(50);
 			
@@ -768,26 +1070,30 @@ int SDL_generateMenu(int nb_entree, char sommaire[N][M]) {
 		
 		if (MouseOverObjPrev != MouseOverObj) {		
 			SDL_BlitObjs(menu);
-			GPU_Flip(screen);
+			SDL_RenderPresent(renderer);
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
-			
 			Mix_PlayChannel(-1, SELECT, 0);
-			
 		}
 		
-		//If user clic (left btn)
+		//If user clic with left btn on object
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 		
 			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-
+			SDL_freeWindow(menu);
+			
 			return MouseOverObj;
 		
+		}else if((in.mousebuttons[SDL_BUTTON_LEFT])) { //Solve bug with SDL 2 when user clic on top bar (just for SDL_generateMenu)
+		
+			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
+			
 		}
 		
 		if (in.quit == 1) {
+			SDL_freeWindow(menu);
 			exit(0);
 		}
 		
@@ -805,8 +1111,6 @@ int SDL_generate(t_window * window) {
 	if ((window->nbObj) == 0) {
 		uniqueFrame = 1;
 	}
-	
-	//SDL_loadWindow(window);
 	
 	while (1) {
 		
@@ -828,8 +1132,9 @@ int SDL_generate(t_window * window) {
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
 			
+			SDL_RenderClear(renderer);
 			SDL_BlitObjs(window);
-			GPU_Flip(screen);
+			SDL_RenderPresent(renderer);
 			forceFrame = 0;
 			
 			if (uniqueFrame == 1) {
@@ -848,16 +1153,16 @@ int SDL_generate(t_window * window) {
 			
 			Mix_PlayChannel(-1, ENTER, 0);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-			
+
 			return MouseOverObj;
 		
 		}
 		
 		if (in.quit == 1) {
+			SDL_freeWindow(window);
 			exit(0);
 		}
 		
 	}
 	
 }
-

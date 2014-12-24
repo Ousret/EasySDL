@@ -1,9 +1,9 @@
-ESDL
-====
+ESDL GPU rendering 0.5 Beta
+===========================
 
-SDL lib, EasySDL permit to create program with SDL easily.
-ESDL version 0.1 by TAHRI Ahmed
-SDL_gpu 0.9 from https://code.google.com/p/sdl-gpu/ by grimfang4@gmail.com
+SDL lib, EasySDL permit to create program with SDL 2 easily.
+ESDL version 0.4 by TAHRI Ahmed, SIMON Jérémy
+Low CPU usage !
 How to install & use
 
 First
@@ -12,5 +12,6 @@ First
 
 Add to your makefile
 `-lESDL`
+
 
 

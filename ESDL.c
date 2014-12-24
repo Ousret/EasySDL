@@ -822,12 +822,11 @@ void SDL_UpdateEvents(Input* in)
 		{
 			case SDL_KEYDOWN:
 			
+				in->key[GlobalEvent.key.keysym.sym]=1;
+			
 				if (buffer_deliver == 1) {
-				
-					in->key[GlobalEvent.key.keysym.sym]=1;
 					buffer = GlobalEvent.key.keysym.unicode;
 					buffer_deliver = 0; //Need to know if char was captured..!
-				
 				}
 			
 				break;

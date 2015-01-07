@@ -8,14 +8,6 @@
 */
 #include <stdio.h>
 #include <stdlib.h>
-#include <SDL.h>
-/* NOT USING IT FOR NOW 
-#include <OpenGL/glu.h>
-#include <OpenGL/glext.h>
-*/
-#include <SDL_mixer.h>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
 #include <string.h>
 
 #include "includes/ESDL.h"
@@ -761,10 +753,10 @@ int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur
 	if (window->windowText == NULL) return 0;
 	
 	window->windowText[idtext].couleur = couleur;
-	window->windowText[idtext].content = content;
+	if (content) window->windowText[idtext].content = content;
 	
-	window->windowText[idtext].x = x;
-	window->windowText[idtext].y = y;
+	if (x != -1) window->windowText[idtext].x = x;
+	if (y != -1) window->windowText[idtext].y = y;
 	
 	//Free old buffer
 	if(window->windowText[idtext].buffer) {
@@ -892,7 +884,7 @@ void SDL_unload() {
 	
 	IMG_Quit();
 	if (tff_loaded) TTF_Quit();
-	if (audio_loaded) Mix_Quit();
+	//if (audio_loaded) Mix_Quit(); DOES NOT EXIST ON WINDOWS
 	SDL_Quit();
 	
 	exit(0);
@@ -919,27 +911,6 @@ void SDL_BlitObjs(t_window * window) {
 		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
 		
 	}
-	
-	//Scan for active sprite..
-	for (i = 0; i < (window->nbSprite); i++) {
-		
-		if (!(window->windowSprite[i].hide)) {
-			
-			//Animation .. Orientation
-			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width))-(window->windowSprite[i].sp_width);
-    		spritePos.y = ((window->windowSprite[i].position) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
-    		spritePos.w = window->windowSprite[i].sp_width;
-    		spritePos.h = window->windowSprite[i].sp_height;
-    		
-    		positionFond.x = window->windowSprite[i].x;
-			positionFond.y = window->windowSprite[i].y;
-    		
-    		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
-		}
-	}
-	
-	positionFond.w = 0;
-	positionFond.h = 0;
 	
 	//Blit OBJ ONLY
 	for (i = 0; i < (window->nbObj); i++) {
@@ -1014,6 +985,27 @@ void SDL_BlitObjs(t_window * window) {
 			
 	}
 	
+		//Scan for active sprite..
+	for (i = 0; i < (window->nbSprite); i++) {
+		
+		if (!(window->windowSprite[i].hide)) {
+			
+			//Animation .. Orientation
+			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width))-(window->windowSprite[i].sp_width);
+    		spritePos.y = ((window->windowSprite[i].position) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
+    		spritePos.w = window->windowSprite[i].sp_width;
+    		spritePos.h = window->windowSprite[i].sp_height;
+    		
+    		positionFond.x = window->windowSprite[i].x;
+			positionFond.y = window->windowSprite[i].y;
+    		
+    		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
+		}
+	}
+	
+	positionFond.w = 0;
+	positionFond.h = 0;
+	
 	positionFond.x = window->x;
 	positionFond.y = window->y;
 	SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
@@ -1022,7 +1014,7 @@ void SDL_BlitObjs(t_window * window) {
 	
 }
 
-int SDL_generateMenu(int nbEntries, char captions[][M]) {
+int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
 	

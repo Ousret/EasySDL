@@ -1,8 +1,8 @@
-ESDL Software rendering 0.4.4
+ESDL Software rendering 0.4.5
 ===========================
 
 SDL lib, EasySDL permit to create program with SDL 1.2 easily.
-ESDL version 0.4 by TAHRI Ahmed, SIMON Jérémy
+ESDL version 0.4 by TAHRI Ahmed, SIMON JÃ©rÃ©my
 Low CPU usage !
 How to install & use
 

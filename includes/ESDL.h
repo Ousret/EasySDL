@@ -14,8 +14,7 @@
 #include <SDL_ttf.h>
 #include <SDL_image.h>
  
-#define N 10
-#define M 50
+#define M_TEXT 50
 
 typedef enum {
 	
@@ -167,7 +166,7 @@ void SDL_init(int x, int y, int fullscreen, char * titre, char * icon_name, int 
  * \param sommaire[N][M] Contain text caption
  * \return Return the value of choise (0 - (nb_entree-1))
  */
-int SDL_generateMenu(int nb_entree, char captions[][M]);
+int SDL_generateMenu(int nb_entree, char captions[][M_TEXT]);
 
 /**
  * \fn int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y)

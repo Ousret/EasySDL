@@ -2,26 +2,20 @@
 *
 *	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.4.5
-* 	Date: 22-12-2014
+*	Version: 0.4.9
+* 	Date: 11-01-2015
 *
 */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "includes/ESDL.h"
+#include "include/ESDL.h"
 
-SDL_Surface *screen = NULL; //Shared
-SDL_Surface *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
-Mix_Chunk *SELECT = NULL, *ENTER = NULL;
-
-SDL_Color colorRed = {255, 0, 0, 0};
-SDL_Color colorWhite = {255, 255, 255, 0};
-SDL_Color colorBlack = {0, 0, 0, 0};
-SDL_Color colorGreenLight = {90, 169, 120, 0};
-
+SDL_Surface *screen = NULL, *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
+SDL_Color colorRed = {255, 0, 0, 0}, colorWhite = {255, 255, 255, 0}, colorBlack = {0, 0, 0, 0}, colorGreenLight = {90, 169, 120, 0};
 SDL_Event GlobalEvent;
+FMOD_SOUND *SELECT = NULL, *ENTER = NULL;
 
 char buffer = 0;
 int buffer_deliver = 1;
@@ -35,15 +29,15 @@ int tff_loaded = 0, audio_loaded = 0;
 
 Input in;
 
-void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
+FMOD_SYSTEM *fmod_system;
+
+void SDL_playSound(char * sndfile, int waitEnd) {
 	
 	char filePath[150];
-	int newChannel = 0;
 	int i = 0, alreadyLoaded = -1;
 	
 	memset(filePath, 0, sizeof(filePath));
-	
-	sprintf(filePath, "ressources/snd/%s", wavfile);
+	sprintf(filePath, "ressources/snd/%s", sndfile);
 	
 	for (i = 0; i < nbSnd; i++) {
 		if (strcmp(MIXTEMP[i].file, filePath) == 0) 
@@ -53,32 +47,32 @@ void SDL_playwav(char * wavfile, int waitEnd, int *channel) {
 	
 	if (alreadyLoaded != -1) {
 		
-		newChannel = Mix_PlayChannel(-1, MIXTEMP[alreadyLoaded].MIX_BUF, 0);
+		FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, MIXTEMP[alreadyLoaded].MIX_BUF, 0, NULL);
 		
 	}else{
 		
-		MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
-		strcpy(MIXTEMP[nbSnd].file, filePath);
-		newChannel = Mix_PlayChannel(-1, MIXTEMP[nbSnd].MIX_BUF, 0);
-		nbSnd++;
+		if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &MIXTEMP[nbSnd].MIX_BUF) == FMOD_OK) {
+			strcpy(MIXTEMP[nbSnd].file, filePath);
+			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, MIXTEMP[alreadyLoaded].MIX_BUF, 0, NULL);
+			nbSnd++;
+		}else{
+			return;
+		}
 		
 	}
 	
-	if (channel != NULL) *channel = newChannel;
 	if (waitEnd == 1) {
-		while(Mix_Playing(newChannel) != 0) SDL_Delay(50);
+		//while(Mix_Playing(newChannel) != 0) SDL_Delay(50);
 	}
 }
 
-void SDL_preloadwav(char * wavfile) {
+void SDL_loadSound(char * sndfile) {
 	
 	char filePath[150];
 	memset(filePath, 0, sizeof(filePath));
-	sprintf(filePath, "ressources/snd/%s", wavfile);
+	sprintf(filePath, "ressources/snd/%s", sndfile);
 	
-	MIXTEMP[nbSnd].MIX_BUF = Mix_LoadWAV(filePath);
-	
-	if (MIXTEMP[nbSnd].MIX_BUF) {
+	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &MIXTEMP[nbSnd].MIX_BUF) == FMOD_OK) {
 		strcpy(MIXTEMP[nbSnd].file, filePath);
 		nbSnd++;
 	}
@@ -106,6 +100,7 @@ int SDL_windowEmpty(t_window * window) {
 int SDL_IsMouseOverObj(t_window * window) {
 	
 	int i = 0, overobj = -1;
+	if (!window) return overobj;
 	
 	for (i = 0; i < (window->nbObj); i++) {
 		
@@ -118,7 +113,7 @@ int SDL_IsMouseOverObj(t_window * window) {
 		
 	}
 	
-	return overobj; //Nothing here!
+	return overobj; 
 	
 }
 
@@ -134,11 +129,7 @@ void SDL_init(int width, int height, int fullscreen, char * title, char * icon_n
 	memset(file, 0, sizeof(file));
 	
     /* Initialize SDL */
-    if (audio_support == 1) {
-    	sdl_start = SDL_Init (SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    }else {
-    	sdl_start = SDL_Init (SDL_INIT_VIDEO);
-    }
+    sdl_start = SDL_Init (SDL_INIT_VIDEO);
     
     if (sdl_start < 0)
     {
@@ -172,12 +163,9 @@ void SDL_init(int width, int height, int fullscreen, char * title, char * icon_n
 	
 	if (audio_support == 1) {
 		
-		if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0) {
-			
-			fprintf (stderr, "[!] Cannot load SDL audio because of: %s\n", Mix_GetError());
-		    exit (1);
-		    
-		}
+		FMOD_System_Create(&fmod_system);
+    	FMOD_System_Init(fmod_system, 2, FMOD_INIT_NORMAL, NULL);
+    	
 		audio_loaded = 1;
 	}
 	
@@ -381,7 +369,7 @@ void SDL_freeWindow(t_window * window) {
 	
 		for (i = 0; i < nbSnd; i++) {
 			
-			if (MIXTEMP[i].MIX_BUF) Mix_FreeChunk(MIXTEMP[i].MIX_BUF);
+			if (MIXTEMP[i].MIX_BUF) FMOD_Sound_Release(MIXTEMP[i].MIX_BUF);
 			
 		}
 	
@@ -862,8 +850,8 @@ void SDL_loadRessources() {
 	BTN_NOTOVER = IMG_Load("ressources/images/m_bg_s0.png");
 	FORM = IMG_Load("ressources/images/ch_saisie_actif.png");
 	
-	SELECT = Mix_LoadWAV("ressources/snd/select.wav");
-	ENTER = Mix_LoadWAV("ressources/snd/enter.wav");
+	FMOD_System_CreateSound(fmod_system, "ressources/snd/select.wav", FMOD_CREATESAMPLE, 0, &SELECT);
+	FMOD_System_CreateSound(fmod_system, "ressources/snd/enter.wav", FMOD_CREATESAMPLE, 0, &ENTER);
 	
 }
 
@@ -873,8 +861,8 @@ void SDL_unloadRessources() {
 	if (BTN_NOTOVER) SDL_FreeSurface(BTN_NOTOVER);
 	if (FORM) SDL_FreeSurface(FORM);
 	
-	if (SELECT) Mix_FreeChunk(SELECT);
-	if (ENTER) Mix_FreeChunk(ENTER);
+	if (SELECT) FMOD_Sound_Release(SELECT);
+	if (ENTER) FMOD_Sound_Release(ENTER);
 	
 }
 
@@ -884,7 +872,10 @@ void SDL_unload() {
 	
 	IMG_Quit();
 	if (tff_loaded) TTF_Quit();
-	//if (audio_loaded) Mix_Quit(); DOES NOT EXIST ON WINDOWS
+	if (audio_loaded) {
+		FMOD_System_Close(fmod_system);
+		FMOD_System_Release(fmod_system);
+	}
 	SDL_Quit();
 	
 	exit(0);
@@ -1047,13 +1038,13 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
-			Mix_PlayChannel(-1, SELECT, 0);
+			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
 		//If user clic with left btn on object
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
-		
-			Mix_PlayChannel(-1, ENTER, 0);
+			
+			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 			SDL_freeWindow(menu);
 			
@@ -1115,15 +1106,13 @@ int SDL_generate(t_window * window) {
 		}
 		
 		if ((MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0)) {
-			
-			Mix_PlayChannel(-1, SELECT, 0);
-			
+			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0) ) {
 			
-			Mix_PlayChannel(-1, ENTER, 0);
+			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;

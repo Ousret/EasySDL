@@ -121,10 +121,6 @@ void SDL_init(int width, int height, int fullscreen, char * title, char * icon_n
 	
     int sdl_start = 0;
 	char file[150]; //Generating file path
-	int audio_rate = 22050;
-	Uint16 audio_format = AUDIO_S16SYS;
-	int audio_channels = 2;
-	int audio_buffers = 4096;
 	
 	memset(file, 0, sizeof(file));
 	
@@ -575,8 +571,6 @@ int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int h
 }
 
 int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width) {
-	
-	char texturePath[150];
 	
 	if (window == NULL) return 0;
 	if (window->windowImg == NULL) return 0;

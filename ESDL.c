@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "include/ESDL.h"
+#include "ESDL.h"
 
 SDL_Surface *screen = NULL, *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
 SDL_Color colorRed = {255, 0, 0, 0}, colorWhite = {255, 255, 255, 0}, colorBlack = {0, 0, 0, 0}, colorGreenLight = {90, 169, 120, 0};
@@ -1271,7 +1271,7 @@ int SDL_generate(t_context * context) {
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (buffer_deliver == 1) && (in.quit != 1) && (uniqueFrame != 1));
 		
 		if (buffer_deliver == 0) {
-			SDL_CaptureForm(context, MouseOverObj);
+			SDL_captureforInput(context, MouseOverObj);
 			forceFrame = 1;
 		}
 		

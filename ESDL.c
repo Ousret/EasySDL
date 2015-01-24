@@ -1,11 +1,14 @@
-/** EasySDL Beta
-*
-*	Author(s): TAHRI Ahmed, SIMON Jeremy
-*	Lib: EasySDL
-*	Version: 0.5.0
-* 	Date: 23-01-2015
-*
-*/
+/**
+ * \file ESDL.c
+ * \brief EasySDL
+ * \author TAHRI Ahmed, SIMON Jérémy
+ * \version 0.5.0
+ * \date 23-01-2015
+ *
+ * EasySDL est une extension de la librairie SDL standard
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -280,7 +283,6 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 	
 }
 
-
 void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
@@ -368,7 +370,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	
 }
 
-int SDL_CaptureForm(t_context * context, int obj) {
+int SDL_captureforInput(t_context * context, int obj) {
 
 	int current_len = 0;
 	//Return if there's nothing to process
@@ -679,7 +681,7 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 	
 }
 
-int SDL_newTexture(t_context * context, int * id, char * file, int x, int y) {
+int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 
 	char texturePath[150];
 	t_image * n_realloc = NULL;
@@ -725,7 +727,7 @@ int SDL_newTexture(t_context * context, int * id, char * file, int x, int y) {
 
 }
 
-int SDL_modTexture(t_context * context, int idimg, int x, int y) {
+int SDL_modImage(t_context * context, int idimg, int x, int y) {
 	
 	if (context == NULL) return 0;
 	if (context->contextImg == NULL) return 0;
@@ -741,7 +743,7 @@ int SDL_modTexture(t_context * context, int idimg, int x, int y) {
 
 }
 
-int SDL_delTexture(t_context * context, int idimg) {
+int SDL_delImage(t_context * context, int idimg) {
 
 	if (context == NULL) return 0;
 	if (context->contextImg == NULL) return 0;
@@ -1194,7 +1196,7 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 		SDL_newObj(menu, NULL, BUTTON, captions[i], ALIGN_CENTER, NULL, NONE, 100, 100+(50*i));
 	}
 	
-	SDL_newTexture(menu, NULL, backgroundPic, 0, 0);
+	SDL_newImage(menu, NULL, backgroundPic, 0, 0);
 	//SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25);
 	
 	while (1) {

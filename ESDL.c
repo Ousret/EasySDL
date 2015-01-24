@@ -2,8 +2,8 @@
 *
 *	Author(s): TAHRI Ahmed, SIMON Jeremy
 *	Lib: EasySDL
-*	Version: 0.4.9
-* 	Date: 11-01-2015
+*	Version: 0.5.0
+* 	Date: 23-01-2015
 *
 */
 #include <stdio.h>
@@ -23,104 +23,268 @@ int buffer_deliver = 1;
 TTF_Font *ttf_police = NULL;
 
 int nbSnd = 0;
-
-int sel_menu_m = 0;
 int tff_loaded = 0, audio_loaded = 0;
 
 Input in;
 
 FMOD_SYSTEM *fmod_system;
 
-void SDL_playSound(char * sndfile, int waitEnd) {
+int SDL_playSound(char * sndfile) {
 	
-	char filePath[150];
+	if (!audio_loaded) return 0;
+	char filePath[256];
 	int i = 0, alreadyLoaded = -1;
 	
-	memset(filePath, 0, sizeof(filePath));
 	sprintf(filePath, "ressources/snd/%s", sndfile);
 	
 	for (i = 0; i < nbSnd; i++) {
-		if (strcmp(MIXTEMP[i].file, filePath) == 0) 
+		
+		if (strcmp(fmodbuffer[i].file, sndfile) == 0)  {
+			alreadyLoaded = i;
+			break;
+		}
+			
+	}
+	
+	if (alreadyLoaded != -1) {
+		
+		FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, fmodbuffer[alreadyLoaded].buffer, 0, NULL);
+		return 1;
+		
+	}else{
+		
+		return 0;
+		
+	}
+	
+}
+
+int SDL_loadSound(char * sndfile) {
+	
+	if (!audio_loaded) return 0;
+	char filePath[256];
+	FMOD_SOUND * tmp_audio = NULL;
+	t_audio * tmp_realloc = NULL;
+	
+	sprintf(filePath, "ressources/snd/%s", sndfile);
+	
+	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &tmp_audio) != FMOD_OK) return 0;
+	
+	if (!fmodbuffer) {
+		fmodbuffer = (t_audio*) malloc(sizeof(t_audio));
+		
+		if (!fmodbuffer) {
+			FMOD_Sound_Release(tmp_audio);
+			return 0;
+		}
+	}else{
+		tmp_realloc = (t_audio*) realloc(fmodbuffer, sizeof(t_audio)*(nbSnd+1));
+		
+		if (tmp_realloc) {
+			fmodbuffer = tmp_realloc;
+		}else{
+			FMOD_Sound_Release(tmp_audio);
+			return 0; //Out of memory..!
+		}
+	}
+	
+	fmodbuffer[nbSnd].file = malloc(sizeof(char)*(strlen(sndfile)+1)); // strlen + 1 because of '\0' (end of string) !
+	if (!(fmodbuffer[nbSnd].file)) return 0;
+	
+	strcpy(fmodbuffer[nbSnd].file, sndfile);
+	fmodbuffer[nbSnd].buffer = tmp_audio;
+	
+	nbSnd++;
+	
+	return 1;
+	
+}
+
+int SDL_unloadSound(char * sndfile) {
+	
+	if (!audio_loaded) return 0;
+	int i = 0, alreadyLoaded = -1;
+	
+	char * tmp_file = NULL;
+	FMOD_SOUND * tmp_audio = NULL;
+	t_audio * tmp_realloc = NULL;
+	
+	for (i = 0; i < nbSnd; i++) {
+		if (strcmp(fmodbuffer[i].file, sndfile) == 0) 
 			alreadyLoaded = i;
 			break;
 	}
 	
 	if (alreadyLoaded != -1) {
 		
-		FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, MIXTEMP[alreadyLoaded].MIX_BUF, 0, NULL);
+		tmp_audio = fmodbuffer[alreadyLoaded].buffer;
+		tmp_file = fmodbuffer[alreadyLoaded].file;
 		
-	}else{
-		
-		if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &MIXTEMP[nbSnd].MIX_BUF) == FMOD_OK) {
-			strcpy(MIXTEMP[nbSnd].file, filePath);
-			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, MIXTEMP[alreadyLoaded].MIX_BUF, 0, NULL);
-			nbSnd++;
-		}else{
-			return;
+		for (i = alreadyLoaded; i < (nbSnd-1); i++) {
+			fmodbuffer[i] = fmodbuffer[i+1];
 		}
 		
+		if (tmp_audio) {
+			FMOD_Sound_Release(tmp_audio);
+		}
+		
+		if (tmp_file) {
+			free (tmp_file);
+		}
+		
+		tmp_realloc = realloc(fmodbuffer, sizeof(t_audio)*nbSnd);
+		if (tmp_realloc) fmodbuffer = tmp_realloc;
+		nbSnd--;
+		
+		return 1;
 	}
 	
-	if (waitEnd == 1) {
-		//while(Mix_Playing(newChannel) != 0) SDL_Delay(50);
+	return 0;
+	
+}
+
+int SDL_unloadallSound() {
+	
+	if (!audio_loaded) return 0;
+	if (!fmodbuffer || !nbSnd) return 0;
+	int i = 0;
+	
+	for (i = 0; i < nbSnd; i++) {
+		
+		if (fmodbuffer[i].file) free (fmodbuffer[i].file);
+		if (fmodbuffer[i].buffer) FMOD_Sound_Release(fmodbuffer[i].buffer);
+		
 	}
-}
-
-void SDL_loadSound(char * sndfile) {
 	
-	char filePath[150];
-	memset(filePath, 0, sizeof(filePath));
-	sprintf(filePath, "ressources/snd/%s", sndfile);
+	if (fmodbuffer) free (fmodbuffer);
+	nbSnd = 0;
 	
-	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &MIXTEMP[nbSnd].MIX_BUF) == FMOD_OK) {
-		strcpy(MIXTEMP[nbSnd].file, filePath);
-		nbSnd++;
-	}
+	return 1;
 	
 }
 
-int SDL_nbObj(t_window * window) {
-	return (window->nbObj);
+int SDL_nbObj(t_context * context) {
+	if (!context) return 0;
+	return (context->nbObj);
 }
 
-int SDL_nbText(t_window * window) {
-	return (window->nbText);
+int SDL_nbText(t_context * context) {
+	if (!context) return 0;
+	return (context->nbText);
 }
 
-int SDL_nbTexture(t_window * window) {
-	return (window->nbImg);
+int SDL_nbImage(t_context * context) {
+	if (!context) return 0;
+	return (context->nbImg);
 }
 
-int SDL_windowEmpty(t_window * window) {
-	if (window == NULL) return 1;
-	if ((SDL_nbObj(window) + SDL_nbText(window) + SDL_nbTexture(window)) == 0) return 1;
+int SDL_nbSprite(t_context * context) {
+	if (!context) return 0;
+	return (context->nbSprite);
+}
+
+int SDL_contextEmpty(t_context * context) {
+	if (!context) return 1;
+	if ((SDL_nbObj(context) + SDL_nbText(context) + SDL_nbImage(context)) == 0) return 1;
 	return 0;
 }
 
-int SDL_IsMouseOverObj(t_window * window) {
+int SDL_ismouseover(t_context * context, t_typeData type) {
 	
 	int i = 0, overobj = -1;
-	if (!window) return overobj;
+	if (!context) return overobj;
 	
-	for (i = 0; i < (window->nbObj); i++) {
+	switch (type) {
+	
+		case BUTTON:
+			
+			if (!(context->contextObj) || !(context->nbObj)) return overobj;
+			
+			for (i = 0; i < (context->nbObj); i++) {
+				
+				if (context->contextObj[i].type == BUTTON) {
+					if (SDL_IsMouseOver(context, BTN_NOTOVER->h, BTN_NOTOVER->w, context->contextObj[i].x, context->contextObj[i].y)) {
+						context->contextObj[i].MouseOver = 1;
+						overobj = i;
+					}else{
+						context->contextObj[i].MouseOver = 0;
+					}
+				}
+				
+			}
+			
+			break;
+		case INPUT:
+			
+			if (!(context->contextObj) || !(context->nbObj)) return overobj;
+			
+			for (i = 0; i < (context->nbObj); i++) {
+				
+				if (context->contextObj[i].type == INPUT) {
+					if (SDL_IsMouseOver(context, FORM->h, FORM->w, context->contextObj[i].x, context->contextObj[i].y)) {
+						context->contextObj[i].MouseOver = 1;
+						overobj = i;
+					}else{
+						context->contextObj[i].MouseOver = 0;
+					}
+				}
+				
+			}
+			
+			break;
+		case IMG:
 		
-		if (SDL_IsMouseOver(window, window->windowObj[i].height, window->windowObj[i].width, window->windowObj[i].x, window->windowObj[i].y)) {
-			window->windowObj[i].MouseOver = 1;
-			overobj = i;
-		}else{
-			window->windowObj[i].MouseOver = 0;
-		}
-		
+			if (!(context->contextImg) || !(context->nbImg)) return overobj;
+			
+			for (i = 0; i < (context->nbImg); i++) {
+				
+				if (SDL_IsMouseOver(context, context->contextImg[i].buffer->h, context->contextImg[i].buffer->w, context->contextImg[i].x, context->contextImg[i].y)) {
+					overobj = i;
+				}
+				
+			}
+			
+			break;
+		case TEXT:
+			
+			if (!(context->contextText) || !(context->nbText)) return overobj;
+			
+			for (i = 0; i < (context->nbText); i++) {
+				
+				if (SDL_IsMouseOver(context, context->contextText[i].buffer->h, context->contextText[i].buffer->w, context->contextText[i].x, context->contextText[i].y)) {
+					overobj = i;
+				}
+				
+			}
+			
+			break;
+		case SPRITE:
+			
+			if (!(context->contextSprite) || !(context->nbSprite)) return overobj;
+			
+			for (i = 0; i < (context->nbSprite); i++) {
+				
+				if (SDL_IsMouseOver(context, context->contextSprite[i].sp_height, context->contextSprite[i].sp_width, context->contextSprite[i].x, context->contextSprite[i].y)) {
+					overobj = i;
+				}
+				
+			}
+			
+			break;
+	
 	}
+	
+	
 	
 	return overobj; 
 	
 }
 
-void SDL_init(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
+
+void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
-	char file[150]; //Generating file path
+	char file[256]; //Generating file path
 	
 	memset(file, 0, sizeof(file));
 	
@@ -146,7 +310,7 @@ void SDL_init(int width, int height, int fullscreen, char * title, char * icon_n
     if (screen == NULL)
     {
         
-        fprintf (stderr, "[!] Unable to load window at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
+        fprintf (stderr, "[!] Unable to load context at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
         
     }
@@ -204,17 +368,17 @@ void SDL_init(int width, int height, int fullscreen, char * title, char * icon_n
 	
 }
 
-int SDL_CaptureForm(t_window * window, int obj) {
+int SDL_CaptureForm(t_context * context, int obj) {
 
 	int current_len = 0;
 	//Return if there's nothing to process
-	if (window == NULL) return 0;
+	if (context == NULL) return 0;
 	
-	if ((obj != -1) && (window->windowObj[obj].dest != NULL) && (buffer_deliver == 0)) {
+	if ((obj != -1) && (context->contextObj[obj].dest != NULL) && (buffer_deliver == 0)) {
 			
-		if ((window->windowObj[obj].type) == 1) {
+		if ((context->contextObj[obj].type) == 1) {
 			
-			current_len = strlen(window->windowObj[obj].dest);
+			current_len = strlen(context->contextObj[obj].dest);
 			
 			if (current_len < 35) {
 				
@@ -222,47 +386,47 @@ int SDL_CaptureForm(t_window * window, int obj) {
 					
 					if (current_len > 0) {
 							
-						window->windowObj[obj].dest[current_len-1] = '\0';
+						context->contextObj[obj].dest[current_len-1] = '\0';
 							
 					}
 					
 				}else {
 					
-					switch (window->windowObj[obj].typeForm) {
+					switch (context->contextObj[obj].typeForm) {
 					
 						case NUMERIC:
 							if (buffer >= '0' && buffer <= '9') {
-								window->windowObj[obj].dest[current_len] = buffer;
-								window->windowObj[obj].dest[current_len+1] = '\0';
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
 							}
 							break;
 							
-						case VARCHAR:
+						case ALPHA:
 							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z')) {
-								window->windowObj[obj].dest[current_len] = buffer;
-								window->windowObj[obj].dest[current_len+1] = '\0';
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
 							}
 							
 							break;
 							
-						case NUMCHAR:
+						case ALPHANUMERIC:
 							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z') || (buffer >= '0' && buffer <= '9')) {
-								window->windowObj[obj].dest[current_len] = buffer;
-								window->windowObj[obj].dest[current_len+1] = '\0';
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
 							}
 							
 							break;
 							
-						case ALL:
+						case NOMASK:
 							
-							window->windowObj[obj].dest[current_len] = buffer;
-							window->windowObj[obj].dest[current_len+1] = '\0';
+							context->contextObj[obj].dest[current_len] = buffer;
+							context->contextObj[obj].dest[current_len+1] = '\0';
 							break;
 							
 						default:
 						
-							window->windowObj[obj].dest[current_len] = buffer;
-							window->windowObj[obj].dest[current_len+1] = '\0';
+							context->contextObj[obj].dest[current_len] = buffer;
+							context->contextObj[obj].dest[current_len+1] = '\0';
 							break;
 					
 					}
@@ -290,17 +454,17 @@ int SDL_CaptureForm(t_window * window, int obj) {
 
 }
 
-t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
-
-	t_window * tmp = (t_window*) malloc(sizeof(t_window));
+t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
+	
+	t_context * tmp = (t_context*) malloc(sizeof(t_context));
 	tmp->title = title;
 	
-	tmp->windowSurface = NULL;
+	tmp->contextSurface = NULL;
 	
-	tmp->windowObj = NULL;
-	tmp->windowText = NULL;
-	tmp->windowImg = NULL;
-	tmp->windowSprite = NULL;
+	tmp->contextObj = NULL;
+	tmp->contextText = NULL;
+	tmp->contextImg = NULL;
+	tmp->contextSprite = NULL;
 	
 	tmp->nbObj = 0;
 	tmp->nbText = 0;
@@ -317,225 +481,216 @@ t_window * SDL_newWindow(char * title, int x, int y, int height, int width) {
 
 }
 
-void SDL_freeWindow(t_window * window) {
+void SDL_freeContext(t_context * context) {
 	
-	if (window == NULL) return;
+	if (context == NULL) return;
 	int i = 0;
 	
-	if (window->windowObj) {
-		for (i = 0;i < (window->nbObj); i ++) {
-			if (window->windowObj[i].buffer_title)
-				SDL_FreeSurface(window->windowObj[i].buffer_title);
-				window->windowObj[i].buffer_title = NULL;
-			if (window->windowObj[i].buffer_content)
-				SDL_FreeSurface(window->windowObj[i].buffer_content);
-				window->windowObj[i].buffer_content = NULL;
+	if (context->contextObj) {
+		for (i = 0;i < (context->nbObj); i ++) {
+			if (context->contextObj[i].buffer_title)
+				SDL_FreeSurface(context->contextObj[i].buffer_title);
+				context->contextObj[i].buffer_title = NULL;
+			if (context->contextObj[i].buffer_content)
+				SDL_FreeSurface(context->contextObj[i].buffer_content);
+				context->contextObj[i].buffer_content = NULL;
 		}
-		free (window->windowObj);
+		free (context->contextObj);
 	}
 	
-	if (window->windowText) {
-		for (i = 0;i < (window->nbText); i ++) {
-			if (window->windowText[i].buffer)
-				SDL_FreeSurface(window->windowText[i].buffer);
-				window->windowText[i].buffer = NULL;
+	if (context->contextText) {
+		for (i = 0;i < (context->nbText); i ++) {
+			if (context->contextText[i].buffer)
+				SDL_FreeSurface(context->contextText[i].buffer);
+				context->contextText[i].buffer = NULL;
 		}
-		free (window->windowText);
+		free (context->contextText);
 	}
 	
-	if (window->windowImg) {
-		for (i = 0;i < (window->nbImg); i ++) {
-			if (window->windowImg[i].buffer)
-				SDL_FreeSurface(window->windowImg[i].buffer);
-				window->windowImg[i].buffer = NULL;
+	if (context->contextImg) {
+		for (i = 0;i < (context->nbImg); i ++) {
+			if (context->contextImg[i].buffer)
+				SDL_FreeSurface(context->contextImg[i].buffer);
+				context->contextImg[i].buffer = NULL;
 		}
-		free (window->windowImg);
+		free (context->contextImg);
 	}
 	
-	if (window->windowSprite) {
-		for (i = 0; i < (window->nbSprite); i++) {
-			if (window->windowSprite[i].buffer)
-				SDL_FreeSurface(window->windowSprite[i].buffer);
-				window->windowSprite[i].buffer = NULL;
+	if (context->contextSprite) {
+		for (i = 0; i < (context->nbSprite); i++) {
+			if (context->contextSprite[i].buffer)
+				SDL_FreeSurface(context->contextSprite[i].buffer);
+				context->contextSprite[i].buffer = NULL;
 		}
-		free (window->windowSprite);
+		free (context->contextSprite);
 	}
 	
-	if (nbSnd > 0) {
-	
-		for (i = 0; i < nbSnd; i++) {
-			
-			if (MIXTEMP[i].MIX_BUF) FMOD_Sound_Release(MIXTEMP[i].MIX_BUF);
-			
-		}
-	
-		nbSnd = 0;
-	
-	}
-	
-	free (window);
+	free (context);
 	
 }
 
-int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
 	
 	t_sprite * n_realloc = NULL;
 	char texturePath[150];
 	
-	if (!window) return 0;
+	if (!context) return 0;
 	if (!strlen(filename)) return 0;
-	if (!height || !width) return 0;
+	//if (!height || !width) return 0;
 	
-	if (!(window->nbSprite)) {
-		if (!(window->windowSprite)) {
-			window->windowSprite = (t_sprite*) malloc(sizeof(t_sprite));
+	if (!(context->nbSprite)) {
+		if (!(context->contextSprite)) {
+			context->contextSprite = (t_sprite*) malloc(sizeof(t_sprite));
 		}else{
 			return 0;
 		}
 	}else{
-		n_realloc = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite) * ((window->nbSprite)+1));
+		n_realloc = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite) * ((context->nbSprite)+1));
 		
 		if (n_realloc) {
-			window->windowSprite = n_realloc;
+			context->contextSprite = n_realloc;
 		}else{
 			return 0;
 		}
 	}
 	
 	sprintf(texturePath, "ressources/images/%s", filename);
-	window->windowSprite[window->nbSprite].buffer = IMG_Load(texturePath);
+	context->contextSprite[context->nbSprite].buffer = IMG_Load(texturePath);
 	
-	//SDL_SetColorKey( window->windowSprite[window->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( window->windowSprite[window->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	//SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	/* Does not work for now.. need help for this one */
 	
-	window->windowSprite[window->nbSprite].height = height;
-	window->windowSprite[window->nbSprite].width = width;
+	//context->contextSprite[context->nbSprite].height = height;
+	//context->contextSprite[context->nbSprite].width = width;
 	
-	window->windowSprite[window->nbSprite].sp_height = sp_height;
-	window->windowSprite[window->nbSprite].sp_width = sp_width;
+	context->contextSprite[context->nbSprite].sp_height = sp_height;
+	context->contextSprite[context->nbSprite].sp_width = sp_width;
 	
-	window->windowSprite[window->nbSprite].x = x;
-	window->windowSprite[window->nbSprite].y = y;
-	window->windowSprite[window->nbSprite].position = position;
-	window->windowSprite[window->nbSprite].animation = animation;
-	window->windowSprite[window->nbSprite].hide = hide;
+	context->contextSprite[context->nbSprite].x = x;
+	context->contextSprite[context->nbSprite].y = y;
+	context->contextSprite[context->nbSprite].position = position;
+	context->contextSprite[context->nbSprite].animation = animation;
+	context->contextSprite[context->nbSprite].hide = hide;
 	
-	window->nbSprite = (window->nbSprite)+1;
+	context->nbSprite = (context->nbSprite)+1;
 	
 	return 1;
 }
 
-int SDL_modSprite(t_window *window, int idSprite, int x, int y, int position, int animation, int hide) {
+int SDL_modSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
 
-	if (!window) return 0;
-	if (idSprite >= (window->nbSprite)) return 0;
+	if (!context) return 0;
+	if (idSprite >= (context->nbSprite)) return 0;
 	
-	window->windowSprite[idSprite].x = x;
-	window->windowSprite[idSprite].y = y;
+	context->contextSprite[idSprite].x = x;
+	context->contextSprite[idSprite].y = y;
 	
-	window->windowSprite[idSprite].position = position;
-	window->windowSprite[idSprite].animation = animation;
+	context->contextSprite[idSprite].position = position;
+	context->contextSprite[idSprite].animation = animation;
 	
-	window->windowSprite[idSprite].hide = hide;
+	context->contextSprite[idSprite].hide = hide;
 	
 	return 1;
 	
 }
 
-int SDL_delSprite(t_window *window, int idSprite) {
+int SDL_delSprite(t_context *context, int idSprite) {
 
 	int i = 0;
 
-	if (!window) return 0;
-	if (idSprite >= (window->nbSprite)) return 0;
+	if (!context) return 0;
+	if (idSprite >= (context->nbSprite)) return 0;
 	
-	if (window->windowSprite[idSprite].buffer) {
-		SDL_FreeSurface(window->windowSprite[idSprite].buffer);
-		window->windowSprite[idSprite].buffer = NULL;
+	if (context->contextSprite[idSprite].buffer) {
+		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
+		context->contextSprite[idSprite].buffer = NULL;
 	}
 	
-	for (i = idSprite; i < window->nbSprite; i++) {
+	for (i = idSprite; i < context->nbSprite; i++) {
 	
-		window->windowSprite[i] = window->windowSprite[i+1];
+		context->contextSprite[i] = context->contextSprite[i+1];
 	
 	}
 	
-	window->nbSprite = (window->nbSprite)-1;
+	context->nbSprite = (context->nbSprite)-1;
 	
-	window->windowSprite = (t_sprite*) realloc(window->windowSprite, sizeof(t_sprite)*(window->nbSprite));
+	context->contextSprite = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite)*(context->nbSprite));
 	
 	return 1;
 }
 
-int SDL_newObj(t_window * window, int * id, int type, char * title, char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
 	
 	t_object * n_realloc = NULL;
 	
-	if (window == NULL) return 0;
+	if (context == NULL) return 0;
 	if (strlen(title) == 0) return 0;
 	
-	if (window->nbObj == 0) {
+	if (context->nbObj == 0) {
 		
-		if (window->windowObj == NULL) {
-			window->windowObj = (t_object*) malloc(sizeof(t_object));
+		if (context->contextObj == NULL) {
+			context->contextObj = (t_object*) malloc(sizeof(t_object));
 		}else{
 			return 0;
 		}
 		
 	}else{
 		
-		n_realloc = (t_object*) realloc(window->windowObj, sizeof(t_object) * ((window->nbObj)+1));
+		n_realloc = (t_object*) realloc(context->contextObj, sizeof(t_object) * ((context->nbObj)+1));
 		if (n_realloc) {
-			window->windowObj = n_realloc;
+			context->contextObj = n_realloc;
 		}else{
 			return 0; /* Out of memory */
 		}
 		
 	}
 	
-	window->windowObj[window->nbObj].x = x;
-	window->windowObj[window->nbObj].y = y;
-	window->windowObj[window->nbObj].height = height;
-	window->windowObj[window->nbObj].width = width;
-	window->windowObj[window->nbObj].MouseOver = 0;
-	window->windowObj[window->nbObj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
-	window->windowObj[window->nbObj].buffer_content = NULL;
+	context->contextObj[context->nbObj].x = x;
+	context->contextObj[context->nbObj].y = y;
 	
-	strcpy(window->windowObj[window->nbObj].title, title);
+	context->contextObj[context->nbObj].align = align;
 	
-	window->windowObj[window->nbObj].type = type;
+	//context->contextObj[context->nbObj].height = height;
+	//context->contextObj[context->nbObj].width = width;
+	context->contextObj[context->nbObj].MouseOver = 0;
+	context->contextObj[context->nbObj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
+	context->contextObj[context->nbObj].buffer_content = NULL;
+	
+	strcpy(context->contextObj[context->nbObj].title, title);
+	
+	context->contextObj[context->nbObj].type = type;
 	
 	if (type == 1) {
 		
-		window->windowObj[window->nbObj].dest = dest;
-		window->windowObj[window->nbObj].typeForm = typeForm;
+		context->contextObj[context->nbObj].dest = dest;
+		context->contextObj[context->nbObj].typeForm = typeForm;
 		
 	}else {
 		
-		window->windowObj[window->nbObj].dest = NULL;
-		window->windowObj[window->nbObj].typeForm = ALL;
+		context->contextObj[context->nbObj].dest = NULL;
+		context->contextObj[context->nbObj].typeForm = NONE;
 		
 	}
 	
-	if (id != NULL) *id = window->nbObj;
-	window->nbObj = (window->nbObj+1);
+	if (id != NULL) *id = context->nbObj;
+	context->nbObj = (context->nbObj+1);
 	
 	return 1;
 	
 }
 
-int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width) {
+int SDL_newTexture(t_context * context, int * id, char * file, int x, int y) {
 
 	char texturePath[150];
-	t_texture * n_realloc = NULL;
+	t_image * n_realloc = NULL;
 	
-	if (window == NULL) return 0;
+	if (context == NULL) return 0;
 	
-	if (window->nbImg == 0) {
+	if (context->nbImg == 0) {
 	
-		if (window->windowImg == NULL) {
+		if (context->contextImg == NULL) {
 		
-			window->windowImg = (t_texture*) malloc(sizeof(t_texture));
+			context->contextImg = (t_image*) malloc(sizeof(t_image));
 			
 		}else{
 			
@@ -545,234 +700,236 @@ int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int h
 	
 	}else{
 	
-		n_realloc = (t_texture*) realloc(window->windowImg, sizeof(t_texture) * ((window->nbImg)+1));
+		n_realloc = (t_image*) realloc(context->contextImg, sizeof(t_image) * ((context->nbImg)+1));
 		if (n_realloc) {
-			window->windowImg = n_realloc;
+			context->contextImg = n_realloc;
 		}else{
 			return 0;
 		}
 		
 	}
 	
-	window->windowImg[window->nbImg].x = x;
-	window->windowImg[window->nbImg].y = y;
-	window->windowImg[window->nbImg].height = height;
-	window->windowImg[window->nbImg].width = width;
+	context->contextImg[context->nbImg].x = x;
+	context->contextImg[context->nbImg].y = y;
+	//context->contextImg[context->nbImg].height = height;
+	//context->contextImg[context->nbImg].width = width;
 	
 	sprintf(texturePath, "ressources/images/%s", file);
-	window->windowImg[window->nbImg].buffer = IMG_Load(texturePath);
+	context->contextImg[context->nbImg].buffer = IMG_Load(texturePath);
 	
-	if (id != NULL) *id = (window->nbImg);
+	if (id != NULL) *id = (context->nbImg);
 	
-	window->nbImg = (window->nbImg)+1;
-	
-	return 1;
-
-}
-
-int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width) {
-	
-	if (window == NULL) return 0;
-	if (window->windowImg == NULL) return 0;
-	if (window->nbImg <= idimg) return 0;
-	
-	window->windowImg[idimg].x = x;
-	window->windowImg[idimg].y = y;
-	window->windowImg[idimg].height = height;
-	window->windowImg[idimg].width = width;
+	context->nbImg = (context->nbImg)+1;
 	
 	return 1;
 
 }
 
-int SDL_delTexture(t_window * window, int idimg) {
+int SDL_modTexture(t_context * context, int idimg, int x, int y) {
+	
+	if (context == NULL) return 0;
+	if (context->contextImg == NULL) return 0;
+	if (context->nbImg <= idimg) return 0;
+	
+	context->contextImg[idimg].x = x;
+	context->contextImg[idimg].y = y;
+	
+	//context->contextImg[idimg].height = height;
+	//context->contextImg[idimg].width = width;
+	
+	return 1;
 
-	if (window == NULL) return 0;
-	if (window->windowImg == NULL) return 0;
-	if (window->nbImg <= idimg) return 0;
+}
+
+int SDL_delTexture(t_context * context, int idimg) {
+
+	if (context == NULL) return 0;
+	if (context->contextImg == NULL) return 0;
+	if (context->nbImg <= idimg) return 0;
 	
 	int i = 0;
 	
-	if (window->windowImg[idimg].buffer) {
-		SDL_FreeSurface(window->windowImg[idimg].buffer);
-		window->windowImg[idimg].buffer = NULL;
+	if (context->contextImg[idimg].buffer) {
+		SDL_FreeSurface(context->contextImg[idimg].buffer);
+		context->contextImg[idimg].buffer = NULL;
 	}
 	
-	for (i = idimg; i < window->nbImg; i++) {
+	for (i = idimg; i < context->nbImg; i++) {
 	
-		window->windowImg[i] = window->windowImg[i+1];
+		context->contextImg[i] = context->contextImg[i+1];
 	
 	}
 	
-	window->nbImg = (window->nbImg)-1;
+	context->nbImg = (context->nbImg)-1;
 	
-	window->windowImg = (t_texture*) realloc(window->windowImg, sizeof(t_texture)*(window->nbImg));
+	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
 	
 	return 1;
 
 }
 
-int SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width) {
+int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
 
-	if (window == NULL) return 0;
-	if (window->nbObj <= obj) return 0;
-	if (window->windowObj == NULL) return 0;
+	if (context == NULL) return 0;
+	if (context->nbObj <= obj) return 0;
+	if (context->contextObj == NULL) return 0;
 	
-	window->windowObj[obj].x = x;
-	window->windowObj[obj].y = y;
-	window->windowObj[obj].height = height;
-	window->windowObj[obj].width = width;
-	window->windowObj[obj].MouseOver = 0;
+	context->contextObj[obj].x = x;
+	context->contextObj[obj].y = y;
+	//context->contextObj[obj].height = height;
+	//context->contextObj[obj].width = width;
+	context->contextObj[obj].MouseOver = 0;
 	
-	strcpy(window->windowObj[obj].title, title);
+	strcpy(context->contextObj[obj].title, title);
+	context->contextObj[obj].align = align;
 	
-	window->windowObj[obj].type = type;
+	context->contextObj[obj].type = type;
 	
 	if (type == 1) {
 		
-		window->windowObj[obj].dest = dest;
-		window->windowObj[obj].typeForm = typeForm;
+		context->contextObj[obj].dest = dest;
+		context->contextObj[obj].typeForm = typeForm;
 		
 	}else {
 		
-		window->windowObj[obj].dest = NULL;
-		window->windowObj[obj].typeForm = ALL;
+		context->contextObj[obj].dest = NULL;
+		context->contextObj[obj].typeForm = NONE;
 		
 	}
 	
-	if (window->windowObj[obj].buffer_title) {
-		SDL_FreeSurface(window->windowObj[obj].buffer_title);
-		window->windowObj[obj].buffer_title = NULL;
+	if (context->contextObj[obj].buffer_title) {
+		SDL_FreeSurface(context->contextObj[obj].buffer_title);
+		context->contextObj[obj].buffer_title = NULL;
 	}
 	
-	if (window->windowObj[obj].buffer_content) {
-		SDL_FreeSurface(window->windowObj[obj].buffer_content);
-		window->windowObj[obj].buffer_content = NULL;
+	if (context->contextObj[obj].buffer_content) {
+		SDL_FreeSurface(context->contextObj[obj].buffer_content);
+		context->contextObj[obj].buffer_content = NULL;
 	}
 	
-	window->windowObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
+	context->contextObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 	
 	return 1;
 	
 }
 
-int SDL_delObj(t_window * window, int obj) {
+int SDL_delObj(t_context * context, int obj) {
 
-	if (window == NULL) return 0;
-	if (window->nbObj <= obj) return 0;
-	if (window->windowObj == NULL) return 0;
+	if (context == NULL) return 0;
+	if (context->nbObj <= obj) return 0;
+	if (context->contextObj == NULL) return 0;
 	
 	int i = 0;
 	
-	if (window->windowObj[obj].buffer_title) {
-		SDL_FreeSurface(window->windowObj[obj].buffer_title);
-		window->windowObj[obj].buffer_title = NULL;
+	if (context->contextObj[obj].buffer_title) {
+		SDL_FreeSurface(context->contextObj[obj].buffer_title);
+		context->contextObj[obj].buffer_title = NULL;
 	}
 	
-	if (window->windowObj[obj].buffer_content) {
-		SDL_FreeSurface(window->windowObj[obj].buffer_content);
-		window->windowObj[obj].buffer_content = NULL;
+	if (context->contextObj[obj].buffer_content) {
+		SDL_FreeSurface(context->contextObj[obj].buffer_content);
+		context->contextObj[obj].buffer_content = NULL;
 	}
 	
-	for (i = obj; i < (window->nbObj); i++) {
+	for (i = obj; i < (context->nbObj); i++) {
 	
-		window->windowObj[i] = window->windowObj[i+1];
+		context->contextObj[i] = context->contextObj[i+1];
 	
 	}
 	
-	window->nbObj = (window->nbObj)-1;
+	context->nbObj = (context->nbObj)-1;
 	
-	window->windowObj = (t_object*) realloc(window->windowObj, sizeof(t_object)*(window->nbObj));
+	context->contextObj = (t_object*) realloc(context->contextObj, sizeof(t_object)*(context->nbObj));
 	
 	return 1;
 
 }
 
-int SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y) {
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y) {
 	
 	t_text * n_realloc = NULL;
 	
-	if (window == NULL) return 0;
+	if (context == NULL) return 0;
 	
-	if (window->nbText == 0) {
+	if (context->nbText == 0) {
 	
-		if (window->windowText == NULL) {
-			window->windowText = (t_text*) malloc(sizeof(t_text));
+		if (context->contextText == NULL) {
+			context->contextText = (t_text*) malloc(sizeof(t_text));
 		}else{
 			return 0;
 		}
 	
 	}else{
-		  n_realloc = (t_text*) realloc(window->windowText, sizeof(t_text) * ((window->nbText)+1));
+		  n_realloc = (t_text*) realloc(context->contextText, sizeof(t_text) * ((context->nbText)+1));
 		  
 		  if (n_realloc) {
-		  	window->windowText = n_realloc;
+		  	context->contextText = n_realloc;
 		  }else{
 		  	return 0;
 		  }
 		  
 	}
 	
-	window->windowText[window->nbText].couleur = couleur;
-	window->windowText[window->nbText].content = content;
+	context->contextText[context->nbText].couleur = couleur;
+	context->contextText[context->nbText].content = content;
 	
-	window->windowText[window->nbText].x = x;
-	window->windowText[window->nbText].y = y;
+	context->contextText[context->nbText].x = x;
+	context->contextText[context->nbText].y = y;
 	
-	window->windowText[window->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
+	context->contextText[context->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
-	if (id != NULL) *id = (window->nbText);
-	window->nbText = (window->nbText)+1;
+	if (id != NULL) *id = (context->nbText);
+	context->nbText = (context->nbText)+1;
 	
 	return 1;
 
 }
 
-int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y) {
+int SDL_modText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y) {
 
-	if (window == NULL) return 0;
-	if (window->nbText <= idtext) return 0;
-	if (window->windowText == NULL) return 0;
+	if (context == NULL) return 0;
+	if (context->nbText <= idtext) return 0;
+	if (context->contextText == NULL) return 0;
 	
-	window->windowText[idtext].couleur = couleur;
-	if (content) window->windowText[idtext].content = content;
+	context->contextText[idtext].couleur = couleur;
+	if (content) context->contextText[idtext].content = content;
 	
-	if (x != -1) window->windowText[idtext].x = x;
-	if (y != -1) window->windowText[idtext].y = y;
+	if (x != -1) context->contextText[idtext].x = x;
+	if (y != -1) context->contextText[idtext].y = y;
 	
 	//Free old buffer
-	if(window->windowText[idtext].buffer) {
-		SDL_FreeSurface(window->windowText[idtext].buffer);
-		window->windowText[idtext].buffer = NULL;
+	if(context->contextText[idtext].buffer) {
+		SDL_FreeSurface(context->contextText[idtext].buffer);
+		context->contextText[idtext].buffer = NULL;
 	}
 	
-	window->windowText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
+	context->contextText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	return 1;
 
 }
 
-int SDL_delText(t_window * window, int idtext) {
+int SDL_delText(t_context * context, int idtext) {
 
-	if (window == NULL) return 0;
-	if (window->nbText <= idtext) return 0;
-	if (window->windowText == NULL) return 0;
+	if (context == NULL) return 0;
+	if (context->nbText <= idtext) return 0;
+	if (context->contextText == NULL) return 0;
 	
 	int i = 0;
 	
-	if (window->windowText[idtext].buffer) {
-		SDL_FreeSurface(window->windowText[idtext].buffer);
-		window->windowText[idtext].buffer = NULL;
+	if (context->contextText[idtext].buffer) {
+		SDL_FreeSurface(context->contextText[idtext].buffer);
+		context->contextText[idtext].buffer = NULL;
 	}
 	
-	for (i = idtext; i < (window->nbText); i++) {
+	for (i = idtext; i < (context->nbText); i++) {
 	
-		window->windowText[i] = window->windowText[i+1];
+		context->contextText[i] = context->contextText[i+1];
 	
 	}
 	
-	window->nbText = (window->nbText)-1;
-	window->windowText = (t_text*) realloc(window->windowText, sizeof(t_text)*(window->nbText));
+	context->nbText = (context->nbText)-1;
+	context->contextText = (t_text*) realloc(context->contextText, sizeof(t_text)*(context->nbText));
 	
 	return 1;
 }
@@ -828,9 +985,9 @@ void SDL_UpdateEvents(Input* in)
 	}
 }
 
-int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y) {
+int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y) {
 	
-	if ( (in.mousey-(window->y)) > y && (in.mousey-(window->y)) <= y+hauteur && (in.mousex-(window->x)) > x && (in.mousex-(window->x)) <= x+largeur ) {
+	if ( (in.mousey-(context->y)) > y && (in.mousey-(context->y)) <= y+hauteur && (in.mousex-(context->x)) > x && (in.mousex-(context->x)) <= x+largeur ) {
 		return 1;
 	}else{
 		return 0;
@@ -876,84 +1033,112 @@ void SDL_unload() {
 
 }
 
-void SDL_BlitObjs(t_window * window) {
+void SDL_generateFrame(t_context * context) {
 	
 	int i = 0;
 	
 	SDL_Rect positionFond, spritePos; 
 	char saisie_content[100]; //Form ONLY
 	
-	if (window == NULL) return;
+	if (context == NULL) return;
 	
-	window->windowSurface = SDL_CreateRGBSurface(0, window->height, window->width, 16, 0, 0, 0, 0);
+	context->contextSurface = SDL_CreateRGBSurface(0, context->height, context->width, 16, 0, 0, 0, 0);
 	
 	//Scan textures to Blit !
-	for (i = 0; i < (window->nbImg); i++) {
+	for (i = 0; i < (context->nbImg); i++) {
 		
-		positionFond.x = window->windowImg[i].x;
-		positionFond.y = window->windowImg[i].y;
+		positionFond.x = context->contextImg[i].x;
+		positionFond.y = context->contextImg[i].y;
 		
-		SDL_BlitSurface(window->windowImg[i].buffer, NULL, window->windowSurface, &positionFond);
+		SDL_BlitSurface(context->contextImg[i].buffer, NULL, context->contextSurface, &positionFond);
 		
 	}
 	
 	//Blit OBJ ONLY
-	for (i = 0; i < (window->nbObj); i++) {
+	for (i = 0; i < (context->nbObj); i++) {
 	
-		switch (window->windowObj[i].type) {
+		switch (context->contextObj[i].type) {
 		
-			case 0: //Simple btn
+			case BUTTON: //Simple btn
 				
-				positionFond.x = window->windowObj[i].x;
-				positionFond.y = window->windowObj[i].y;
+				positionFond.x = context->contextObj[i].x;
+				positionFond.y = context->contextObj[i].y;
 				
-				if (window->windowObj[i].MouseOver == 1) {
-					SDL_BlitSurface(BTN_OVER, NULL, window->windowSurface, &positionFond);
+				if (context->contextObj[i].MouseOver == 1) {
+					SDL_BlitSurface(BTN_OVER, NULL, context->contextSurface, &positionFond);
 				}else{
-					SDL_BlitSurface(BTN_NOTOVER, NULL, window->windowSurface, &positionFond);
+					SDL_BlitSurface(BTN_NOTOVER, NULL, context->contextSurface, &positionFond);
 				}
 				
-				positionFond.x += 20;
+				switch (context->contextObj[i].align) {
+					case ALIGN_CENTER:
+						positionFond.x += ((BTN_OVER->w)/2)-((context->contextObj[i].buffer_title->w)/2);
+						break;
+					case ALIGN_LEFT:
+						positionFond.x += 20;
+						break;
+					case ALIGN_RIGHT:
+						positionFond.x += 20;
+						break;
+				}
+				
+				
 				positionFond.y += 5;
 				
-				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
+				SDL_BlitSurface(context->contextObj[i].buffer_title, NULL, context->contextSurface, &positionFond);
 				
 				break;
 				
-			case 1: //Form
+			case INPUT: //Form
 				
 				memset (saisie_content, 0, sizeof (saisie_content));
 				
-				if (window->windowObj[i].MouseOver == 1) {
+				if (context->contextObj[i].MouseOver == 1) {
 					
-					strcpy (saisie_content, window->windowObj[i].dest);
+					strcpy (saisie_content, context->contextObj[i].dest);
   					strcat (saisie_content,"|");
   					
 				}else{
 					
-					strcpy (saisie_content, window->windowObj[i].dest);
+					strcpy (saisie_content, context->contextObj[i].dest);
 					
 				}
 				
-				positionFond.x = window->windowObj[i].x;
-				positionFond.y = window->windowObj[i].y;
+				positionFond.x = context->contextObj[i].x;
+				positionFond.y = context->contextObj[i].y;
 				
-				SDL_BlitSurface(FORM, NULL, window->windowSurface, &positionFond);
+				SDL_BlitSurface(FORM, NULL, context->contextSurface, &positionFond);
 				
-				if (window->windowObj[i].buffer_content) {
-					SDL_FreeSurface(window->windowObj[i].buffer_content);
-					window->windowObj[i].buffer_content = NULL;
+				if (context->contextObj[i].buffer_content) {
+					SDL_FreeSurface(context->contextObj[i].buffer_content);
+					context->contextObj[i].buffer_content = NULL;
 				}
 				
-				window->windowObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-				positionFond.x = (window->windowObj[i].x)+10;
-				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(window->windowObj[i].buffer_content, NULL, window->windowSurface, &positionFond);
+				context->contextObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
 				
-				positionFond.x = (window->windowObj[i].x)-55;
-				positionFond.y = (window->windowObj[i].y)+5;
-				SDL_BlitSurface(window->windowObj[i].buffer_title, NULL, window->windowSurface, &positionFond);
+				switch (context->contextObj[i].align) {
+					case ALIGN_CENTER:
+						positionFond.x += ((FORM->w)/2)-((context->contextObj[i].buffer_content->w)/2);
+						break;
+					case ALIGN_LEFT:
+						positionFond.x += 20;
+						break;
+					case ALIGN_RIGHT:
+						positionFond.x += 20;
+						break;
+				}
 				
+				//positionFond.x = (context->contextObj[i].x)+10;
+				positionFond.y = (context->contextObj[i].y)+5;
+				SDL_BlitSurface(context->contextObj[i].buffer_content, NULL, context->contextSurface, &positionFond);
+				
+				positionFond.x = (context->contextObj[i].x)-55;
+				positionFond.y = (context->contextObj[i].y)+5;
+				SDL_BlitSurface(context->contextObj[i].buffer_title, NULL, context->contextSurface, &positionFond);
+				
+				break;
+				
+			default:
 				break;
 				
 		}
@@ -961,56 +1146,56 @@ void SDL_BlitObjs(t_window * window) {
 	}
 	
 	//For each surface that correspond to text, blit !
-	for (i = 0; i < (window->nbText); i++) {
+	for (i = 0; i < (context->nbText); i++) {
 		
-		positionFond.x = window->windowText[i].x;
-		positionFond.y = window->windowText[i].y;
+		positionFond.x = context->contextText[i].x;
+		positionFond.y = context->contextText[i].y;
 		
-		SDL_BlitSurface(window->windowText[i].buffer, NULL, window->windowSurface, &positionFond);
+		SDL_BlitSurface(context->contextText[i].buffer, NULL, context->contextSurface, &positionFond);
 			
 	}
 	
 		//Scan for active sprite..
-	for (i = 0; i < (window->nbSprite); i++) {
+	for (i = 0; i < (context->nbSprite); i++) {
 		
-		if (!(window->windowSprite[i].hide)) {
+		if (!(context->contextSprite[i].hide)) {
 			
 			//Animation .. Orientation
-			spritePos.x = ((window->windowSprite[i].animation % ((window->windowSprite[i].width) / (window->windowSprite[i].sp_width))) * (window->windowSprite[i].sp_width))-(window->windowSprite[i].sp_width);
-    		spritePos.y = ((window->windowSprite[i].position) * (window->windowSprite[i].sp_height))-(window->windowSprite[i].sp_height);
-    		spritePos.w = window->windowSprite[i].sp_width;
-    		spritePos.h = window->windowSprite[i].sp_height;
+			spritePos.x = ((context->contextSprite[i].animation % ((context->contextSprite[i].buffer->w) / (context->contextSprite[i].sp_width))) * (context->contextSprite[i].sp_width))-(context->contextSprite[i].sp_width);
+    		spritePos.y = ((context->contextSprite[i].position) * (context->contextSprite[i].sp_height))-(context->contextSprite[i].sp_height);
+    		spritePos.w = context->contextSprite[i].sp_width;
+    		spritePos.h = context->contextSprite[i].sp_height;
     		
-    		positionFond.x = window->windowSprite[i].x;
-			positionFond.y = window->windowSprite[i].y;
+    		positionFond.x = context->contextSprite[i].x;
+			positionFond.y = context->contextSprite[i].y;
     		
-    		SDL_BlitSurface(window->windowSprite[i].buffer, &spritePos, window->windowSurface, &positionFond );
+    		SDL_BlitSurface(context->contextSprite[i].buffer, &spritePos, context->contextSurface, &positionFond );
 		}
 	}
 	
 	positionFond.w = 0;
 	positionFond.h = 0;
 	
-	positionFond.x = window->x;
-	positionFond.y = window->y;
-	SDL_BlitSurface(window->windowSurface, NULL, screen, &positionFond);
+	positionFond.x = context->x;
+	positionFond.y = context->y;
+	SDL_BlitSurface(context->contextSurface, NULL, screen, &positionFond);
 	
-	SDL_FreeSurface(window->windowSurface);
+	SDL_FreeSurface(context->contextSurface);
 	
 }
 
-int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
+int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 	
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
 	
-	t_window * menu = SDL_newWindow("Menu", 0, 0, 800, 600);
+	t_context * menu = SDL_newContext("Menu", 0, 0, 800, 600);
 	
 	for (i = 0; i < nbEntries; i++) {
-		SDL_newObj(menu, NULL, 0, captions[i], NULL, ALL, 100, 100+(50*i), 40, 230);
+		SDL_newObj(menu, NULL, BUTTON, captions[i], ALIGN_CENTER, NULL, NONE, 100, 100+(50*i));
 	}
 	
-	SDL_newTexture(menu, NULL, "app_bg.png", 0, 0, 600, 800);
-	SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25, 0, 0);
+	SDL_newTexture(menu, NULL, backgroundPic, 0, 0);
+	//SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25);
 	
 	while (1) {
 		
@@ -1018,7 +1203,8 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 			
 			MouseOverObjPrev = MouseOverObj;
 			SDL_UpdateEvents(&in);
-			MouseOverObj = SDL_IsMouseOverObj(menu);
+			MouseOverObj = SDL_ismouseover(menu, BUTTON);
+			if (MouseOverObj == -1) MouseOverObj = SDL_ismouseover(menu, INPUT);
 			
 			if (firstFrame == 0) { firstFrame = 1; break; }
 			SDL_Delay(50);
@@ -1026,12 +1212,12 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (in.quit != 1));
 		
 		if (MouseOverObjPrev != MouseOverObj) {		
-			SDL_BlitObjs(menu);
+			SDL_generateFrame(menu);
 			SDL_Flip (screen);
 			SDL_FreeSurface(screen);
 		}
 		
-		if ((MouseOverObj != -1) && ((menu->windowObj[MouseOverObj].type) == 0)) {
+		if ((MouseOverObj != -1) && ((menu->contextObj[MouseOverObj].type) == 0)) {
 			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
@@ -1040,7 +1226,7 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 			
 			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
-			SDL_freeWindow(menu);
+			SDL_freeContext(menu);
 			
 			return MouseOverObj;
 		
@@ -1051,7 +1237,7 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 		}
 		
 		if (in.quit == 1) {
-			SDL_freeWindow(menu);
+			SDL_freeContext(menu);
 			exit(0);
 		}
 		
@@ -1059,14 +1245,14 @@ int SDL_generateMenu(int nbEntries, char captions[][M_TEXT]) {
 	
 }
 
-int SDL_generate(t_window * window) {
+int SDL_generate(t_context * context) {
 	
 	int MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0, forceFrame = 0;
 	int uniqueFrame = 0;
 	
-	if (window == NULL) return -1;
+	if (context == NULL) return -1;
 	
-	if ((window->nbObj) == 0) {
+	if ((context->nbObj) == 0) {
 		uniqueFrame = 1;
 	}
 	
@@ -1076,7 +1262,8 @@ int SDL_generate(t_window * window) {
 			
 			MouseOverObjPrev = MouseOverObj;
 			SDL_UpdateEvents(&in);
-			MouseOverObj = SDL_IsMouseOverObj(window);
+			MouseOverObj = SDL_ismouseover(context, BUTTON);
+			if (MouseOverObj == -1) MouseOverObj = SDL_ismouseover(context, INPUT);
 			
 			if (firstFrame == 0) { firstFrame = 1; break; }
 			SDL_Delay(50);
@@ -1084,12 +1271,12 @@ int SDL_generate(t_window * window) {
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (buffer_deliver == 1) && (in.quit != 1) && (uniqueFrame != 1));
 		
 		if (buffer_deliver == 0) {
-			SDL_CaptureForm(window, MouseOverObj);
+			SDL_CaptureForm(context, MouseOverObj);
 			forceFrame = 1;
 		}
 		
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
-			SDL_BlitObjs(window);
+			SDL_generateFrame(context);
 			SDL_Flip (screen);
 			SDL_FreeSurface(screen);
 			forceFrame = 0;
@@ -1099,12 +1286,12 @@ int SDL_generate(t_window * window) {
 			}
 		}
 		
-		if ((MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0)) {
+		if ((MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0)) {
 			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
 		//If user clic (left btn)
-		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((window->windowObj[MouseOverObj].type) == 0) ) {
+		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0) ) {
 			
 			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
@@ -1114,7 +1301,7 @@ int SDL_generate(t_window * window) {
 		}
 		
 		if (in.quit == 1) {
-			SDL_freeWindow(window);
+			SDL_freeContext(context);
 			exit(0);
 		}
 		

@@ -2,15 +2,15 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.4.9
- * \date 11-01-2015
+ * \version 0.5.0
+ * \date 23-01-2015
  *
- * Lib for creating SDL program easily.
+ * EasySDL est une extension de la librairie SDL standard
  *
  */
 
 #ifdef _WIN32
-	// windows code goes here
+	//windows code goes here
     #include <SDL/SDL.h>
 	#include <SDL/SDL_ttf.h>
 	#include <SDL/SDL_image.h>
@@ -23,33 +23,44 @@
 	#include <fmodex/fmod.h>
 #endif
 
-#define N 10
-#define M_TEXT 50
+#define ALIGN_CENTER 1
+#define ALIGN_LEFT 2
+#define ALIGN_RIGHT 3
 
 typedef enum {
 	
-	NUMERIC,
-	VARCHAR,
-	NUMCHAR,
-	ALL
+	NUMERIC, // 0-9
+	ALPHA, // A-Z
+	ALPHANUMERIC, // A-Z or 0-9
+	NOMASK, // LATIN-1
+	NONE //..
 	
 } t_typeForm;
 
+typedef enum {
+
+	BUTTON,
+	INPUT,
+	IMG,
+	SPRITE,
+	TEXT
+	
+} t_typeData;
+
 /**
  * \struct t_object
- * \brief Represent object, could be button or form input to be filled.
+ * \brief Décrit de quoi est fait un objet
  *
- * t_object contain info of one object (button or form input)
+ * t_object décrit un bouton ou un champs de saisie
  */
 
 typedef struct {
 	
-	int type;
+	t_typeData type;
 	int x;
 	int y;
-	int height;
-	int width;
 	char title[50];
+	int align;
 	char * dest; //Only for form obj
 	t_typeForm typeForm; //Only for form obj
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
@@ -59,9 +70,9 @@ typedef struct {
 
 /**
  * \struct t_text
- * \brief Represent text only with color and x, y pos (in pixel)
+ * \brief Contient une ligne de texte pour un rendu SDL
  *
- * t_text contain info of one text line does not support char like \n, \t, etc.. .
+ * t_text décrit une chaine de caractère à transformer en SDL_Surface, ne supporte pas les caractères \x !
  */
 typedef struct {
 	
@@ -74,33 +85,42 @@ typedef struct {
 } t_text;
 
 /**
- * \struct t_texture
- * \brief Keep info about one image
+ * \struct t_image
+ * \brief Une image et ses paramètres
  *
- * t_texture contain info of one image, his size in pixels and his pos
+ * t_image contient la SDL_Surface de une image ainsi que ses paramètres pour le rendu.
  */
 typedef struct {
 	
 	int x;
 	int y;
-	int height;
-	int width;
 	SDL_Surface *buffer;
 
-} t_texture;
+} t_image;
 
+/**
+ * \struct t_audio
+ * \brief Un son avec le nom fichier associé
+ *
+ * t_audio contient un son chargé et le nom de fichier associé à celui-ci
+ */
 typedef struct {
 	
-	char file[150];
-	FMOD_SOUND * MIX_BUF;
+	char * file;
+	FMOD_SOUND * buffer;
 	
 } t_audio;
 
+/**
+ * \struct t_sprite
+ * \brief Une image sprite et ses paramètres
+ *
+ * t_sprite contient les paramètres utiles à la mise en place d'un sprite (ex: personnage animé).
+ */
 typedef struct {
 
 	SDL_Surface *buffer;
 	SDL_Color transparancy;
-	int height, width;
 	int sp_height, sp_width;
 	int x, y;
 	int position, animation;
@@ -109,41 +129,42 @@ typedef struct {
 } t_sprite;
 
 /**
- * \struct t_window
- * \brief This is where all data of previous struct are stored for one window
+ * \struct t_context
+ * \brief Représentation d'un contexte et son rendu.
  *
- * t_window contain all obj, text and textures infos. Contain also window pos and size in pixels.
+ * t_context contient un ensemble de donnée pour la formation d'une frame dans un état donnée.
  */
 typedef struct {
 
 	char * title;
-	SDL_Surface * windowSurface;
+	SDL_Surface * contextSurface;
 	
-	t_object * windowObj;
+	t_object * contextObj;
 	int nbObj;
 	
-	t_text * windowText;
+	t_text * contextText;
 	int nbText;
 	
-	t_texture * windowImg;
+	t_image * contextImg;
 	int nbImg;
 	
-	t_sprite * windowSprite;
+	t_sprite * contextSprite;
 	int nbSprite;
 	
 	int x, y;
 	int height, width;
 	
-} t_window;
+} t_context;
 
 /**
  * \struct Input
- * \brief This struct help us to keep all event with UpdateEvents
+ * \brief Contient le mapping des évènements liés au clavier et la souris.
  *
- * Input is like mapping of what being pressed or not at t instant.
+ * L'état des touches / souris à un instant t.
  */
 typedef struct
 {
+	
 	char key[SDLK_LAST];
 	int mousex,mousey;
 	int mousexrel,mouseyrel;
@@ -152,155 +173,188 @@ typedef struct
     
 } Input;
 
-/**
- * \fn SDL_init(int x, int y, int fullscreen, char titre[100], int ttf_support, char police_name[100], int police_size, int audio_support)
- * \brief Init SDL with your preferences
- *
- * \param x Size in pixel
- * \param y Size in pixel
- * \param fullscreen Enable fullscreen or not
- * \param titre Title of the SDL handle
- * \param ttf_support Decide if SDL_ttf will load up
- * \param police_name Police filename stored in ressources/ttf/
- * \param police_size Police size in pt
- * \param audio_support Decide if SDL_mixer will load up
- * \return No return value, if it fail, it'll close the program with err message.
- */
-void SDL_init(int x, int y, int fullscreen, char * titre, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support);
+void SDL_initWindow(int x, int y, int fullscreen, char * titre, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support);
+void SDL_unload();
+
+int SDL_generateMenu(char * backgroundPic, int nb_entree, char ** captions);
+int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y);
 
 /**
- * \fn int SDL_generateMenu(int nb_entree, char captions[][M_TEXT])
- * \brief Generate menu with button(s)
- *
- * \param nb_entree Number of choise to display
- * \param sommaire[N][M] Contain text caption
- * \return Return the value of choise (0 - (nb_entree-1))
- */
-int SDL_generateMenu(int nb_entree, char captions[][M_TEXT]);
+* \fn int SDL_ismouseover(t_context * context, t_typeData type)
+* \brief Renvoie l'identifiant d'un objet (bouton, champ de saisie, image, sprite, texte) sur lequel la souris survol le-dit objet.
+*
+* \param context Le contexte pour lequel il faut vérifier
+* \param type Le type à vérifier
+* \return Identifiant de l'objet ou -1 si rien.
+*/
+int SDL_ismouseover(t_context * context, t_typeData type);
 
 /**
- * \fn int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y)
- * \brief Check if mouse is over area definied in pixel
- *
- * \param *window Ptr to window created with SDL_newwindow
- * \param hauteur Height in pixel
- * \param largeur Width in pixel
- * \param x Pos X in pixel
- * \param y Pos Y in pixel 
- * \return Bool func
- */
-int SDL_IsMouseOver(t_window * window, int hauteur, int largeur, int x, int y);
+* \fn void SDL_generateFrame(t_context * context)
+* \brief Construit une frame pour un contexte donnée et la stocke dans la surface principale en attente de rafraichissement.
+*
+* \param context Le contexte pour lequel il faut construire une frame
+* \return void
+*/
+void SDL_generateFrame(t_context * context);
 
 /**
- * \fn void SDL_playSound(char * sndfile, int waitEnd)
- * \brief Play wav file
- *
- * \param sndfile Name of the snd file to play (must be in ressources/snd/)
- * \param waitEnd Stop the current thread until playing is over
- * \return void
- */
-void SDL_playSound(char * sndfile, int waitEnd);
-
-/**
- * \fn int SDL_IsMouseOverObj(t_window * window);
- * \brief Check if mouse is over an object and return his obj id
- *
- * \param window Window name (created with newWindow())
- * \return Obj id or -1
- */
-int SDL_IsMouseOverObj(t_window * window);
-
-/**
- * \fn void SDL_BlitObjs(t_window * window);
- * \brief Print on the screen specific window data
- *
- * \param window Window name (created with newWindow())
- * \return void
- */
-void SDL_BlitObjs(t_window * window);
-
-/**
- * \fn void SDL_UpdateEvents(Input* in);
- * \brief Get at t instant event from input
- *
- * \param in Input struct that contains key mapping with 0/1 for pressed or not
- * \return void
- */
+* \fn void SDL_UpdateEvents(Input* in)
+* \brief Met à jour la table des évènements à un instant t.
+*
+* \param in Tableau dans lequel les données seront inscrite.
+* \return void
+*/
 void SDL_UpdateEvents(Input* in);
 
-/**
- * \fn int SDL_CaptureForm(t_window * window, int obj);
- * \brief Copy buffer (key.unicode) to form obj if mouse is over his area
- *
- * \param window Window that contain form obj
- * \param obj ObjID (form) dest for buffer cpy
- * \return void
- */
-int SDL_CaptureForm(t_window * window, int obj);
+int SDL_CaptureForm(t_context * context, int obj);
+
+int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
+int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
+int SDL_delObj(t_context * context, int obj);
+
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y);
+int SDL_modText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y);
+int SDL_delText(t_context * context, int idtext);
+
+int SDL_newTexture(t_context * context, int * id, char * file, int x, int y);
+int SDL_modTexture(t_context * context, int idimg, int x, int y);
+int SDL_delTexture(t_context * context, int idimg);
+
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
+int SDL_modSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
+int SDL_delSprite(t_context *context, int idSprite);
 
 /**
- * \fn void SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
- * \brief Create a new object into *window data buffer
- *
- * \param window Window target
- * \param id Get the ID of this new obj if created
- * \param type 0 = Button, 1 = Form to fill
- * \param title Caption of this new object
- * \param dest Addr of char * var if type = 1
- * \param typeForm If type=1, you need to precise the mask
- * \param x Pos X, relative to window
- * \param y Pos Y, relative to window
- * \param height Height in pixel
- * \param width Width in pixel
- * \return void
- */
-int SDL_newObj(t_window * window, int * id, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
-int SDL_modObj(t_window * window, int obj, int type, char title[50], char * dest, t_typeForm typeForm, int x, int y, int height, int width);
-int SDL_delObj(t_window * window, int obj);
+* \fn int SDL_generate(t_context * context)
+* \brief Génère une frame et l'affiche à l'écran, fonction blocante s'il existe des objets (bouton(s) ou champ(s) de saisie).
+*
+* \param context Le contexte pour lequel il faut générer une frame
+* \return L'identifiant du bouton choisis ou rien.
+*/
+int SDL_generate(t_context * context);
 
-int SDL_newText(t_window * window, int * id, char * content, SDL_Color couleur, int x, int y);
-int SDL_modText(t_window * window, int idtext, char * content, SDL_Color couleur, int x, int y);
-int SDL_delText(t_window * window, int idtext);
+/**
+* \fn int SDL_nbObj(t_context * context)
+* \brief Compte le nombre d'objet chargée en mémoire pour un contexte donnée (Comprend les bouttons et les champs de saisie)
+*
+* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \return Nombre d'objet chargée
+*/
+int SDL_nbObj(t_context * context);
+/**
+* \fn int SDL_nbText(t_context * context)
+* \brief Compte le nombre d'objet texte chargée en mémoire pour un contexte donnée
+*
+* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \return Nombre d'objet texte chargée
+*/
+int SDL_nbText(t_context * context);
+/**
+* \fn int SDL_nbImage(t_context * context)
+* \brief Compte le nombre d'image chargée en mémoire pour un contexte donnée
+*
+* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \return Nombre d'image chargée
+*/
+int SDL_nbImage(t_context * context);
 
-int SDL_newTexture(t_window * window, int * id, char * file, int x, int y, int height, int width);
-int SDL_modTexture(t_window * window, int idimg, int x, int y, int height, int width);
-int SDL_delTexture(t_window * window, int idimg);
+/**
+* \fn int SDL_nbSprite(t_context * context)
+* \brief Compte le nombre de sprite chargée en mémoire pour un contexte donnée
+*
+* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \return Nombre de sprite chargée
+*/
+int SDL_nbSprite(t_context * context);
 
-int SDL_newSprite(t_window *window, char * filename, SDL_Color transparancy, int height, int width,int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
-int SDL_modSprite(t_window *window, int idSprite, int x, int y, int position, int animation, int hide);
-int SDL_delSprite(t_window *window, int idSprite);
+/**
+* \fn int SDL_contextEmpty(t_context * context)
+* \brief Vérifie si un contexte n'a pas de donnée chargé en mémoire
+*
+* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \return Bool
+*/
+int SDL_contextEmpty(t_context * context);
 
-int SDL_generate(t_window * window);
+/**
+* \fn t_context * SDL_newContext(char * title, int x, int y, int height, int width)
+* \brief Création d'un nouveau contexte
+*
+* \param title Le titre associé à ce nouveau contexte
+* \param x Position x relative à la fenêtre SDL
+* \param y Position y relative à la fenêtre SDL
+* \param height Hauteur occupé en pixel par ce nouveau contexte
+* \param width Largeur occupé en pixel par ce nouveau contexte
+* \return Adresse du nouvelle element t_context *
+*/
+t_context * SDL_newContext(char * title, int x, int y, int height, int width);
 
-int SDL_nbObj(t_window * window);
-int SDL_nbText(t_window * window);
-int SDL_nbTexture(t_window * window);
-int SDL_windowEmpty(t_window * window);
-
-t_window * SDL_newWindow(char * title, int x, int y, int height, int width);
-
-void SDL_freeWindow(t_window * window);
+/**
+* \fn void SDL_freeContext(t_context * context)
+* \brief Libère la mémoire, supprime les données chargés pour un contexte donnée.
+*
+* \param key Identifiant de la touche (constante)
+* \return Bool
+*/
+void SDL_freeContext(t_context * context);
 
 void SDL_loadRessources();
-void SDL_unload();
-int SDL_isKeyPressed(int key);
 void SDL_unloadRessources();
-void SDL_loadSound(char * sndfile);
+
+/**
+* \fn int SDL_isKeyPressed(int key)
+* \brief Vérifie si une touche du clavier est enfoncée.
+*
+* \param key Identifiant de la touche (constante)
+* \return Bool
+*/
+int SDL_isKeyPressed(int key);
+
+/**
+* \fn int SDL_playSound(char * sndfile)
+* \brief Lecture d'un fichier son court au préalable chargé avec SDL_loadSound
+*
+* \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
+* \return Bool
+*/
+int SDL_playSound(char * sndfile);
+/**
+* \fn int SDL_loadSound(char * sndfile)
+* \brief Chargement en mémoire d'un fichier audio
+*
+* \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
+* \return Bool
+*/
+int SDL_loadSound(char * sndfile);
+/**
+* \fn int SDL_unloadSound(char * sndfile)
+* \brief Libérer un fichier audio de la mémoire au préalable chargé avec SDL_loadSound
+*
+* \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
+* \return Bool
+*/
+int SDL_unloadSound(char * sndfile);
+/**
+* \fn int SDL_unloadallSound()
+* \brief Libère tout les fichiers audio chargé avec SDL_loadSound
+*
+* \return Bool
+*/
+int SDL_unloadallSound();
 
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;
 
-t_audio MIXTEMP[50];
+t_audio * fmodbuffer;
 extern int nbSnd;
 
 extern SDL_Surface *screen;
-/** \brief Couleurs RGB */
 extern SDL_Color colorRed, colorWhite, colorBlack, colorGreenLight;
 /** \brief Contient la suite des événements capturés par la SDL (Clavier+Souris) */
 extern SDL_Event GlobalEvent;
 
 /** \brief Identifiant du bouton survolé */
-extern int sel_menu_m; //Indice du choix (menu) survolé à un moment t.
 extern char buffer; //Where we will keep last char from keyboard !
 extern int buffer_deliver;
-extern Input in, tmp;
+extern Input in;

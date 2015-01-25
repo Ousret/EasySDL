@@ -394,43 +394,47 @@ int SDL_captureforInput(t_context * context, int obj) {
 					
 				}else {
 					
-					switch (context->contextObj[obj].typeForm) {
-					
-						case NUMERIC:
-							if (buffer >= '0' && buffer <= '9') {
-								context->contextObj[obj].dest[current_len] = buffer;
-								context->contextObj[obj].dest[current_len+1] = '\0';
-							}
-							break;
-							
-						case ALPHA:
-							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z')) {
-								context->contextObj[obj].dest[current_len] = buffer;
-								context->contextObj[obj].dest[current_len+1] = '\0';
-							}
-							
-							break;
-							
-						case ALPHANUMERIC:
-							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z') || (buffer >= '0' && buffer <= '9')) {
-								context->contextObj[obj].dest[current_len] = buffer;
-								context->contextObj[obj].dest[current_len+1] = '\0';
-							}
-							
-							break;
-							
-						case NOMASK:
-							
-							context->contextObj[obj].dest[current_len] = buffer;
-							context->contextObj[obj].dest[current_len+1] = '\0';
-							break;
-							
-						default:
+					if (((unsigned int) current_len <= (unsigned int) sizeof(context->contextObj[obj].dest))) {
 						
-							context->contextObj[obj].dest[current_len] = buffer;
-							context->contextObj[obj].dest[current_len+1] = '\0';
-							break;
+						switch (context->contextObj[obj].typeForm) {
 					
+							case NUMERIC:
+								if (buffer >= '0' && buffer <= '9') {
+									context->contextObj[obj].dest[current_len] = buffer;
+									context->contextObj[obj].dest[current_len+1] = '\0';
+								}
+								break;
+							
+							case ALPHA:
+								if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z')) {
+									context->contextObj[obj].dest[current_len] = buffer;
+									context->contextObj[obj].dest[current_len+1] = '\0';
+								}
+							
+								break;
+							
+							case ALPHANUMERIC:
+								if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z') || (buffer >= '0' && buffer <= '9')) {
+									context->contextObj[obj].dest[current_len] = buffer;
+									context->contextObj[obj].dest[current_len+1] = '\0';
+								}
+							
+								break;
+							
+							case NOMASK:
+							
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
+								break;
+							
+							default:
+						
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
+								break;
+					
+						}
+						
 					}
 					
 				}
@@ -1249,12 +1253,12 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 
 int SDL_generate(t_context * context) {
 	
-	int MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0, forceFrame = 0;
+	int MouseOverObj = -1, MouseOverObjPrev = 0, firstFrame = 0, forceFrame = 0;
 	int uniqueFrame = 0;
 	
 	if (context == NULL) return -1;
 	
-	if ((context->nbObj) == 0) {
+	if (!(context->nbObj)) {
 		uniqueFrame = 1;
 	}
 	
@@ -1267,7 +1271,7 @@ int SDL_generate(t_context * context) {
 			MouseOverObj = SDL_ismouseover(context, BUTTON);
 			if (MouseOverObj == -1) MouseOverObj = SDL_ismouseover(context, INPUT);
 			
-			if (firstFrame == 0) { firstFrame = 1; break; }
+			if (!firstFrame) { firstFrame = 1; break; }
 			SDL_Delay(50);
 			
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (buffer_deliver == 1) && (in.quit != 1) && (uniqueFrame != 1));
@@ -1277,15 +1281,14 @@ int SDL_generate(t_context * context) {
 			forceFrame = 1;
 		}
 		
-		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1)) {		
+		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1) || (firstFrame == 1)) {		
 			SDL_generateFrame(context);
 			SDL_Flip (screen);
 			SDL_FreeSurface(screen);
 			forceFrame = 0;
 			
-			if (uniqueFrame == 1) {
-				return 0;
-			}
+			if (uniqueFrame == 1) return 0;
+			if (firstFrame == 1) firstFrame = 2;
 		}
 		
 		if ((MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0)) {

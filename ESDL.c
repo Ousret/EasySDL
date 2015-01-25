@@ -29,6 +29,7 @@ int nbSnd = 0;
 int tff_loaded = 0, audio_loaded = 0;
 
 int DELAY_EACH_FRAME = 50;
+char * resSND = NULL, * resIMG = NULL, * resTTF = NULL;
 
 Input in;
 
@@ -42,7 +43,7 @@ int SDL_playSound(char * sndfile) {
 	char filePath[256];
 	int i = 0, alreadyLoaded = -1;
 	
-	sprintf(filePath, "ressources/snd/%s", sndfile);
+	sprintf(filePath, "%s%s", resSND, sndfile);
 	
 	for (i = 0; i < nbSnd; i++) {
 		
@@ -73,7 +74,7 @@ int SDL_loadSound(char * sndfile) {
 	FMOD_SOUND * tmp_audio = NULL;
 	t_audio * tmp_realloc = NULL;
 	
-	sprintf(filePath, "ressources/snd/%s", sndfile);
+	sprintf(filePath, "%s%s", resSND, sndfile);
 	
 	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &tmp_audio) != FMOD_OK) return 0;
 	
@@ -293,6 +294,18 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 	
 }
 
+void SDL_setSNDFolder(char * newFolder) {
+	if (newFolder) resSND = newFolder;
+}
+
+void SDL_setTTFFolder(char * newFolder) {
+	if (newFolder) resTTF = newFolder;
+}
+
+void SDL_setIMGFolder(char * newFolder) {
+	if (newFolder) resIMG = newFolder;
+}
+
 void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
@@ -300,13 +313,17 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	
 	memset(file, 0, sizeof(file));
 	
+	if (!resSND) SDL_setSNDFolder("ressources/snd/");
+	if (!resTTF) SDL_setTTFFolder("ressources/ttf/");
+	if (!resIMG) SDL_setIMGFolder("ressources/images/");
+	
     /* Initialize SDL */
     sdl_start = SDL_Init (SDL_INIT_VIDEO);
     
     if (sdl_start < 0)
     {
         
-        fprintf (stderr, "[!] SDL failed to load because of: %s\n", SDL_GetError ());
+        fprintf (stderr, "<! Fatal> EasySDL: SDL failed to load because of: %s\n", SDL_GetError ());
         exit (1);
         
     }
@@ -322,7 +339,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
     if (screen == NULL)
     {
         
-        fprintf (stderr, "[!] Unable to load context at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
+        fprintf (stderr, "<! Fatal> EasySDL: Unable to load context at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
         
     }
@@ -345,23 +362,22 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 		
 		if(TTF_Init() == -1)
 		{
-	    	fprintf (stderr, "[!] Cannot load SDL_ttf, you may want to check your SDL setup !\n");
+	    	fprintf (stderr, "<! Fatal> EasySDL: Cannot load SDL_ttf, you may want to check your SDL setup !\n");
 	        exit (1);
 		}
 		
-		sprintf(file, "ressources/ttf/%s", police_name);
-		
-		/*if (!STJ_FileExist(file)) {
-			fprintf(stderr, "[!] Unable to find %s ttf file !\n", police_name);
-			exit (1);
-		}*/
+		sprintf(file, "%s%s", resTTF, police_name);
 		
 		if (police_size <= 0) {
-			fprintf(stderr, "[!] Cannot load ttf_police with size=0 !\n");
+			fprintf(stderr, "<! Fatal> EasySDL: Cannot load ttf_police with size=0 !\n");
 			exit (1);
 		}
 		
 		ttf_police = TTF_OpenFont(file, police_size);
+		if (!ttf_police) {
+			fprintf(stderr, "<! Fatal> EasySDL: Cannot load %s\n<?> EasySDL: Exit 0\n", file);
+			exit(0); 
+		}
 		tff_loaded = 1;
 	}
 	
@@ -371,8 +387,8 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	int initted=IMG_Init(flags);
 	
 	if((initted&flags) != flags) {
-    	fprintf(stdout, "[!] IMG_Init: Failed to init required support!\n");
-    	fprintf(stdout, "[!] IMG_Init: %s\n", IMG_GetError());
+    	fprintf(stdout, "<! Fatal> EasySDL: IMG_Init: Failed to init required support!\n");
+    	fprintf(stdout, "<! Fatal> EasySDL: IMG_Init: %s\n", IMG_GetError());
     	exit (1);
 	}
 	
@@ -566,14 +582,17 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 		}
 	}
 	
-	sprintf(texturePath, "ressources/images/%s", filename);
+	sprintf(texturePath, "%s%s", resIMG ,filename);
+	
+	context->contextSprite[context->nbSprite].buffer = NULL;
 	context->contextSprite[context->nbSprite].buffer = IMG_Load(texturePath);
+	
+	if (!(context->contextSprite[context->nbSprite].buffer)) {
+		fprintf(stdout, "<! Warning> EasySDL: Cannot load sprite %s, ignore..\n", texturePath);
+	}
 	
 	//SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	/* Does not work for now.. need help for this one */
-	
-	//context->contextSprite[context->nbSprite].height = height;
-	//context->contextSprite[context->nbSprite].width = width;
 	
 	context->contextSprite[context->nbSprite].sp_height = sp_height;
 	context->contextSprite[context->nbSprite].sp_width = sp_width;
@@ -726,8 +745,13 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	//context->contextImg[context->nbImg].height = height;
 	//context->contextImg[context->nbImg].width = width;
 	
-	sprintf(texturePath, "ressources/images/%s", file);
+	sprintf(texturePath, "%s%s", resIMG ,file);
+	context->contextImg[context->nbImg].buffer = NULL;
 	context->contextImg[context->nbImg].buffer = IMG_Load(texturePath);
+	
+	if (!(context->contextImg[context->nbImg].buffer)) {
+		fprintf(stdout, "<! Warning> EasySDL: Cannot load %s, ignore..\n", texturePath);
+	}
 	
 	if (id != NULL) *id = (context->nbImg);
 	

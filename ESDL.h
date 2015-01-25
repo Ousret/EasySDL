@@ -626,6 +626,31 @@ int SDL_getposx(t_context * context, int id, t_typeData type);
 */
 int SDL_getposy(t_context * context, int id, t_typeData type);
 
+/**
+* \fn void SDL_setSNDFolder(char * newFolder)
+* \brief Change le dossier source pour les sons
+*
+* \param newFolder Chemin relatif ou absolu ce terminant par /
+* \return void
+*/
+void SDL_setSNDFolder(char * newFolder);
+/**
+* \fn void SDL_setTTFFolder(char * newFolder)
+* \brief Change le dossier source pour les polices d'écritures
+*
+* \param newFolder Chemin relatif ou absolu ce terminant par /
+* \return void
+*/
+void SDL_setTTFFolder(char * newFolder);
+/**
+* \fn void SDL_setIMGFolder(char * newFolder)
+* \brief Change le dossier source pour les images
+*
+* \param newFolder Chemin relatif ou absolu ce terminant par /
+* \return void
+*/
+void SDL_setIMGFolder(char * newFolder);
+
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;
 

@@ -61,6 +61,7 @@ int SDL_playSound(char * sndfile) {
 		
 	}else{
 		
+		fprintf(stderr, "<! Warning> EasySDL: You need to load it before playing %s, ignoring..\n", filePath);
 		return 0;
 		
 	}
@@ -76,7 +77,10 @@ int SDL_loadSound(char * sndfile) {
 	
 	sprintf(filePath, "%s%s", resSND, sndfile);
 	
-	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &tmp_audio) != FMOD_OK) return 0;
+	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &tmp_audio) != FMOD_OK) {
+		fprintf(stderr, "<! Warning> EasySDL: FMODex cannot load sound file %s, ignoring..\n", filePath);
+		return 0;
+	}
 	
 	if (!fmodbuffer) {
 		fmodbuffer = (t_audio*) malloc(sizeof(t_audio));
@@ -147,6 +151,7 @@ int SDL_unloadSound(char * sndfile) {
 		return 1;
 	}
 	
+	fprintf(stderr, "<! Warning> EasySDL: Unable to unload %s, ignoring..\n", sndfile);
 	return 0;
 	
 }
@@ -511,7 +516,7 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 
 void SDL_freeContext(t_context * context) {
 	
-	if (context == NULL) return;
+	if (!context) return;
 	int i = 0;
 	
 	if (context->contextObj) {
@@ -639,7 +644,7 @@ int SDL_delSprite(t_context *context, int idSprite) {
 		context->contextSprite[idSprite].buffer = NULL;
 	}
 	
-	for (i = idSprite; i < context->nbSprite; i++) {
+	for (i = idSprite; i < (context->nbSprite)-1; i++) {
 	
 		context->contextSprite[i] = context->contextSprite[i+1];
 	
@@ -656,7 +661,10 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 	
 	t_object * n_realloc = NULL;
 	
-	if (context == NULL) return 0;
+	if (!context) {
+		fprintf(stderr, "<! Warning> EasySDL: Want to add object to undefined context, ignoring..\n");
+		return 0;
+	}
 	if (strlen(title) == 0) return 0;
 	
 	if (context->nbObj == 0) {
@@ -673,6 +681,7 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 		if (n_realloc) {
 			context->contextObj = n_realloc;
 		}else{
+			fprintf(stderr, "<! Error> EasySDL: Out of memory when trying to add object \"%s\" to %s, bad sign..\n", title, context->title);
 			return 0; /* Out of memory */
 		}
 		
@@ -703,7 +712,10 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 		
 	}
 	
-	if (id != NULL) *id = context->nbObj;
+	if (id != NULL) {
+		*id = context->nbObj;
+		context->contextObj[context->nbObj].id = id;
+	}
 	context->nbObj = (context->nbObj+1);
 	
 	return 1;
@@ -743,6 +755,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 		if (n_realloc) {
 			context->contextImg = n_realloc;
 		}else{
+			fprintf(stderr, "<! Error> Out of memory when trying to add image %s to %s, bad sign..\n", texturePath, context->title);
 			return 0;
 		}
 		
@@ -753,7 +766,10 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	
 	context->contextImg[context->nbImg].buffer = tmp;
 	
-	if (id != NULL) *id = (context->nbImg);
+	if (id != NULL) {
+		*id = (context->nbImg);
+		context->contextImg[context->nbImg].id = id;
+	}
 	
 	context->nbImg = (context->nbImg)+1;
 	
@@ -763,15 +779,21 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 
 int SDL_modImage(t_context * context, int idimg, int x, int y) {
 	
-	if (context == NULL) return 0;
-	if (context->contextImg == NULL) return 0;
-	if (context->nbImg <= idimg) return 0;
+	if (!context) {
+		fprintf(stderr, "<! Error> EasySDL: Invalid context when trying to modify image id = %i, ignoring..\n", idimg);
+		return 0;
+	}
+	if (!(context->contextImg)) {
+		fprintf(stderr, "<! Error> EasySDL: No image were allocated in %s when trying to modify image id = %i, ignoring..\n", context->title, idimg);
+		return 0;
+	}
+	if (context->nbImg <= idimg) {
+		fprintf(stderr, "<! Error> EasySDL: Want to modify image id = %i in %s with only %i image(s) loaded, ignoring..\n", idimg, context->title, context->nbImg);
+		return 0;
+	}
 	
 	context->contextImg[idimg].x = x;
 	context->contextImg[idimg].y = y;
-	
-	//context->contextImg[idimg].height = height;
-	//context->contextImg[idimg].width = width;
 	
 	return 1;
 
@@ -779,10 +801,18 @@ int SDL_modImage(t_context * context, int idimg, int x, int y) {
 
 int SDL_delImage(t_context * context, int idimg) {
 
-	if (context == NULL) return 0;
-	if (context->contextImg == NULL) return 0;
-	if (context->nbImg <= idimg) return 0;
-	
+	if (!context) {
+		fprintf(stderr, "<! Error> EasySDL: Invalid context when trying to delete image id = %i, ignoring..\n", idimg);
+		return 0;
+	}
+	if (!(context->contextImg)) {
+		fprintf(stderr, "<! Error> EasySDL: No image were allocated in %s when trying to delete image id = %i, ignoring..\n", context->title, idimg);
+		return 0;
+	}
+	if (context->nbImg <= idimg) {
+		fprintf(stderr, "<! Error> EasySDL: Want to delete image id = %i in %s with only %i image(s) loaded, ignoring..\n", idimg, context->title, context->nbImg);
+		return 0;
+	}
 	int i = 0;
 	
 	if (context->contextImg[idimg].buffer) {
@@ -790,14 +820,13 @@ int SDL_delImage(t_context * context, int idimg) {
 		context->contextImg[idimg].buffer = NULL;
 	}
 	
-	for (i = idimg; i < context->nbImg; i++) {
+	for (i = idimg; i < (context->nbImg)-1; i++) {
 	
 		context->contextImg[i] = context->contextImg[i+1];
 	
 	}
 	
 	context->nbImg = (context->nbImg)-1;
-	
 	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
 	
 	return 1;
@@ -806,14 +835,20 @@ int SDL_delImage(t_context * context, int idimg) {
 
 int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
 
-	if (context == NULL) return 0;
-	if (context->nbObj <= obj) return 0;
-	if (context->contextObj == NULL) return 0;
-	
+	if (!context) {
+		fprintf(stderr, "<! Error> EasySDL: Invalid context when trying to modify object id = %i, ignoring..\n", obj);
+		return 0;
+	}
+	if (context->nbObj <= obj) {
+		fprintf(stderr, "<! Error> EasySDL: Want to change obj id %i in %s but there are only %i obj loaded, ignoring..\n", obj, context->title ,context->nbObj);
+		return 0;
+	}
+	if (context->contextObj == NULL) {
+		fprintf(stderr, "<! Error> EasySDL: No object were allocated in %s when trying to modify obj id = %i, ignoring..\n", context->title ,obj);
+		return 0;
+	}
 	context->contextObj[obj].x = x;
 	context->contextObj[obj].y = y;
-	//context->contextObj[obj].height = height;
-	//context->contextObj[obj].width = width;
 	context->contextObj[obj].MouseOver = 0;
 	
 	strcpy(context->contextObj[obj].title, title);
@@ -867,7 +902,7 @@ int SDL_delObj(t_context * context, int obj) {
 		context->contextObj[obj].buffer_content = NULL;
 	}
 	
-	for (i = obj; i < (context->nbObj); i++) {
+	for (i = obj; i < (context->nbObj)-1; i++) {
 	
 		context->contextObj[i] = context->contextObj[i+1];
 	
@@ -914,7 +949,10 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	
 	context->contextText[context->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
-	if (id != NULL) *id = (context->nbText);
+	if (id != NULL) {
+		*id = (context->nbText);
+		context->contextText[context->nbText].id = id;
+	}
 	context->nbText = (context->nbText)+1;
 	
 	return 1;
@@ -958,7 +996,7 @@ int SDL_delText(t_context * context, int idtext) {
 		context->contextText[idtext].buffer = NULL;
 	}
 	
-	for (i = idtext; i < (context->nbText); i++) {
+	for (i = idtext; i < (context->nbText)-1; i++) {
 	
 		context->contextText[i] = context->contextText[i+1];
 	

@@ -69,6 +69,7 @@ typedef struct {
 	t_typeForm typeForm; //Only for form obj
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	SDL_Surface *buffer_title, *buffer_content;
+	int * id;
 	
 } t_object;
 
@@ -85,6 +86,7 @@ typedef struct {
 	int x;
 	int y;
 	SDL_Surface *buffer;
+	int * id;
 	
 } t_text;
 
@@ -99,7 +101,8 @@ typedef struct {
 	int x; /*!< Position x relative au contexte parent */
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */
-
+	int * id;
+	
 } t_image;
 
 /**
@@ -129,7 +132,7 @@ typedef struct {
 	int x, y;
 	int position, animation;
 	int hide; /*!< Indique si le sprite doit être afficher */
-
+	
 } t_sprite;
 
 /**
@@ -273,7 +276,7 @@ int SDL_captureforInput(t_context * context, int obj);
 * \param type Bouton ou champ de saisie
 * \param title Titre de l'objet
 * \param align Alignement du texte
-* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquel sera stocké le résultat, sinon mettre à NULL.
+* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquelle sera stocké le résultat, sinon mettre à NULL.
 * \param typeForm S'il s'agit d'un champs de saisie, préciser le masque de saisie, sinon mettre NONE.
 * \param x Position x relative au contexte de l'objet
 * \param y Position y relative au contexte de l'objet

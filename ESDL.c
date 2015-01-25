@@ -1105,6 +1105,7 @@ void SDL_unload() {
 	IMG_Quit();
 	if (tff_loaded) TTF_Quit();
 	if (audio_loaded) {
+		SDL_unloadallSound();
 		FMOD_System_Close(fmod_system);
 		FMOD_System_Release(fmod_system);
 	}

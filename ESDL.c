@@ -712,6 +712,8 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 		
 	}
 	
+	context->contextObj[context->nbObj].id = NULL;
+	
 	if (id != NULL) {
 		*id = context->nbObj;
 		context->contextObj[context->nbObj].id = id;
@@ -765,6 +767,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	context->contextImg[context->nbImg].y = y;
 	
 	context->contextImg[context->nbImg].buffer = tmp;
+	context->contextImg[context->nbImg].id = NULL;
 	
 	if (id != NULL) {
 		*id = (context->nbImg);
@@ -813,21 +816,28 @@ int SDL_delImage(t_context * context, int idimg) {
 		fprintf(stderr, "<! Error> EasySDL: Want to delete image id = %i in %s with only %i image(s) loaded, ignoring..\n", idimg, context->title, context->nbImg);
 		return 0;
 	}
+	
 	int i = 0;
 	
 	if (context->contextImg[idimg].buffer) {
+		
 		SDL_FreeSurface(context->contextImg[idimg].buffer);
 		context->contextImg[idimg].buffer = NULL;
+		
 	}
+	
+	if (context->contextImg[idimg].id) *(context->contextImg[idimg].id) = -1;
 	
 	for (i = idimg; i < (context->nbImg)-1; i++) {
 	
 		context->contextImg[i] = context->contextImg[i+1];
-	
+		if (context->contextImg[i].id) *(context->contextImg[i].id) = *(context->contextImg[i].id) - 1;
+		
 	}
 	
-	context->nbImg = (context->nbImg)-1;
+	
 	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
+	context->nbImg = (context->nbImg)-1;
 	
 	return 1;
 
@@ -898,19 +908,23 @@ int SDL_delObj(t_context * context, int obj) {
 	}
 	
 	if (context->contextObj[obj].buffer_content) {
+		
 		SDL_FreeSurface(context->contextObj[obj].buffer_content);
 		context->contextObj[obj].buffer_content = NULL;
+		
 	}
+	
+	if (context->contextObj[obj].id) *(context->contextObj[obj].id) = -1;
 	
 	for (i = obj; i < (context->nbObj)-1; i++) {
 	
 		context->contextObj[i] = context->contextObj[i+1];
-	
+		if (context->contextObj[i].id) *(context->contextObj[i].id) = *(context->contextObj[i].id) - 1;
+		
 	}
 	
-	context->nbObj = (context->nbObj)-1;
-	
 	context->contextObj = (t_object*) realloc(context->contextObj, sizeof(t_object)*(context->nbObj));
+	context->nbObj = (context->nbObj)-1;
 	
 	return 1;
 
@@ -948,6 +962,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	context->contextText[context->nbText].y = y;
 	
 	context->contextText[context->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
+	context->contextText[context->nbText].id = NULL;
 	
 	if (id != NULL) {
 		*id = (context->nbText);
@@ -996,14 +1011,17 @@ int SDL_delText(t_context * context, int idtext) {
 		context->contextText[idtext].buffer = NULL;
 	}
 	
+	if (context->contextText[idtext].id) *(context->contextText[idtext].id) = -1;
+	
 	for (i = idtext; i < (context->nbText)-1; i++) {
 	
 		context->contextText[i] = context->contextText[i+1];
-	
+		if (context->contextText[i].id) *(context->contextText[i].id) = *(context->contextText[i].id) - 1;
+		
 	}
 	
-	context->nbText = (context->nbText)-1;
 	context->contextText = (t_text*) realloc(context->contextText, sizeof(t_text)*(context->nbText));
+	context->nbText = (context->nbText)-1;
 	
 	return 1;
 }

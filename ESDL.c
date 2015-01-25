@@ -26,7 +26,7 @@ int buffer_deliver = 1;
 TTF_Font *ttf_police = NULL;
 
 int nbSnd = 0;
-int tff_loaded = 0, audio_loaded = 0;
+int ttf_loaded = 0, audio_loaded = 0;
 
 int DELAY_EACH_FRAME = 50;
 char * resSND = NULL, * resIMG = NULL, * resTTF = NULL;
@@ -383,7 +383,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 			fprintf(stderr, "<! Fatal> EasySDL: Cannot load %s\n<?> EasySDL: Exit 0\n", file);
 			exit(0); 
 		}
-		tff_loaded = 1;
+		ttf_loaded = 1;
 	}
 	
 	SDL_EnableUNICODE(1);
@@ -599,7 +599,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	context->contextSprite[context->nbSprite].buffer = tmp;
 	
 	/* Does not work for now.. need help for this one */
-	//SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
+	SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	
 	context->contextSprite[context->nbSprite].sp_height = sp_height;
 	context->contextSprite[context->nbSprite].sp_width = sp_width;
@@ -660,6 +660,7 @@ int SDL_delSprite(t_context *context, int idSprite) {
 int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
 	
 	t_object * n_realloc = NULL;
+	if (!ttf_loaded) return 0;
 	
 	if (!context) {
 		fprintf(stderr, "<! Warning> EasySDL: Want to add object to undefined context, ignoring..\n");
@@ -934,7 +935,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	
 	t_text * n_realloc = NULL;
 	
-	if (context == NULL) return 0;
+	if (!context || !ttf_loaded) return 0;
 	
 	if (context->nbText == 0) {
 	
@@ -1157,13 +1158,33 @@ int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y)
 }
 
 void SDL_loadRessources() {
-
-	BTN_OVER = IMG_Load("ressources/images/m_bg_s1.png");
-	BTN_NOTOVER = IMG_Load("ressources/images/m_bg_s0.png");
-	FORM = IMG_Load("ressources/images/ch_saisie_actif.png");
 	
-	FMOD_System_CreateSound(fmod_system, "ressources/snd/select.wav", FMOD_CREATESAMPLE, 0, &SELECT);
-	FMOD_System_CreateSound(fmod_system, "ressources/snd/enter.wav", FMOD_CREATESAMPLE, 0, &ENTER);
+	char filePath[256];
+	
+	sprintf(filePath, "%s%s", resIMG, "m_bg_s1.png");
+	BTN_OVER = IMG_Load(filePath);
+	sprintf(filePath, "%s%s", resIMG, "m_bg_s0.png");
+	BTN_NOTOVER = IMG_Load(filePath);
+	sprintf(filePath, "%s%s", resIMG, "ch_saisie_actif.png");
+	FORM = IMG_Load(filePath);
+	
+	if (!BTN_OVER || !BTN_NOTOVER || !FORM) {
+		fprintf(stderr, "<! Fatal> EasySDL: Missing image ressources in %s please check for m_bg_s1.png, m_bg_s0.png and ch_saisie_actif.png !\n", resIMG);
+		exit(0);
+	}
+	
+	if (audio_loaded) {
+		
+		sprintf(filePath, "%s%s", resSND, "select.wav");
+		FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &SELECT);
+		sprintf(filePath, "%s%s", resSND, "enter.wav");
+		FMOD_System_CreateSound(fmod_system, filePath, FMOD_CREATESAMPLE, 0, &ENTER);
+		
+		if (!SELECT || !ENTER) {
+			fprintf(stderr, "<! Fatal> EasySDL: Missing sound ressources in %s please check for select.wav and enter.wav !\n", resSND);
+			exit(0);
+		}
+	}
 	
 }
 
@@ -1173,17 +1194,19 @@ void SDL_unloadRessources() {
 	if (BTN_NOTOVER) SDL_FreeSurface(BTN_NOTOVER);
 	if (FORM) SDL_FreeSurface(FORM);
 	
-	if (SELECT) FMOD_Sound_Release(SELECT);
-	if (ENTER) FMOD_Sound_Release(ENTER);
+	if (audio_loaded) {
+		if (SELECT) FMOD_Sound_Release(SELECT);
+		if (ENTER) FMOD_Sound_Release(ENTER);
+	}
+	
 	
 }
 
 void SDL_unload() {
 	
 	SDL_unloadRessources();
-	
 	IMG_Quit();
-	if (tff_loaded) TTF_Quit();
+	if (ttf_loaded) TTF_Quit();
 	if (audio_loaded) {
 		SDL_unloadallSound();
 		FMOD_System_Close(fmod_system);
@@ -1381,13 +1404,13 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 		}
 		
 		if ((MouseOverObj != -1) && ((menu->contextObj[MouseOverObj].type) == 0)) {
-			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
+			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
 		//If user clic with left btn on object
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1)) {
 			
-			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
+			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 			SDL_freeContext(menu);
 			
@@ -1456,13 +1479,13 @@ int SDL_generate(t_context * context) {
 		}
 		
 		if ((MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0)) {
-			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
+			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
 		
 		//If user clic (left btn)
 		if ((in.mousebuttons[SDL_BUTTON_LEFT]) && (MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0) ) {
 			
-			FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
+			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
 			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
 
 			return MouseOverObj;

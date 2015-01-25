@@ -34,7 +34,7 @@ Input in;
 
 FMOD_SYSTEM *fmod_system;
 
-void setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
+void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
 
 int SDL_playSound(char * sndfile) {
 	

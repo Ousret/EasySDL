@@ -556,13 +556,13 @@ int SDL_unloadSound(char * sndfile);
 int SDL_unloadallSound();
 
 /**
-* \fn void setDelaySingleFrame(int delay)
+* \fn void SDL_setDelaySingleFrame(int delay)
 * \brief Le temps de rafraichissement entre chaque frame, par défault 50 ms.
 *
 * \param delay Temps en milliseconde entre chaque frame rendu
 * \return void
 */
-void setDelaySingleFrame(int delay);
+void SDL_setDelaySingleFrame(int delay);
 
 /**
 * \fn int SDL_requestExit()

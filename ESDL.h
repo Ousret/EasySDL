@@ -2,8 +2,8 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.5.0
- * \date 23-01-2015
+ * \version 0.5.1
+ * \date 25-01-2015
  *
  * EasySDL est une extension de la librairie SDL standard
  *

@@ -2,8 +2,8 @@
  * \file ESDL.c
  * \brief EasySDL
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.5.0
- * \date 23-01-2015
+ * \version 0.5.1
+ * \date 25-01-2015
  *
  * EasySDL est une extension de la librairie SDL standard
  *
@@ -560,11 +560,20 @@ void SDL_freeContext(t_context * context) {
 int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
 	
 	t_sprite * n_realloc = NULL;
+	SDL_Surface *tmp = NULL;
 	char texturePath[150];
 	
 	if (!context) return 0;
 	if (!strlen(filename)) return 0;
-	//if (!height || !width) return 0;
+	
+	/* Check if file exist or not.. */
+	sprintf(texturePath, "%s%s", resIMG ,filename);
+	tmp = IMG_Load(texturePath);
+	
+	if (!tmp) {
+		fprintf(stdout, "<! Warning> EasySDL: Cannot load sprite %s, ignoring..\n", texturePath);
+		return 0;
+	}
 	
 	if (!(context->nbSprite)) {
 		if (!(context->contextSprite)) {
@@ -582,17 +591,10 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 		}
 	}
 	
-	sprintf(texturePath, "%s%s", resIMG ,filename);
+	context->contextSprite[context->nbSprite].buffer = tmp;
 	
-	context->contextSprite[context->nbSprite].buffer = NULL;
-	context->contextSprite[context->nbSprite].buffer = IMG_Load(texturePath);
-	
-	if (!(context->contextSprite[context->nbSprite].buffer)) {
-		fprintf(stdout, "<! Warning> EasySDL: Cannot load sprite %s, ignore..\n", texturePath);
-	}
-	
-	//SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	/* Does not work for now.. need help for this one */
+	//SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	
 	context->contextSprite[context->nbSprite].sp_height = sp_height;
 	context->contextSprite[context->nbSprite].sp_width = sp_width;
@@ -681,8 +683,6 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 	
 	context->contextObj[context->nbObj].align = align;
 	
-	//context->contextObj[context->nbObj].height = height;
-	//context->contextObj[context->nbObj].width = width;
 	context->contextObj[context->nbObj].MouseOver = 0;
 	context->contextObj[context->nbObj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 	context->contextObj[context->nbObj].buffer_content = NULL;
@@ -714,8 +714,16 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 
 	char texturePath[150];
 	t_image * n_realloc = NULL;
+	SDL_Surface *tmp = NULL;
+	if (!context) return 0;
 	
-	if (context == NULL) return 0;
+	sprintf(texturePath, "%s%s", resIMG, file);
+	tmp = IMG_Load(texturePath);
+	
+	if (!tmp) {
+		fprintf(stderr, "<! Warning> EasySDL: Cannot load image %s, ignoring..\n", texturePath);
+		return 0;
+	}
 	
 	if (context->nbImg == 0) {
 	
@@ -742,16 +750,8 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	
 	context->contextImg[context->nbImg].x = x;
 	context->contextImg[context->nbImg].y = y;
-	//context->contextImg[context->nbImg].height = height;
-	//context->contextImg[context->nbImg].width = width;
 	
-	sprintf(texturePath, "%s%s", resIMG ,file);
-	context->contextImg[context->nbImg].buffer = NULL;
-	context->contextImg[context->nbImg].buffer = IMG_Load(texturePath);
-	
-	if (!(context->contextImg[context->nbImg].buffer)) {
-		fprintf(stdout, "<! Warning> EasySDL: Cannot load %s, ignore..\n", texturePath);
-	}
+	context->contextImg[context->nbImg].buffer = tmp;
 	
 	if (id != NULL) *id = (context->nbImg);
 	

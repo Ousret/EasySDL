@@ -947,13 +947,82 @@ int SDL_delText(t_context * context, int idtext) {
 }
 
 int SDL_isKeyPressed(int KEY_S) {
+	SDL_UpdateEvents(&in);
 	if ((in.key[KEY_S])==1) return 1;
 	return 0;
 }
 
 int SDL_isMousePressed(int MOUSE_S) {
+	SDL_UpdateEvents(&in);
 	if (in.mousebuttons[MOUSE_S]==1) return 1;
 	return 0;
+}
+
+int SDL_getmousex() { return (in.mousex); }
+int SDL_getmousey() { return (in.mousey); }
+
+int SDL_getimagewidth(t_context * context, int imgid) {
+	if (!context || (imgid >= context->nbImg) || !(context->contextImg[imgid].buffer)) return 0;
+	return (context->contextImg[imgid].buffer->w);
+}
+
+int SDL_getimageheight(t_context * context, int imgid) {
+	if (!context || (imgid >= context->nbImg) || !(context->contextImg[imgid].buffer)) return 0;
+	return (context->contextImg[imgid].buffer->h);
+}
+
+int SDL_getposx(t_context * context, int id, t_typeData type) {
+	
+	if (!context) return 0;
+	
+	switch (type) {
+	
+		case BUTTON:
+			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
+			return (context->contextObj[id].x);
+		case SPRITE:
+			if (!(context->contextSprite) || (id >= context->nbSprite)) return 0;
+			return (context->contextSprite[id].x);
+		case IMG:
+			if (!(context->contextImg) || (id >= context->nbImg)) return 0;
+			return (context->contextImg[id].x);
+		case TEXT:
+			if (!(context->contextText) || (id >= context->nbText)) return 0;
+			return (context->contextText[id].x);
+		case INPUT:
+			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
+			return (context->contextObj[id].x);
+		default:
+			return 0;
+	}
+	
+}
+
+int SDL_getposy(t_context * context, int id, t_typeData type) {
+	
+	if (!context) return 0;
+	
+	switch (type) {
+	
+		case BUTTON:
+			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
+			return (context->contextObj[id].y);
+		case SPRITE:
+			if (!(context->contextSprite) || (id >= context->nbSprite)) return 0;
+			return (context->contextSprite[id].y);
+		case IMG:
+			if (!(context->contextImg) || (id >= context->nbImg)) return 0;
+			return (context->contextImg[id].y);
+		case TEXT:
+			if (!(context->contextText) || (id >= context->nbText)) return 0;
+			return (context->contextText[id].y);
+		case INPUT:
+			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
+			return (context->contextObj[id].y);
+		default:
+			return 0;
+	}
+	
 }
 
 void SDL_UpdateEvents(Input* in)

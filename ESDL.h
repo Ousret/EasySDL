@@ -572,6 +572,60 @@ void SDL_setDelaySingleFrame(int delay);
 */
 int SDL_requestExit();
 
+/**
+* \fn int SDL_getmousex()
+* \brief Rend la position x de la souris par rapport à la fenêtre
+*
+* \return Position x (entier)
+*/
+int SDL_getmousex();
+/**
+* \fn int SDL_getmousey()
+* \brief Rend la position y de la souris par rapport à la fenêtre
+*
+* \return Position y (entier)
+*/
+int SDL_getmousey();
+/**
+* \fn int SDL_getimagewidth(t_context * context, int imgid)
+* \brief Nous informe de la largeur d'une image depuis un contexte précis
+*
+* \param context Le contexte concerné
+* \param imgid Identifiant de l'image
+* \return Largeur en pixel (entier)
+*/
+int SDL_getimagewidth(t_context * context, int imgid);
+/**
+* \fn int SDL_getimageheight(t_context * context, int imgid)
+* \brief Nous informe de la hauteur d'une image depuis un contexte précis
+*
+* \param context Le contexte concerné
+* \param imgid Identifiant de l'image
+* \return Hauteur en pixel (entier)
+*/
+int SDL_getimageheight(t_context * context, int imgid);
+
+/**
+* \fn int SDL_getposx(t_context * context, int id, t_typeData type)
+* \brief Nous informe de la position x d'un objet depuis un contexte précis
+*
+* \param context Le contexte concerné
+* \param id Identifiant de l'objet
+* \param type Type d'objet, bouton, champs de saisie, image, etc..
+* \return Position x, pixel (entier).
+*/
+int SDL_getposx(t_context * context, int id, t_typeData type);
+/**
+* \fn int SDL_getposy(t_context * context, int id, t_typeData type)
+* \brief Nous informe de la position y d'un objet depuis un contexte précis
+*
+* \param context Le contexte concerné
+* \param id Identifiant de l'objet
+* \param type Type d'objet, bouton, champs de saisie, image, etc..
+* \return Position y, pixel (entier).
+*/
+int SDL_getposy(t_context * context, int id, t_typeData type);
+
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;
 

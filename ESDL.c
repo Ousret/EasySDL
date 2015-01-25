@@ -393,48 +393,44 @@ int SDL_captureforInput(t_context * context, int obj) {
 					}
 					
 				}else {
-					
-					if (((unsigned int) current_len <= (unsigned int) sizeof(context->contextObj[obj].dest))) {
 						
-						switch (context->contextObj[obj].typeForm) {
+					switch (context->contextObj[obj].typeForm) {
 					
-							case NUMERIC:
-								if (buffer >= '0' && buffer <= '9') {
-									context->contextObj[obj].dest[current_len] = buffer;
-									context->contextObj[obj].dest[current_len+1] = '\0';
-								}
-								break;
-							
-							case ALPHA:
-								if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z')) {
-									context->contextObj[obj].dest[current_len] = buffer;
-									context->contextObj[obj].dest[current_len+1] = '\0';
-								}
-							
-								break;
-							
-							case ALPHANUMERIC:
-								if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z') || (buffer >= '0' && buffer <= '9')) {
-									context->contextObj[obj].dest[current_len] = buffer;
-									context->contextObj[obj].dest[current_len+1] = '\0';
-								}
-							
-								break;
-							
-							case NOMASK:
-							
+						case NUMERIC:
+							if (buffer >= '0' && buffer <= '9') {
 								context->contextObj[obj].dest[current_len] = buffer;
 								context->contextObj[obj].dest[current_len+1] = '\0';
-								break;
+							}
+							break;
 							
-							default:
-						
+						case ALPHA:
+							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z')) {
 								context->contextObj[obj].dest[current_len] = buffer;
 								context->contextObj[obj].dest[current_len+1] = '\0';
-								break;
-					
-						}
+							}
+							
+							break;
+							
+						case ALPHANUMERIC:
+							if ((buffer >= 'a' && buffer <= 'z') || (buffer >= 'A' && buffer <= 'Z') || (buffer >= '0' && buffer <= '9')) {
+								context->contextObj[obj].dest[current_len] = buffer;
+								context->contextObj[obj].dest[current_len+1] = '\0';
+							}
+							
+							break;
+							
+						case NOMASK:
+							
+							context->contextObj[obj].dest[current_len] = buffer;
+							context->contextObj[obj].dest[current_len+1] = '\0';
+							break;
+							
+						default:
 						
+							context->contextObj[obj].dest[current_len] = buffer;
+							context->contextObj[obj].dest[current_len+1] = '\0';
+							break;
+					
 					}
 					
 				}
@@ -1084,7 +1080,8 @@ void SDL_generateFrame(t_context * context) {
 						positionFond.x += 20;
 						break;
 					case ALIGN_RIGHT:
-						positionFond.x += 20;
+						positionFond.x += ((BTN_OVER->w)-(context->contextObj[i].buffer_title->w))-5;
+						
 						break;
 				}
 				

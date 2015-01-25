@@ -555,11 +555,30 @@ int SDL_unloadSound(char * sndfile);
 */
 int SDL_unloadallSound();
 
+/**
+* \fn void setDelaySingleFrame(int delay)
+* \brief Le temps de rafraichissement entre chaque frame, par défault 50 ms.
+*
+* \param delay Temps en milliseconde entre chaque frame rendu
+* \return void
+*/
+void setDelaySingleFrame(int delay);
+
+/**
+* \fn int SDL_requestExit()
+* \brief Vérifie si l'utilisateur requiert la fermeture du programme
+*
+* \return bool
+*/
+int SDL_requestExit();
+
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;
 
 t_audio * fmodbuffer;
 extern int nbSnd;
+
+extern int DELAY_EACH_FRAME;
 
 extern SDL_Surface *screen;
 extern SDL_Color colorRed, colorWhite, colorBlack, colorGreenLight;

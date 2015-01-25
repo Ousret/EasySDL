@@ -28,9 +28,13 @@ TTF_Font *ttf_police = NULL;
 int nbSnd = 0;
 int tff_loaded = 0, audio_loaded = 0;
 
+int DELAY_EACH_FRAME = 50;
+
 Input in;
 
 FMOD_SYSTEM *fmod_system;
+
+void setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
 
 int SDL_playSound(char * sndfile) {
 	
@@ -192,10 +196,16 @@ int SDL_contextEmpty(t_context * context) {
 	return 0;
 }
 
+int SDL_requestExit() {
+	return (in.quit);
+}
+
 int SDL_ismouseover(t_context * context, t_typeData type) {
 	
 	int i = 0, overobj = -1;
 	if (!context) return overobj;
+	
+	SDL_UpdateEvents(&in);
 	
 	switch (type) {
 	
@@ -1284,7 +1294,14 @@ int SDL_generate(t_context * context) {
 			SDL_FreeSurface(screen);
 			forceFrame = 0;
 			
-			if (uniqueFrame == 1) return 0;
+			if (uniqueFrame == 1) {
+				if (in.quit) {
+					SDL_freeContext(context);
+					exit(0);
+				}
+				SDL_Delay(DELAY_EACH_FRAME);
+				return 0;
+			}
 			if (firstFrame == 1) firstFrame = 2;
 		}
 		

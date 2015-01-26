@@ -15,25 +15,18 @@
 
 #include "ESDL.h"
 
+/* SDL */
 SDL_Surface *screen = NULL, *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
 SDL_Color colorRed = {255, 0, 0, 0}, colorWhite = {255, 255, 255, 0}, colorBlack = {0, 0, 0, 0}, colorGreenLight = {90, 169, 120, 0};
 SDL_Event GlobalEvent;
-FMOD_SOUND *SELECT = NULL, *ENTER = NULL;
-
-char buffer = 0;
-int buffer_deliver = 1;
-
 TTF_Font *ttf_police = NULL;
-
-int nbSnd = 0;
-int ttf_loaded = 0, audio_loaded = 0;
-
-int DELAY_EACH_FRAME = 50;
-char * resSND = NULL, * resIMG = NULL, * resTTF = NULL;
-
+/* FMODex */
+FMOD_SOUND *SELECT = NULL, *ENTER = NULL;
+FMOD_SYSTEM *fmod_system = NULL;
+/* Ref */
+int buffer_deliver = 1, nbSnd = 0, ttf_loaded = 0, audio_loaded = 0, DELAY_EACH_FRAME = 50;
+char * resSND = NULL, * resIMG = NULL, * resTTF = NULL, buffer = 0;
 Input in;
-
-FMOD_SYSTEM *fmod_system;
 
 void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
 
@@ -314,9 +307,7 @@ void SDL_setIMGFolder(char * newFolder) {
 void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support) {
 	
     int sdl_start = 0;
-	char file[256]; //Generating file path
-	
-	memset(file, 0, sizeof(file));
+	char file[256] = ""; //Generating file path
 	
 	if (!resSND) SDL_setSNDFolder("ressources/snd/");
 	if (!resTTF) SDL_setTTFFolder("ressources/ttf/");
@@ -335,18 +326,16 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
     
 	atexit (SDL_unload);
 	
-	if (fullscreen == 1) {
+	if (fullscreen) {
 		screen = SDL_SetVideoMode (width, height, 16, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_FULLSCREEN);
 	}else{
 		screen = SDL_SetVideoMode (width, height, 16, SDL_HWSURFACE | SDL_DOUBLEBUF);
 	}
     
-    if (screen == NULL)
+    if (!screen)
     {
-        
         fprintf (stderr, "<! Fatal> EasySDL: Unable to load context at %ix%i in 16 bits': %s\n", width, height ,SDL_GetError ());
         exit (2);
-        
     }
     
 	SDL_WM_SetCaption (title, NULL);
@@ -740,14 +729,16 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 		return 0;
 	}
 	
-	if (context->nbImg == 0) {
+	if (!(context->nbImg)) {
 	
-		if (context->contextImg == NULL) {
+		if (!(context->contextImg)) {
 		
 			context->contextImg = (t_image*) malloc(sizeof(t_image));
 			
 		}else{
 			
+			fprintf(stderr, "<! Error> Count 0 image but context image area in %s seem not empty, reseting area..\n", context->title);
+			context->contextImg = NULL;
 			return 0;
 			
 		}
@@ -1029,18 +1020,22 @@ int SDL_delText(t_context * context, int idtext) {
 
 int SDL_isKeyPressed(int KEY_S) {
 	SDL_UpdateEvents(&in);
-	if ((in.key[KEY_S])==1) return 1;
-	return 0;
+	return in.key[KEY_S];
 }
 
 int SDL_isMousePressed(int MOUSE_S) {
 	SDL_UpdateEvents(&in);
-	if (in.mousebuttons[MOUSE_S]==1) return 1;
-	return 0;
+	return in.mousebuttons[MOUSE_S];
 }
 
-int SDL_getmousex() { return (in.mousex); }
-int SDL_getmousey() { return (in.mousey); }
+int SDL_getmousex() { 
+	SDL_UpdateEvents(&in);
+	return (in.mousex); 
+}
+int SDL_getmousey() { 
+	SDL_UpdateEvents(&in);
+	return (in.mousey); 
+}
 
 int SDL_getimagewidth(t_context * context, int imgid) {
 	if (!context || (imgid >= context->nbImg) || !(context->contextImg[imgid].buffer)) return 0;
@@ -1075,6 +1070,7 @@ int SDL_getposx(t_context * context, int id, t_typeData type) {
 			return (context->contextObj[id].x);
 		default:
 			return 0;
+			
 	}
 	
 }
@@ -1314,7 +1310,6 @@ void SDL_generateFrame(t_context * context) {
 						break;
 				}
 				
-				//positionFond.x = (context->contextObj[i].x)+10;
 				positionFond.y = (context->contextObj[i].y)+5;
 				SDL_BlitSurface(context->contextObj[i].buffer_content, NULL, context->contextSurface, &positionFond);
 				
@@ -1381,7 +1376,6 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 	}
 	
 	SDL_newImage(menu, NULL, backgroundPic, 0, 0);
-	//SDL_newTexture(menu, NULL, "BarreLaterale.png", 80, 25);
 	
 	while (1) {
 		

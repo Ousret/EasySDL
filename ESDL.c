@@ -162,7 +162,10 @@ int SDL_unloadallSound() {
 		
 	}
 	
-	if (fmodbuffer) free (fmodbuffer);
+	if (fmodbuffer) {
+		free (fmodbuffer);
+		fmodbuffer = NULL;
+	}
 	nbSnd = 0;
 	
 	return 1;

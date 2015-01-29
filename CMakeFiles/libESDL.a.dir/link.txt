@@ -1,0 +1,1 @@
+/usr/bin/cc   -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/libESDL.a.dir/src/ESDL.c.o  -o bin/libESDL.a  

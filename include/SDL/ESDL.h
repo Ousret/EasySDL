@@ -217,17 +217,17 @@ void SDL_unload();
 int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions);
 
 /**
-* \fn int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y)
+* \fn int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y)
 * \brief Vérifie si la souris est dans la zone définie en paramètre
 *
 * \param context Contexte de référence concerné
-* \param hauteur Hauteur de la zone en pixel
-* \param largeur Largeur de la zone en pixel
+* \param height Hauteur de la zone en pixel
+* \param width Largeur de la zone en pixel
 * \param x Coordonnée x du point supérieur gauche
 * \param y Coordonnée y du point supérieur gauche
 * \return bool
 */
-int SDL_ismouseoverArea(t_context * context, int hauteur, int largeur, int x, int y);
+int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y);
 
 /**
 * \fn int SDL_ismouseover(t_context * context, t_typeData type)

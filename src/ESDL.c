@@ -393,7 +393,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	
 }
 
-int SDL_captureforInput(t_context * context, int obj) {
+int SDL_captureInputTo(t_context * context, int obj) {
 
 	int current_len = 0;
 	//Return if there's nothing to process
@@ -607,7 +607,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	return 1;
 }
 
-int SDL_modSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
 
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
@@ -775,7 +775,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 
 }
 
-int SDL_modImage(t_context * context, int idimg, int x, int y) {
+int SDL_editImage(t_context * context, int idimg, int x, int y) {
 	
 	if (!context) {
 		fprintf(stderr, "<! Error> EasySDL: Invalid context when trying to modify image id = %i, ignoring..\n", idimg);
@@ -838,7 +838,7 @@ int SDL_delImage(t_context * context, int idimg) {
 
 }
 
-int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
+int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {
 
 	if (!context) {
 		fprintf(stderr, "<! Error> EasySDL: Invalid context when trying to modify object id = %i, ignoring..\n", obj);
@@ -969,11 +969,11 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 
 }
 
-int SDL_modText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y) {
+int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y) {
 
 	if (context == NULL) return 0;
 	if (context->nbText <= idtext) return 0;
-	if (context->contextText == NULL) return 0;
+	if (!(context->contextText)) return 0;
 	
 	context->contextText[idtext].couleur = couleur;
 	if (content) context->contextText[idtext].content = content;
@@ -1146,9 +1146,9 @@ void SDL_UpdateEvents(Input* in)
 	}
 }
 
-int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y) {
+int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y) {
 	
-	if ( (in.mousey-(context->y)) > y && (in.mousey-(context->y)) <= y+hauteur && (in.mousex-(context->x)) > x && (in.mousex-(context->x)) <= x+largeur ) {
+	if ( (in.mousey-(context->y)) > y && (in.mousey-(context->y)) <= y+height && (in.mousex-(context->x)) > x && (in.mousex-(context->x)) <= x+width ) {
 		return 1;
 	}else{
 		return 0;

@@ -258,14 +258,14 @@ void SDL_generateFrame(t_context * context);
 void SDL_UpdateEvents(Input* in);
 
 /**
-* \fn int SDL_captureforInput(t_context * context, int obj)
+* \fn int SDL_captureInput(t_context * context, int obj)
 * \brief Copie le dernier caractère capturé dans la bonne destination
 *
 * \param context Contexte concerné
 * \param obj Identifiant de l'objet concerné
 * \return bool
 */
-int SDL_captureforInput(t_context * context, int obj);
+int SDL_captureInput(t_context * context, int obj);
 
 /**
 * \fn int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y)

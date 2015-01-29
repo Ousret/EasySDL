@@ -393,7 +393,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	
 }
 
-int SDL_captureInputTo(t_context * context, int obj) {
+int SDL_captureInput(t_context * context, int obj) {
 
 	int current_len = 0;
 	//Return if there's nothing to process
@@ -1454,7 +1454,7 @@ int SDL_generate(t_context * context) {
 		} while ((MouseOverObjPrev == MouseOverObj) && (!in.mousebuttons[SDL_BUTTON_LEFT]) && (buffer_deliver == 1) && (in.quit != 1) && (uniqueFrame != 1));
 		
 		if (buffer_deliver == 0) {
-			SDL_captureforInput(context, MouseOverObj);
+			SDL_captureInput(context, MouseOverObj);
 			forceFrame = 1;
 		}
 		

@@ -227,7 +227,7 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions);
 * \param y Coordonnée y du point supérieur gauche
 * \return bool
 */
-int SDL_IsMouseOver(t_context * context, int hauteur, int largeur, int x, int y);
+int SDL_ismouseoverArea(t_context * context, int hauteur, int largeur, int x, int y);
 
 /**
 * \fn int SDL_ismouseover(t_context * context, t_typeData type)
@@ -284,7 +284,7 @@ int SDL_captureforInput(t_context * context, int obj);
 */
 int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
 /**
-* \fn int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y)
+* \fn int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y)
 * \brief Modifie les propriétés d'un objet
 *
 * \param context Contexte concerné
@@ -298,7 +298,7 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 * \param y Position y relative au contexte de l'objet
 * \return bool
 */
-int SDL_modObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
+int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
 /**
 * \fn int SDL_delObj(t_context * context, int obj)
 * \brief Supprime d'un contexte un objet
@@ -323,7 +323,7 @@ int SDL_delObj(t_context * context, int obj);
 */
 int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y);
 /**
-* \fn int SDL_modText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y)
+* \fn int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y)
 * \brief Modifie une entrée texte au préalable chargée avec SDL_newText()
 *
 * \param context Contexte concerné
@@ -334,7 +334,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_modText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y);
+int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y);
 /**
 * \fn int SDL_delText(t_context * context, int idtext)
 * \brief Supprime d'un contexte un objet texte
@@ -358,7 +358,7 @@ int SDL_delText(t_context * context, int idtext);
 */
 int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
 /**
-* \fn int SDL_modImage(t_context * context, int idimg, int x, int y)
+* \fn int SDL_editImage(t_context * context, int idimg, int x, int y)
 * \brief Modifie les propriétés d'une image
 *
 * \param context Contexte concerné
@@ -367,7 +367,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_modImage(t_context * context, int idimg, int x, int y);
+int SDL_editImage(t_context * context, int idimg, int x, int y);
 /**
 * \fn int SDL_delImage(t_context * context, int idimg)
 * \brief Supprimer une image d'un contexte
@@ -396,7 +396,7 @@ int SDL_delImage(t_context * context, int idimg);
 */
 int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
 /**
-* \fn int SDL_modSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide)
+* \fn int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide)
 * \brief Modifie le sprite d'un contexte donnée à condition qu'il soit déjà chargé avec SDL_newSprite()
 *
 * \param context Contexte concerné
@@ -408,7 +408,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 * \param hide Pour ne pas afficher = 1, 0 pour afficher.
 * \return bool
 */
-int SDL_modSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
 /**
 * \fn int SDL_delSprite(t_context *context, int idSprite)
 * \brief Supprime un sprite d'un contexte donnée

@@ -3,7 +3,10 @@ cmake_minimum_required(VERSION 2.6)
 project(libESDL)
 set(LIBRARY_OUTPUT_PATH bin)
 
-include_directories(include/SDL)
+include_directories(include)
+if(UNIX)
+    include_directories(/opt/local/include/SDL)
+endif()
 
 file(
         GLOB_RECURSE
@@ -19,4 +22,4 @@ add_library(
 
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
-  DESTINATION include/SDL)
+  DESTINATION include)

@@ -35,10 +35,10 @@ RM = /opt/local/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL"
+CMAKE_SOURCE_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL"
+CMAKE_BINARY_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL"
 
 # Include any dependencies generated for this target.
 include CMakeFiles/ESDL.dir/depend.make
@@ -51,17 +51,17 @@ include CMakeFiles/ESDL.dir/flags.make
 
 CMakeFiles/ESDL.dir/src/ESDL.c.o: CMakeFiles/ESDL.dir/flags.make
 CMakeFiles/ESDL.dir/src/ESDL.c.o: src/ESDL.c
-	$(CMAKE_COMMAND) -E cmake_progress_report "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/CMakeFiles" $(CMAKE_PROGRESS_1)
+	$(CMAKE_COMMAND) -E cmake_progress_report "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/CMakeFiles" $(CMAKE_PROGRESS_1)
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Building C object CMakeFiles/ESDL.dir/src/ESDL.c.o"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/ESDL.dir/src/ESDL.c.o   -c "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/src/ESDL.c"
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -o CMakeFiles/ESDL.dir/src/ESDL.c.o   -c "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/src/ESDL.c"
 
 CMakeFiles/ESDL.dir/src/ESDL.c.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/ESDL.dir/src/ESDL.c.i"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -E "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/src/ESDL.c" > CMakeFiles/ESDL.dir/src/ESDL.c.i
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -E "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/src/ESDL.c" > CMakeFiles/ESDL.dir/src/ESDL.c.i
 
 CMakeFiles/ESDL.dir/src/ESDL.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/ESDL.dir/src/ESDL.c.s"
-	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -S "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/src/ESDL.c" -o CMakeFiles/ESDL.dir/src/ESDL.c.s
+	/usr/bin/cc  $(C_DEFINES) $(C_FLAGS) -S "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/src/ESDL.c" -o CMakeFiles/ESDL.dir/src/ESDL.c.s
 
 CMakeFiles/ESDL.dir/src/ESDL.c.o.requires:
 .PHONY : CMakeFiles/ESDL.dir/src/ESDL.c.o.requires
@@ -98,6 +98,6 @@ CMakeFiles/ESDL.dir/clean:
 .PHONY : CMakeFiles/ESDL.dir/clean
 
 CMakeFiles/ESDL.dir/depend:
-	cd "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/CMakeFiles/ESDL.dir/DependInfo.cmake" --color=$(COLOR)
+	cd "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL" && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL" "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/CMakeFiles/ESDL.dir/DependInfo.cmake" --color=$(COLOR)
 .PHONY : CMakeFiles/ESDL.dir/depend
 

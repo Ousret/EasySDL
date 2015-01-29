@@ -47,10 +47,10 @@ RM = /opt/local/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL"
+CMAKE_SOURCE_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL"
+CMAKE_BINARY_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL"
 
 #=============================================================================
 # Target rules for target CMakeFiles/ESDL.dir
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL"
 CMakeFiles/ESDL.dir/all:
 	$(MAKE) -f CMakeFiles/ESDL.dir/build.make CMakeFiles/ESDL.dir/depend
 	$(MAKE) -f CMakeFiles/ESDL.dir/build.make CMakeFiles/ESDL.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/CMakeFiles"  1
+	$(CMAKE_COMMAND) -E cmake_progress_report "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/CMakeFiles"  1
 	@echo "Built target ESDL"
 .PHONY : CMakeFiles/ESDL.dir/all
 
@@ -69,9 +69,9 @@ all: CMakeFiles/ESDL.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/ESDL.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/CMakeFiles" 1
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/CMakeFiles" 1
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/ESDL.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/CMakeFiles" 0
 .PHONY : CMakeFiles/ESDL.dir/rule
 
 # Convenience name for target.

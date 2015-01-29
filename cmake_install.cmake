@@ -1,4 +1,4 @@
-# Install script for directory: /Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL
+# Install script for directory: /Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -28,11 +28,11 @@ if(NOT CMAKE_INSTALL_COMPONENT)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/SDL" TYPE FILE FILES "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/include/SDL/ESDL.h")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/include/ESDL.h")
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/bin/libESDL.a")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/bin/libESDL.a")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libESDL.a" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libESDL.a")
     execute_process(COMMAND "/usr/bin/ranlib" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libESDL.a")
@@ -45,7 +45,7 @@ else()
   set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 endif()
 
-file(WRITE "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/${CMAKE_INSTALL_MANIFEST}" "")
+file(WRITE "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/${CMAKE_INSTALL_MANIFEST}" "")
 foreach(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  file(APPEND "/Users/Ahmed/Documents/L2 SPI/C/Personnels/EasySDL/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  file(APPEND "/Users/Ahmed/Documents/L2 SPI/C/Personnels/ESDL/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 endforeach()

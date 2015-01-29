@@ -218,7 +218,7 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			for (i = 0; i < (context->nbObj); i++) {
 				
 				if (context->contextObj[i].type == BUTTON) {
-					if (SDL_IsMouseOver(context, BTN_NOTOVER->h, BTN_NOTOVER->w, context->contextObj[i].x, context->contextObj[i].y)) {
+					if (SDL_ismouseoverArea(context, BTN_NOTOVER->h, BTN_NOTOVER->w, context->contextObj[i].x, context->contextObj[i].y)) {
 						context->contextObj[i].MouseOver = 1;
 						overobj = i;
 					}else{
@@ -236,7 +236,7 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			for (i = 0; i < (context->nbObj); i++) {
 				
 				if (context->contextObj[i].type == INPUT) {
-					if (SDL_IsMouseOver(context, FORM->h, FORM->w, context->contextObj[i].x, context->contextObj[i].y)) {
+					if (SDL_ismouseoverArea(context, FORM->h, FORM->w, context->contextObj[i].x, context->contextObj[i].y)) {
 						context->contextObj[i].MouseOver = 1;
 						overobj = i;
 					}else{
@@ -253,7 +253,7 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			
 			for (i = 0; i < (context->nbImg); i++) {
 				
-				if (SDL_IsMouseOver(context, context->contextImg[i].buffer->h, context->contextImg[i].buffer->w, context->contextImg[i].x, context->contextImg[i].y)) {
+				if (SDL_ismouseoverArea(context, context->contextImg[i].buffer->h, context->contextImg[i].buffer->w, context->contextImg[i].x, context->contextImg[i].y)) {
 					overobj = i;
 				}
 				
@@ -266,7 +266,7 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			
 			for (i = 0; i < (context->nbText); i++) {
 				
-				if (SDL_IsMouseOver(context, context->contextText[i].buffer->h, context->contextText[i].buffer->w, context->contextText[i].x, context->contextText[i].y)) {
+				if (SDL_ismouseoverArea(context, context->contextText[i].buffer->h, context->contextText[i].buffer->w, context->contextText[i].x, context->contextText[i].y)) {
 					overobj = i;
 				}
 				
@@ -279,7 +279,7 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			
 			for (i = 0; i < (context->nbSprite); i++) {
 				
-				if (SDL_IsMouseOver(context, context->contextSprite[i].sp_height, context->contextSprite[i].sp_width, context->contextSprite[i].x, context->contextSprite[i].y)) {
+				if (SDL_ismouseoverArea(context, context->contextSprite[i].sp_height, context->contextSprite[i].sp_width, context->contextSprite[i].x, context->contextSprite[i].y)) {
 					overobj = i;
 				}
 				

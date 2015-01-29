@@ -416,7 +416,7 @@ int SDL_captureforInput(t_context * context, int obj) {
 					}
 					
 				}else {
-						
+					
 					switch (context->contextObj[obj].typeForm) {
 					
 						case NUMERIC:

@@ -1,2 +1,0 @@
-/usr/bin/ar cr bin/libESDL.a  CMakeFiles/ESDL.dir/src/ESDL.c.o
-/usr/bin/ranlib bin/libESDL.a

@@ -2,7 +2,7 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.5.1
+ * \version 0.5.2
  * \date 25-01-2015
  *
  * EasySDL est une extension de la librairie SDL standard
@@ -22,9 +22,6 @@
 	#include <SDL_image.h>
 	#include <fmodex/fmod.h>
 #endif
-
-#define RTOK 0x0000ff
-#define RTCANCEL 0x00ff00
 
 typedef enum {
 
@@ -50,18 +47,10 @@ typedef enum {
 	INPUT, /*!< Les champs de saisie */
 	IMG, /*!< Les images */
 	SPRITE, /*!< Les sprites */
-	TEXT /*!< Le texte */
+	TEXT, /*!< Le texte */
+	RECTANGLE /*!< Rectangles */
 	
 } t_typeData;
-
-typedef enum {
-
-	INFO,
-	WARN,
-	ERROR
-
-} t_typeMessageBox;
-
 
 /**
  * \struct t_object
@@ -443,6 +432,44 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 int SDL_delSprite(t_context *context, int idSprite);
 
 /**
+* \fn int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y)
+* \brief Ajoute un nouveau rectangle pour un contexte donnée
+*
+* \param context Contexte concerné
+* \param idrect Lier à un entier le nouveau rectangle sinon mettre à NULL
+* \param color Couleur du rectangle (SDL_Color)
+* \param height Hauteur du nouveau rectangle
+* \param width Largeur du nouveau rectangle
+* \param x Position x par rapport au contexte
+* \param y Position y par rapport au contexte
+* \return bool
+*/
+int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y);
+/**
+* \fn int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y)
+* \brief Modifie un rectangle existant dans un contexte donnée
+*
+* \param context Contexte concerné
+* \param idrect Identifiant du rectangle concerné
+* \param color Couleur du rectangle (SDL_Color)
+* \param height Hauteur du rectangle
+* \param width Largeur du rectangle
+* \param x Position x par rapport au contexte
+* \param y Position y par rapport au contexte
+* \return bool
+*/
+int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y);
+/**
+* \fn int SDL_delRect(t_context *context, int idrect)
+* \brief Supprime un rectangle existant dans un contexte donnée
+*
+* \param context Contexte concerné
+* \param idrect Identifiant du rectangle concerné
+* \return bool
+*/
+int SDL_delRect(t_context *context, int idrect);
+
+/**
 * \fn int SDL_generate(t_context * context)
 * \brief Génère une frame et l'affiche à l'écran, fonction blocante s'il existe des objets (bouton(s) ou champ(s) de saisie).
 *
@@ -676,11 +703,6 @@ void SDL_setTTFFolder(char * newFolder);
 * \return void
 */
 void SDL_setIMGFolder(char * newFolder);
-
-void SDL_MessageBox(t_context *dst, char * msg, t_typeMessageBox type);
-int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y);
-int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y);
-int SDL_delRect(t_context *context, int idrect);
 
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;

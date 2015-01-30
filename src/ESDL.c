@@ -2,7 +2,7 @@
  * \file ESDL.c
  * \brief EasySDL
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.5.1
+ * \version 0.5.2
  * \date 25-01-2015
  *
  * EasySDL est une extension de la librairie SDL standard
@@ -30,13 +30,6 @@ char * resSND = NULL, * resIMG = NULL, * resTTF = NULL, buffer = 0;
 Input in;
 
 void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
-
-void SDL_MessageBox(t_context *dst, char * msg, t_typeMessageBox type){
-	
-	int ligne = getcharocc(msg, '\n'), i = 0;
-	
-	
-}
 
 int SDL_playSound(char * sndfile) {
 	
@@ -295,10 +288,22 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			}
 			
 			break;
+			
+		case RECTANGLE:
+			
+			if (!(context->contextRect) || !(context->nbRect)) return overobj;
+			
+			for (i = 0; i < (context->nbRect); i++) {
+				
+				if (SDL_ismouseoverArea(context, context->contextRect[i].def.h, context->contextRect[i].def.w, context->contextRect[i].def.x, context->contextRect[i].def.y)) {
+					overobj = i;
+				}
+				
+			}
+			
+			break;
 	
 	}
-	
-	
 	
 	return overobj; 
 	
@@ -596,6 +601,7 @@ int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, i
 	context->contextRect[context->nbRect].def.x = x;
 	context->contextRect[context->nbRect].def.y = y;
 	
+	
 	if (idrect) {
 		*idrect = context->nbRect;
 	}
@@ -615,6 +621,7 @@ int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, in
 	context->contextRect[idrect].def.w = width;
 	context->contextRect[idrect].def.x = x;
 	context->contextRect[idrect].def.y = y;
+	
 	
 	return 1;
 	
@@ -644,7 +651,6 @@ int SDL_delRect(t_context *context, int idrect) {
 	context->nbRect = (context->nbRect) - 1;
 	
 	return 1;
-	
 	
 }
 
@@ -1050,6 +1056,9 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	context->contextText[context->nbText].x = x;
 	context->contextText[context->nbText].y = y;
 	
+	replaceinstring(content, '\n', ' ');
+	replaceinstring(content, '\t', ' ');
+	
 	context->contextText[context->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
 	context->contextText[context->nbText].id = NULL;
@@ -1166,6 +1175,9 @@ int SDL_getposx(t_context * context, int id, t_typeData type) {
 		case INPUT:
 			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
 			return (context->contextObj[id].x);
+		case RECTANGLE:
+			if (!(context->contextRect) || (id >= context->nbRect)) return 0;
+			return (context->contextRect[id].def.x);
 		default:
 			return 0;
 			
@@ -1194,6 +1206,9 @@ int SDL_getposy(t_context * context, int id, t_typeData type) {
 		case INPUT:
 			if (!(context->contextObj) || (id >= context->nbObj) || (context->contextObj[id].type != type)) return 0;
 			return (context->contextObj[id].y);
+		case RECTANGLE:
+			if (!(context->contextRect) || (id >= context->nbRect)) return 0;
+			return (context->contextRect[id].def.y);
 		default:
 			return 0;
 	}

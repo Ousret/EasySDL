@@ -23,6 +23,9 @@
 	#include <fmodex/fmod.h>
 #endif
 
+#define RTOK 0x0000ff
+#define RTCANCEL 0x00ff00
+
 typedef enum {
 
 	ALIGN_CENTER = 1, /*!< Texte aligné au centre */
@@ -51,6 +54,15 @@ typedef enum {
 	
 } t_typeData;
 
+typedef enum {
+
+	INFO,
+	WARN,
+	ERROR
+
+} t_typeMessageBox;
+
+
 /**
  * \struct t_object
  * \brief Décrit de quoi est fait un objet
@@ -72,6 +84,14 @@ typedef struct {
 	int * id;
 	
 } t_object;
+
+typedef struct {
+
+	SDL_Rect def;
+	SDL_Color color;
+	int *id;
+	
+} t_rect;
 
 /**
  * \struct t_text
@@ -157,6 +177,9 @@ typedef struct {
 	
 	t_sprite * contextSprite;
 	int nbSprite;
+	
+	t_rect * contextRect;
+	int nbRect;
 	
 	int x, y;
 	int height, width;
@@ -653,6 +676,11 @@ void SDL_setTTFFolder(char * newFolder);
 * \return void
 */
 void SDL_setIMGFolder(char * newFolder);
+
+void SDL_MessageBox(t_context *dst, char * msg, t_typeMessageBox type);
+int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y);
+int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y);
+int SDL_delRect(t_context *context, int idrect);
 
 extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
 extern FMOD_SOUND *SELECT, *ENTER;

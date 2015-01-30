@@ -13,7 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <ESDL.h>
+#include "ESDL.h"
+#include "cstring.h"
 
 /* SDL */
 SDL_Surface *screen = NULL, *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;
@@ -29,6 +30,13 @@ char * resSND = NULL, * resIMG = NULL, * resTTF = NULL, buffer = 0;
 Input in;
 
 void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
+
+void SDL_MessageBox(t_context *dst, char * msg, t_typeMessageBox type){
+	
+	int ligne = getcharocc(msg, '\n'), i = 0;
+	
+	
+}
 
 int SDL_playSound(char * sndfile) {
 	
@@ -92,6 +100,7 @@ int SDL_loadSound(char * sndfile) {
 			return 0; //Out of memory..!
 		}
 	}
+	
 	
 	fmodbuffer[nbSnd].file = malloc(sizeof(char)*(strlen(sndfile)+1)); // strlen + 1 because of '\0' (end of string) !
 	if (!(fmodbuffer[nbSnd].file)) return 0;
@@ -490,11 +499,13 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 	tmp->contextText = NULL;
 	tmp->contextImg = NULL;
 	tmp->contextSprite = NULL;
+	tmp->contextRect = NULL;
 	
 	tmp->nbObj = 0;
 	tmp->nbText = 0;
 	tmp->nbImg = 0;
 	tmp->nbSprite = 0;
+	tmp->nbRect = 0;
 	
 	tmp->x = x;
 	tmp->y = y;
@@ -550,7 +561,90 @@ void SDL_freeContext(t_context * context) {
 		free (context->contextSprite);
 	}
 	
+	if (context->contextRect) {
+		free (context->contextRect);
+	}
+	
 	free (context);
+	
+}
+
+int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, int width, int x, int y) {
+	
+	t_rect *n_realloc = NULL;
+	
+	if (!context) return 0;
+	if (!height || !width) return 0;
+	
+	if (!(context->contextRect)) {
+		
+		context->contextRect = (t_rect*) malloc(sizeof(t_rect));
+		if (!(context->contextRect)) return 0;
+		
+	}else{
+		n_realloc = realloc(context->contextRect, sizeof(t_rect)*((context->nbRect) +1));
+		if (n_realloc) {
+			context->contextRect = n_realloc;
+		}else{
+			return 0; /* Out of memory */
+		}
+	}
+	
+	context->contextRect[context->nbRect].color = color;
+	context->contextRect[context->nbRect].def.h = height;
+	context->contextRect[context->nbRect].def.w = width;
+	context->contextRect[context->nbRect].def.x = x;
+	context->contextRect[context->nbRect].def.y = y;
+	
+	if (idrect) {
+		*idrect = context->nbRect;
+	}
+	
+	context->nbRect = (context->nbRect) + 1;
+	
+	return 1;
+	
+}
+
+int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y) {
+	
+	if (!context || !(context->contextRect) || idrect <= (context->nbRect)) return 0;
+	
+	context->contextRect[idrect].color = color;
+	context->contextRect[idrect].def.h = height;
+	context->contextRect[idrect].def.w = width;
+	context->contextRect[idrect].def.x = x;
+	context->contextRect[idrect].def.y = y;
+	
+	return 1;
+	
+}
+
+int SDL_delRect(t_context *context, int idrect) {
+	
+	if (!context || !(context->contextRect) || idrect <= (context->nbRect)) return 0;
+	t_rect * n_realloc = NULL;
+	int i = 0;
+	
+	if (context->contextRect[idrect].id) *(context->contextRect[idrect].id) = -1;
+	
+	for (i = idrect; i < (context->nbRect)-1; i++) {
+		
+		context->contextRect[i] = context->contextRect[i+1];
+		if (context->contextRect[i].id) *(context->contextRect[i].id) = *(context->contextRect[i].id) - 1;
+		
+	}
+	
+	n_realloc = realloc(context->contextRect, sizeof(t_rect)*(context->nbRect));
+	
+	if (n_realloc) {
+		context->contextRect = n_realloc;
+	}
+	
+	context->nbRect = (context->nbRect) - 1;
+	
+	return 1;
+	
 	
 }
 
@@ -957,6 +1051,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	context->contextText[context->nbText].y = y;
 	
 	context->contextText[context->nbText].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
+	
 	context->contextText[context->nbText].id = NULL;
 	
 	if (id != NULL) {
@@ -1198,14 +1293,17 @@ void SDL_unloadRessources() {
 		if (ENTER) FMOD_Sound_Release(ENTER);
 	}
 	
-	
 }
 
 void SDL_unload() {
 	
 	SDL_unloadRessources();
 	IMG_Quit();
-	if (ttf_loaded) TTF_Quit();
+	if (ttf_loaded) {
+		TTF_CloseFont(ttf_police);
+		ttf_police = NULL;
+		TTF_Quit();
+	}
 	if (audio_loaded) {
 		SDL_unloadallSound();
 		FMOD_System_Close(fmod_system);
@@ -1235,6 +1333,14 @@ void SDL_generateFrame(t_context * context) {
 		positionFond.y = context->contextImg[i].y;
 		
 		SDL_BlitSurface(context->contextImg[i].buffer, NULL, context->contextSurface, &positionFond);
+		
+	}
+	
+	//Scan for Rectangle to Blit
+	
+	for (i = 0; i < (context->nbRect); i++) {
+		
+		SDL_FillRect(context->contextSurface, &(context->contextRect[i].def), SDL_MapRGB(context->contextSurface->format, context->contextRect[i].color.r, context->contextRect[i].color.g, context->contextRect[i].color.b));
 		
 	}
 	

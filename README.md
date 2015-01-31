@@ -1,18 +1,16 @@
-EasySDL lib 0.5.1
+EasySDL lib 0.5.2
 ===========================
 
-SDL lib, EasySDL permit to create program with SDL 1.2 easily.
+SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
 
 Authors: 
 - TAHRI Ahmed @Ousret
 - SIMON Jérémy @Jokoast
 
 
-What new in 0.5.1 ?
-- Much faster than rev 0.4
-- Less memory used
-- Fix bug in SDL_unloadallSound()
-- Rename few func (prefix mod become edit now) 
+What new in 0.5.2 ?
+- SDL_addImage use less RAM
+- Fix bug in SDL_addText.
 
 -------------------------------------
 EasySDL 0.5

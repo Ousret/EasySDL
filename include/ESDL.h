@@ -74,6 +74,12 @@ typedef struct {
 	
 } t_object;
 
+/**
+ * \struct t_rect
+ * \brief Décrit un rectangle simple avec une couleur
+ *
+ * t_rect contient les données nécessaires au dessin d'un rectangle
+ */
 typedef struct {
 
 	SDL_Rect def;
@@ -107,6 +113,7 @@ typedef struct {
  */
 typedef struct {
 	
+	char * file;
 	int x; /*!< Position x relative au contexte parent */
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */

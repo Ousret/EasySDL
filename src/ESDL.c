@@ -525,43 +525,76 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 void SDL_freeContext(t_context * context) {
 	
 	if (!context) return;
-	int i = 0;
+	int i = 0, j = 0, multipleLoad = 0;
 	
 	if (context->contextObj) {
 		for (i = 0;i < (context->nbObj); i ++) {
-			if (context->contextObj[i].buffer_title)
+			if (context->contextObj[i].buffer_title) {
+				
 				SDL_FreeSurface(context->contextObj[i].buffer_title);
 				context->contextObj[i].buffer_title = NULL;
-			if (context->contextObj[i].buffer_content)
+				
+			}
+				
+			if (context->contextObj[i].buffer_content) {
 				SDL_FreeSurface(context->contextObj[i].buffer_content);
 				context->contextObj[i].buffer_content = NULL;
+			}
+				
 		}
 		free (context->contextObj);
 	}
 	
 	if (context->contextText) {
 		for (i = 0;i < (context->nbText); i ++) {
-			if (context->contextText[i].buffer)
+			if (context->contextText[i].buffer) {
 				SDL_FreeSurface(context->contextText[i].buffer);
 				context->contextText[i].buffer = NULL;
+			}
+				
 		}
 		free (context->contextText);
 	}
 	
 	if (context->contextImg) {
-		for (i = 0;i < (context->nbImg); i ++) {
-			if (context->contextImg[i].buffer)
-				SDL_FreeSurface(context->contextImg[i].buffer);
+		//tmp = context->nbImg;
+		for (i = 0;i < (context->nbImg); i++) {
+			if (context->contextImg[i].buffer) {
+				for (j = i; j < (context->nbImg); j++) {
+					if (strcmp(context->contextImg[i].file, context->contextImg[j].file) == 0) {
+						if (j != i) {
+							multipleLoad = 1;
+							break;
+						}
+					}
+				}
+				
+				if (!multipleLoad) { 
+					SDL_FreeSurface(context->contextImg[i].buffer);
+				}else{
+					multipleLoad = 0;
+				}
+				
 				context->contextImg[i].buffer = NULL;
+			}
+			
+			if (context->contextImg[i].file) {
+				free (context->contextImg[i].file);
+				context->contextImg[i].file = NULL;
+			}
+				
 		}
 		free (context->contextImg);
 	}
 	
 	if (context->contextSprite) {
 		for (i = 0; i < (context->nbSprite); i++) {
-			if (context->contextSprite[i].buffer)
+			
+			if (context->contextSprite[i].buffer) {
 				SDL_FreeSurface(context->contextSprite[i].buffer);
 				context->contextSprite[i].buffer = NULL;
+			}
+				
 		}
 		free (context->contextSprite);
 	}
@@ -600,7 +633,6 @@ int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, i
 	context->contextRect[context->nbRect].def.w = width;
 	context->contextRect[context->nbRect].def.x = x;
 	context->contextRect[context->nbRect].def.y = y;
-	
 	
 	if (idrect) {
 		*idrect = context->nbRect;
@@ -822,10 +854,24 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	char texturePath[150];
 	t_image * n_realloc = NULL;
 	SDL_Surface *tmp = NULL;
+	int alreadyLoaded = -1, i = 0;
 	if (!context) return 0;
 	
+	/* Check if not already loaded */
+	for (i = 0; i < context->nbImg; i++) {
+		if (strcmp(context->contextImg[i].file, file) == 0) {
+			alreadyLoaded = i;
+			break;
+		}
+	}
+	
 	sprintf(texturePath, "%s%s", resIMG, file);
-	tmp = IMG_Load(texturePath);
+	
+	if (alreadyLoaded != -1) {
+		tmp = context->contextImg[alreadyLoaded].buffer;
+	}else{
+		tmp = IMG_Load(texturePath);
+	}
 	
 	if (!tmp) {
 		fprintf(stderr, "<! Warning> EasySDL: Cannot load image %s, ignoring..\n", texturePath);
@@ -860,7 +906,8 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	
 	context->contextImg[context->nbImg].x = x;
 	context->contextImg[context->nbImg].y = y;
-	
+	context->contextImg[context->nbImg].file = malloc(sizeof(char)*(strlen(file)+1));
+	strcpy(context->contextImg[context->nbImg].file, file);
 	context->contextImg[context->nbImg].buffer = tmp;
 	context->contextImg[context->nbImg].id = NULL;
 	
@@ -912,24 +959,34 @@ int SDL_delImage(t_context * context, int idimg) {
 		return 0;
 	}
 	
-	int i = 0;
+	int i = 0, multipleLoad = 0;
 	
-	if (context->contextImg[idimg].buffer) {
-		
+	for (i = 0; i < context->nbImg; i++) {
+		if (strcmp(context->contextImg[i].file, context->contextImg[idimg].file) == 0) {
+			if (i != idimg) {
+				multipleLoad = 1;
+				break;
+			}
+		}
+	}
+	
+	
+	if (context->contextImg[idimg].buffer && !multipleLoad) {
 		SDL_FreeSurface(context->contextImg[idimg].buffer);
 		context->contextImg[idimg].buffer = NULL;
-		
+	}
+	
+	if (context->contextImg[idimg].file) {
+		free (context->contextImg[idimg].file);
+		context->contextImg[idimg].file = NULL;
 	}
 	
 	if (context->contextImg[idimg].id) *(context->contextImg[idimg].id) = -1;
 	
 	for (i = idimg; i < (context->nbImg)-1; i++) {
-	
 		context->contextImg[i] = context->contextImg[i+1];
 		if (context->contextImg[i].id) *(context->contextImg[i].id) = *(context->contextImg[i].id) - 1;
-		
 	}
-	
 	
 	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
 	context->nbImg = (context->nbImg)-1;
@@ -1540,7 +1597,7 @@ int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions) {
 			
 		}
 		
-		if (in.quit == 1) {
+		if (in.quit) {
 			SDL_freeContext(menu);
 			exit(0);
 		}

@@ -6,6 +6,8 @@ set(LIBRARY_OUTPUT_PATH bin)
 include_directories(include)
 if(UNIX)
     include_directories(/opt/local/include/SDL)
+    link_directories(/opt/local/lib)
+    #set(CMAKE_C_FLAGS "-lSDLmain -Wl,-framework,AppKit -lSDL -Wl,-framework,Cocoa")
 endif()
 
 file(
@@ -16,8 +18,21 @@ file(
 
 add_library(
         ESDL
-        STATIC
+        SHARED
         ${source_files}
+)
+
+target_link_libraries(
+
+        ESDL
+        SDLmain
+        SDL
+        SDL_ttf
+        SDL_image
+        fmodex
+        crypto
+        sqlite3
+
 )
 
 INSTALL_TARGETS(/lib ESDL)

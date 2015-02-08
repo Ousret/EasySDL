@@ -18,7 +18,6 @@
 
 #include "ESDL.h"
 
-
 void freeProfil(d_save * profil) {
 	if (!profil) return;
 	int i = 0;

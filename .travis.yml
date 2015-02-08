@@ -19,7 +19,7 @@ install:
 script:
   - cmake -G "Unix Makefiles"
   - make
-  - make install
+  - sudo make install
   
 # Only watch the master branch
 branches:

@@ -1,9 +1,15 @@
-/*
-*	Encrypted personal data
-*	public domain code; OpenSSL EVP apis.
-*	Started by Saju Pillai (saju.pillai@gmail.com)
-*	Changed, adapted & improved by TAHRI Ahmed (@Ousret)
-*/
+/**
+ * \file aes.c
+ * \brief EasySDL: Encryption / Decryption management AES 256bits
+ * \author TAHRI Ahmed
+ * \version 0.9
+ * \date 08-02-2015
+ *
+ * EasySDL est une extension de la librairie SDL standard
+ * public domain code; OpenSSL EVP apis.
+ * Started by Saju Pillai (saju.pillai@gmail.com)
+ * Changed, adapted & improved by TAHRI Ahmed (@Ousret)
+ */
 
 #include <string.h>
 #include <stdio.h>

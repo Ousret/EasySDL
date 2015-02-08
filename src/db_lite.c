@@ -1,13 +1,15 @@
-/*
-*	Database management with SQLite3
-*	Part of EasySDL
-*	Written by TAHRI Ahmed @Ousret
-*	tahri.spitajoke.com
-*	Alpha..
-*	Store blob data. (AES output)
-*	Fortement inspiré de 
-*	https://www.sqlite.org/cvstrac/wiki?p=BlobExample
-*/
+/**
+ * \file db_lite.c
+ * \brief EasySDL: Database management for esave.c
+ * \author TAHRI Ahmed
+ * \version 0.1
+ * \date 08-02-2015
+ *
+ * EasySDL est une extension de la librairie SDL standard
+ * Utilise SQLite3
+ * Fortement inspiré de https://www.sqlite.org/cvstrac/wiki?p=BlobExample
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

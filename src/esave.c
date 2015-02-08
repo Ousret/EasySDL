@@ -1,4 +1,16 @@
-
+/**
+ * \file esave.c
+ * \brief EasySDL: save module
+ * \author TAHRI Ahmed, SIMON Jérémy
+ * \version 0.1
+ * \date 08-02-2015
+ *
+ * EasySDL est une extension de la librairie SDL standard
+ * esave.c est un module de sauvegarde
+ * Au format couple (Parametre, Valeur)
+ * Seul la valeur est crypte avec AES 256bits
+ *
+ */
 
 #include <string.h>
 #include <stdio.h>

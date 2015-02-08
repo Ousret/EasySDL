@@ -9,8 +9,19 @@
  *
  */
 
-#include <string.h>
+/**
+ * \file cstring.c
+ * \brief EasySDL: Gestion personnalise des chaines de caracteres
+ * \author TAHRI Ahmed
+ * \version 0.2
+ * \date 08-02-2015
+ *
+ * EasySDL est une extension de la librairie SDL standard
+ * Les fonctions suivantes s'utilise dans un contexte particulier, à utiliser avec des pincettes.
+ *
+ */
 
+#include <string.h>
 #include "ESDL.h"
 
 long getcharocc(char * text, char elem) {

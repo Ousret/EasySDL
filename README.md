@@ -3,10 +3,8 @@ EasySDL lib 0.6.0 [![Build Status](https://travis-ci.org/Ousret/EasySDL.svg)](ht
 
 SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
 
-Authors: 
+Author(s): 
 - TAHRI Ahmed @Ousret
-- SIMON Jérémy @Jokoast
-
 
 What new in 0.6.0 ?
 - Encrypted data save. (profil)

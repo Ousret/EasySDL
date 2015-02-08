@@ -123,6 +123,8 @@ target_link_libraries(
 
 )
 
+set_target_properties(ESDL PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)

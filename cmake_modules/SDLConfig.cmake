@@ -84,8 +84,6 @@ FIND_PATH(SDL_INCLUDE_DIR SDL.h
   /opt
 )
 
-MESSAGE("SDL_INCLUDE_DIR is ${SDL_INCLUDE_DIR}")
-
 # SDL-1.1 is the name used by FreeBSD ports...
 # don't confuse it for the version number.
 FIND_LIBRARY(SDL_LIBRARY_TEMP 

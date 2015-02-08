@@ -129,6 +129,6 @@ INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
 INSTALL(FILES ${fmodex_libs}
-  DESTINATION /usr/local/lib)
+  DESTINATION lib)
 INSTALL(FILES ${fmodex_header}
   DESTINATION include/fmodex)

@@ -54,15 +54,23 @@ message("This lib use FMODex, licence at: http://www.fmod.com/files/public/LICEN
 message("FMOD Sound System, copyright © Firelight Technologies Pty, Ltd., 1994-2014.")
 message("Audio engine : FMOD Sound System by Firelight Technologies")
 message("FMOD by Firelight Technologies")
-if (LINUX)
+
+message("Your kernel is: ${CMAKE_SYSTEM_NAME}")
+
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	message("Linux FMODex added")
 	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex.so")
-elseif (UNIX)
+endif()
+
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 	message("Unix FMODex added")
 	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
-elseif (WIN32)
-	message("Win32 FMODex dir added")
-	link_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/win32)
+endif()
+
+#Todo..
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Cygwin")
+	message("Unix FMODex added")
+	#set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
 endif()
 
 file(

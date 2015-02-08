@@ -1,0 +1,1 @@
+/usr/bin/cc   -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/sqlite.dir/src/sqlite3.c.o CMakeFiles/sqlite.dir/src/shell.c.o  -o sqlite3  

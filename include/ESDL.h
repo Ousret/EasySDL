@@ -19,7 +19,7 @@
 #include <openssl/evp.h>
 #include <sqlite3.h>
 
-#define DEBUGLINE fprintf(stdout, "<? Debug> %s %i\n", __FILE__, __LINE__);
+//#define DEBUGLINE fprintf(stdout, "<? Debug> %s %i\n", __FILE__, __LINE__);
 
 typedef enum {
 

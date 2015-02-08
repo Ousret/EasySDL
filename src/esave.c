@@ -40,13 +40,12 @@ d_save * initProfil(char * filename) {
 	unsigned char * sqlAnswer = NULL;
 	char * Rparam = NULL, *Rvalue = NULL;
 	int sizesqlAnser = 0, i = 1, len = 0;
-
+	
 	/* Allocate and init new save bloc */
 	tmp = malloc(sizeof(d_save));
 	tmp->filename = filename;
 	tmp->data = NULL;
 	tmp->elem = 0;
-	 
 	
 	while (readText(db, i, &sqlAnswer, &sizesqlAnser) == SQLITE_ROW) {
 		

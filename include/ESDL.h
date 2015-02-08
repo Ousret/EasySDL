@@ -11,9 +11,9 @@
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
-#include <SDL/SDL.h>
-#include <SDL/SDL_ttf.h>
-#include <SDL/SDL_image.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
+#include <SDL_image.h>
 #include <fmodex/fmod.h>
 #include <openssl/aes.h>
 #include <openssl/evp.h>

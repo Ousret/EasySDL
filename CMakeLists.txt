@@ -60,23 +60,12 @@ message("Your kernel is: ${CMAKE_SYSTEM_NAME}")
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	message("Linux FMODex added")
 	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex64.so")
-	
-	file(
-        GLOB_RECURSE
-        fmodex_libs
-        ${CMAKE_SOURCE_DIR}/deps/fmodex/unix/*.so
-	)
 
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 	message("Unix FMODex added")
 	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
-	file(
-        GLOB_RECURSE
-        fmodex_libs
-        ${CMAKE_SOURCE_DIR}/deps/fmodex/unix/*.dylib
-	)
 endif()
 
 #Todo..
@@ -123,12 +112,10 @@ target_link_libraries(
 
 )
 
-set_target_properties(ESDL PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
-INSTALL(FILES ${fmodex_libs}
+INSTALL(FILES ${FMODEXLib}
   DESTINATION lib)
 INSTALL(FILES ${fmodex_header}
   DESTINATION include/fmodex)

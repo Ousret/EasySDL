@@ -14,7 +14,6 @@ find_package(sqlite3)
 if (NOT SQLITE3_FOUND)
 	MESSAGE("EasySDL: SQLITE NOT FOUND, WILL USE INTEGRATED PACKAGE..")
 	ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/deps/sqlite3)
-	add_dependencies(ESDL sqlite3)
 endif()
 	
 set(SDL_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
@@ -48,7 +47,7 @@ find_package(openssl)
 if (NOT OPENSSL_FOUND)
 	message("EasySDL: OpenSSL not found, will use internal package.")
 	ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/deps/openssl)
-	add_dependencies(ESDL crypto)
+	
 endif()
 
 #find fmodex (manual + print licence)
@@ -78,6 +77,14 @@ add_library(
         SHARED
         ${source_files}
 )
+
+if (NOT OPENSSL_FOUND)
+	add_dependencies(ESDL crypto)
+endif()
+
+if (NOT SQLITE3_FOUND)
+	add_dependencies(ESDL sqlite3)
+endif()
 
 target_link_libraries(
 

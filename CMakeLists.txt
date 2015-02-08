@@ -59,7 +59,7 @@ message("Your kernel is: ${CMAKE_SYSTEM_NAME}")
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	message("Linux FMODex added")
-	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex.so")
+	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex64.so")
 endif()
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")

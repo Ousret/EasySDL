@@ -21,7 +21,7 @@ find_package(SDL REQUIRED)
 
 if (SDL_FOUND)
 	include_directories(${SDL_INCLUDE_DIR})
-	message("EasySDL: SDL Header found !")
+	message("EasySDL: SDL Header found : ${SDL_INCLUDE_DIR}")
 endif()
 
 set(SDL_ttfDIR "${CMAKE_SOURCE_DIR}/cmake_modules")
@@ -79,6 +79,12 @@ file(
         src/*.c
 )
 
+file(
+        GLOB_RECURSE
+        fmodex_header
+        include/fmodex/*.h
+)
+
 add_library(
         ESDL
         SHARED
@@ -108,3 +114,5 @@ target_link_libraries(
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
+INSTALL(FILES ${fmodex_header}
+  DESTINATION include/fmodex)

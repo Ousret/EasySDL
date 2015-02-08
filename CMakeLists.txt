@@ -47,7 +47,6 @@ find_package(openssl)
 if (NOT OPENSSL_FOUND)
 	message("EasySDL: OpenSSL not found, will use internal package.")
 	ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/deps/openssl)
-	
 endif()
 
 #find fmodex (manual + print licence)
@@ -56,11 +55,11 @@ message("FMOD Sound System, copyright © Firelight Technologies Pty, Ltd., 1994-
 message("Audio engine : FMOD Sound System by Firelight Technologies")
 message("FMOD by Firelight Technologies")
 if (LINUX)
-	message("Linux FMODex dir added")
-	link_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/linux)
+	message("Linux FMODex added")
+	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex.so")
 elseif (UNIX)
-	message("Unix FMODex dir added")
-	link_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/unix)
+	message("Unix FMODex added")
+	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
 elseif (WIN32)
 	message("Win32 FMODex dir added")
 	link_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/win32)
@@ -93,7 +92,7 @@ target_link_libraries(
         ${SDLTTF_LIBRARY}
         ${SDLIMAGE_LIBRARY}
         ${SQLITE3_LIBRARIES}
-        fmodex
+        ${FMODEXLib}
         ${OPENSSL_LIBRARIES}
 
 )

@@ -4,6 +4,9 @@
 *	Written by TAHRI Ahmed @Ousret
 *	tahri.spitajoke.com
 *	Alpha..
+*	Store blob data. (AES output)
+*	Fortement inspiré de 
+*	https://www.sqlite.org/cvstrac/wiki?p=BlobExample
 */
 
 #include <stdio.h>
@@ -11,11 +14,17 @@
 #include <string.h>
 #include <sqlite3.h>
 
-//#include "db_lite.h"
+#include "db_lite.h"
 
 sqlite3 *db = NULL;
-sqlite3_stmt *res = NULL;
-char *err_msg = NULL;
+
+/*
+** Create the blobs table in database db. Return an SQLite error code.
+*/ 
+static int createBlobTable(sqlite3 *db){
+	const char *zSql = "CREATE TABLE sdata(id INT PRIMARY KEY, key TEXT, value BLOB)";
+	return sqlite3_exec(db, zSql, 0, 0, 0);
+}
 
 int db_open(char * filename) {
 	
@@ -27,96 +36,12 @@ int db_open(char * filename) {
         sqlite3_close(db);
         
         return 0;
+    }else{
+    	createBlobTable(db);
     }
-    
-    /* Checking if table SDATA exist.. */
-    char *sql = "SELECT count(type) FROM sqlite_master WHERE type='table' AND name='SDATA';";
-    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    
-    if (rc != SQLITE_OK) {
-        return 0;
-    }
-    
-    int step = sqlite3_step(res);
-    
-    if (step != SQLITE_ROW) {
-        
-        sql = "CREATE TABLE SDATA(Id INTEGER PRIMARY KEY, Param TEXT, Value TEXT);";
-        rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    
-    	if (rc != SQLITE_OK ) {
-    		return 0;
-    	}   
-    	
-    	sqlite3_step(res);
-    	
-    } 
     
     return 1;
     
-}
-
-unsigned char * db_getkeyvalue(unsigned char * key) {
-	
-	if (!db || !key) return NULL;
-	int rc = 0;
-	unsigned char *qresult = NULL;
-	
-	/* We have to check if something is already there.. */
-	char *sql = "SELECT Value FROM SDATA WHERE Param = ?";
-    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    
-    if (rc != SQLITE_OK) return NULL;
-    sqlite3_bind_text(res, 1, (char*) key, strlen((char*) key)+1, SQLITE_STATIC);
-    
-    int step = sqlite3_step(res);
-    
-    if (step == SQLITE_ROW) {
-        qresult = malloc(sizeof(unsigned char)*strlen((char*) sqlite3_column_text(res, 0)));
-        strcpy((char*) qresult, (char*) sqlite3_column_text(res, 0));
-        sqlite3_finalize(res);
-        
-        return qresult;
-    } 
-    
-    return NULL;
-    
-}
-
-int db_setkeyvalue(char *key, char *value) {
-	
-	int rc = 0;
-	/* We have to check if something is already there.. */
-	char *sql = "SELECT Value FROM SDATA WHERE Param = ?";
-    
-    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    if (rc != SQLITE_OK) return 0;
-    
-    sqlite3_bind_text(res, 1, key, strlen(key)+1, SQLITE_STATIC);
-    int step = sqlite3_step(res);
-    
-    if (step == SQLITE_ROW) {
-        
-        /*printf("%s: ", sqlite3_column_text(res, 0));
-        printf("%s\n", sqlite3_column_text(res, 1));*/
-        
-    }else{
-    	
-    	//Set new line..
-    	sql = "INSERT INTO SDATA (Id, Param, Value) VALUES (Id+1, '?', '?');";
-    	rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    	if (rc != SQLITE_OK) return 0;
-    	
-    	sqlite3_bind_text(res, 1, key, strlen(key)+1, SQLITE_STATIC);
-    	sqlite3_bind_text(res, 2, value, strlen(key)+1, SQLITE_STATIC);
-    	
-    	sqlite3_step(res);
-    	
-    } 
-
-    sqlite3_finalize(res);
-	
-	return 1;
 }
 
 void db_close() {
@@ -124,4 +49,184 @@ void db_close() {
 	sqlite3_close(db);
     db = NULL;
     
+}
+
+/*
+** Store a blob in database db. Return an SQLite error code.
+**
+** This function inserts a new row into the blobs table. The 'key' column
+** of the new row is set to the string pointed to by parameter zKey. The
+** blob pointed to by zBlob, size nBlob bytes, is stored in the 'value' 
+** column of the new row.
+*/ 
+int writeBlob(
+	sqlite3 *db,                   /* Database to insert data into */
+	const char *zKey,              /* Null-terminated key string */
+	const unsigned char *zBlob,    /* Pointer to blob of data */
+	int nBlob                      /* Length of data pointed to by zBlob */
+){
+  
+	const char *zSql = "INSERT INTO sdata(id, key, value) VALUES(id+1, ?, ?)";
+	sqlite3_stmt *pStmt;
+	int rc;
+
+  do {
+    /* Compile the INSERT statement into a virtual machine. */
+    rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+    if( rc!=SQLITE_OK ){
+      return rc;
+    }
+
+    /* Bind the key and value data for the new table entry to SQL variables
+    ** (the ? characters in the sql statement) in the compiled INSERT 
+    ** statement. 
+    **
+    ** NOTE: variables are numbered from left to right from 1 upwards.
+    ** Passing 0 as the second parameter of an sqlite3_bind_XXX() function 
+    ** is an error.
+    */
+    sqlite3_bind_text(pStmt, 1, zKey, -1, SQLITE_STATIC);
+    sqlite3_bind_blob(pStmt, 2, zBlob, nBlob, SQLITE_STATIC);
+
+    /* Call sqlite3_step() to run the virtual machine. Since the SQL being
+    ** executed is not a SELECT statement, we assume no data will be returned.
+    */
+    rc = sqlite3_step(pStmt);
+    //assert( rc!=SQLITE_ROW );
+
+    /* Finalize the virtual machine. This releases all memory and other
+    ** resources allocated by the sqlite3_prepare() call above.
+    */
+    rc = sqlite3_finalize(pStmt);
+
+    /* If sqlite3_finalize() returned SQLITE_SCHEMA, then try to execute
+    ** the statement again.
+    */
+  } while( rc==SQLITE_SCHEMA );
+
+  return rc;
+}
+
+/*
+** Read a blob from database db. Return an SQLite error code.
+*/ 
+int readBlob(
+	sqlite3 *db,               /* Database containing blobs table */
+	const char *zKey,          /* Null-terminated key to retrieve blob for */
+	unsigned char **pzBlob,    /* Set *pzBlob to point to the retrieved blob */
+	int *pnBlob                /* Set *pnBlob to the size of the retrieved blob */
+){
+	
+	const char *zSql = "SELECT value FROM sdata WHERE key = ?";
+	sqlite3_stmt *pStmt;
+	int rc;
+
+  /* In case there is no table entry for key zKey or an error occurs, 
+  ** set *pzBlob and *pnBlob to 0 now.
+  */
+  *pzBlob = 0;
+  *pnBlob = 0;
+
+  do {
+    /* Compile the SELECT statement into a virtual machine. */
+    rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+    if( rc!=SQLITE_OK ){
+      return rc;
+    }
+
+    /* Bind the key to the SQL variable. */
+    sqlite3_bind_text(pStmt, 1, zKey, -1, SQLITE_STATIC);
+
+    /* Run the virtual machine. We can tell by the SQL statement that
+    ** at most 1 row will be returned. So call sqlite3_step() once
+    ** only. Normally, we would keep calling sqlite3_step until it
+    ** returned something other than SQLITE_ROW.
+    */
+    rc = sqlite3_step(pStmt);
+    if( rc==SQLITE_ROW ){
+      /* The pointer returned by sqlite3_column_blob() points to memory
+      ** that is owned by the statement handle (pStmt). It is only good
+      ** until the next call to an sqlite3_XXX() function (e.g. the 
+      ** sqlite3_finalize() below) that involves the statement handle. 
+      ** So we need to make a copy of the blob into memory obtained from 
+      ** malloc() to return to the caller.
+      */
+      *pnBlob = sqlite3_column_bytes(pStmt, 0);
+      *pzBlob = (unsigned char *)malloc(*pnBlob);
+      memcpy(*pzBlob, sqlite3_column_blob(pStmt, 0), *pnBlob);
+    }
+
+    /* Finalize the statement (this releases resources allocated by 
+    ** sqlite3_prepare() ).
+    */
+    rc = sqlite3_finalize(pStmt);
+
+    /* If sqlite3_finalize() returned SQLITE_SCHEMA, then try to execute
+    ** the statement all over again.
+    */
+  } while( rc==SQLITE_SCHEMA );
+
+  return rc;
+}
+
+/*
+** Read a blob from database db. Return an SQLite error code.
+*/ 
+int readText(
+	sqlite3 *db,               /* Database containing blobs table */
+	int zID,          /* Null-terminated key to retrieve blob for */
+	unsigned char **pzBlob,    /* Set *pzBlob to point to the retrieved blob */
+	int *pnBlob                /* Set *pnBlob to the size of the retrieved blob */
+){
+	
+	const char *zSql = "SELECT key FROM sdata WHERE id = ?";
+	sqlite3_stmt *pStmt;
+	int rc;
+
+  /* In case there is no table entry for key zKey or an error occurs, 
+  ** set *pzBlob and *pnBlob to 0 now.
+  */
+  *pzBlob = 0;
+  *pnBlob = 0;
+
+  do {
+    /* Compile the SELECT statement into a virtual machine. */
+    rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+    if( rc!=SQLITE_OK ){
+      return rc;
+    }
+
+    /* Bind the key to the SQL variable. */
+    sqlite3_bind_int(pStmt, 1, zID);
+
+    /* Run the virtual machine. We can tell by the SQL statement that
+    ** at most 1 row will be returned. So call sqlite3_step() once
+    ** only. Normally, we would keep calling sqlite3_step until it
+    ** returned something other than SQLITE_ROW.
+    */
+    rc = sqlite3_step(pStmt);
+    if( rc==SQLITE_ROW ){
+      /* The pointer returned by sqlite3_column_blob() points to memory
+      ** that is owned by the statement handle (pStmt). It is only good
+      ** until the next call to an sqlite3_XXX() function (e.g. the 
+      ** sqlite3_finalize() below) that involves the statement handle. 
+      ** So we need to make a copy of the blob into memory obtained from 
+      ** malloc() to return to the caller.
+      */
+      *pnBlob = sqlite3_column_bytes(pStmt, 0);
+      *pzBlob = (unsigned char *)malloc(*pnBlob);
+      memcpy(*pzBlob, sqlite3_column_blob(pStmt, 0), *pnBlob);
+    }
+
+    /* Finalize the statement (this releases resources allocated by 
+    ** sqlite3_prepare() ).
+    */
+    rc = sqlite3_finalize(pStmt);
+
+    /* If sqlite3_finalize() returned SQLITE_SCHEMA, then try to execute
+    ** the statement all over again.
+    */
+  } while( rc==SQLITE_SCHEMA );
+
+  return rc;
 }

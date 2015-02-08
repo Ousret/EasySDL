@@ -24,6 +24,7 @@ TTF_Font *ttf_police = NULL;
 /* FMODex */
 FMOD_SOUND *SELECT = NULL, *ENTER = NULL;
 FMOD_SYSTEM *fmod_system = NULL;
+t_audio * fmodbuffer;
 /* Ref */
 int buffer_deliver = 1, nbSnd = 0, ttf_loaded = 0, audio_loaded = 0, DELAY_EACH_FRAME = 50;
 char * resSND = NULL, * resIMG = NULL, * resTTF = NULL, buffer = 0;

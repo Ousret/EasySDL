@@ -11,3 +11,4 @@
 
 long getcharocc(char * text, char elem);
 void replaceinstring(char * text, char elem, char newc);
+void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len);

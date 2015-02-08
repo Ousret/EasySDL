@@ -10,12 +10,10 @@
  */
 
 #include <string.h>
-#include <stdlib.h>
-
 #include "cstring.h"
 
 long getcharocc(char * text, char elem) {
-	long i = 0, cpt = 0;
+	unsigned long i = 0, cpt = 0;
 	
 	for (i = 0; i < (strlen(text)); i++) {
 		if (text[i] == elem) cpt++;
@@ -26,9 +24,20 @@ long getcharocc(char * text, char elem) {
 
 void replaceinstring(char * text, char elem, char newc) {
 	if (!text || elem == newc) return;
-	long i = 0;
+	unsigned long i = 0;
 	
 	for (i = 0; i < (strlen(text)); i++) {
 		if (text[i] == elem) text[i] = newc;
 	} 
+}
+
+void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len) {
+	
+	unsigned long i = 0;
+	if (!(dest || src)) return;
+	
+	for (i = 0; i < len; i++) {
+		dest[i] = src[i];
+	}
+	
 }

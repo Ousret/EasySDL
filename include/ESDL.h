@@ -9,19 +9,11 @@
  *
  */
 
-#ifdef _WIN32
-	//windows code goes here
-    #include <SDL/SDL.h>
-	#include <SDL/SDL_ttf.h>
-	#include <SDL/SDL_image.h>
-	#include <fmodex/fmod.h>
-#else
-	//linux/Unix code goes here
-    #include <SDL.h>
-	#include <SDL_ttf.h>
-	#include <SDL_image.h>
-	#include <fmodex/fmod.h>
-#endif
+
+#include <SDL/SDL.h>
+#include <SDL/SDL_ttf.h>
+#include <SDL/SDL_image.h>
+#include <fmodex/fmod.h>
 
 typedef enum {
 
@@ -710,12 +702,6 @@ void SDL_setTTFFolder(char * newFolder);
 * \return void
 */
 void SDL_setIMGFolder(char * newFolder);
-
-extern SDL_Surface *BTN_NOTOVER, *BTN_OVER, *FORM;
-extern FMOD_SOUND *SELECT, *ENTER;
-
-t_audio * fmodbuffer;
-extern int nbSnd;
 
 extern int DELAY_EACH_FRAME;
 

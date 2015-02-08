@@ -40,6 +40,7 @@ fmodex license: http://www.fmod.com/files/public/LICENSE.TXT (NO COMMERCIAL USE)
 “FMOD Sound System, copyright © Firelight Technologies Pty, Ltd., 1994-2014.”
 “Audio engine : FMOD Sound System by Firelight Technologies”
 “FMOD by Firelight Technologies”
+
 -------------------------------------
 OpenSSL, libCrypto, libSSL
 -------------------------------------
@@ -49,6 +50,7 @@ the OpenSSL License and the original SSLeay license apply to the toolkit.
 See below for the actual license texts. Actually both licenses are BSD-style
 Open Source licenses. In case of any license issues related to OpenSSL
 please contact openssl-core@openssl.org.
+
 -------------------------------------
 libEasySDL
 -------------------------------------

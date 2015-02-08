@@ -197,6 +197,12 @@ typedef struct
     
 } Input;
 
+/**
+ * \struct d_param
+ * \brief Contient un couple (Paramètre, Valeur)
+ *
+ * Un couple indisociable dont la valeur est crypté
+ */
 typedef struct {
 	
 	char *param;
@@ -204,6 +210,12 @@ typedef struct {
 	
 } d_param;
 
+/**
+ * \struct d_save
+ * \brief Décrit un jeu de données
+ *
+ * Contient les couples (paramètre, valeur) et le nom du fichier à manipuler.
+ */
 typedef struct {
 	
 	char * filename;
@@ -725,10 +737,48 @@ void SDL_setTTFFolder(char * newFolder);
 void SDL_setIMGFolder(char * newFolder);
 
 /* esave.c */
+/**
+* \fn int saveProfil(d_save * profil)
+* \brief Sauvegarde le profil de données dans le fichier
+*
+* \param profil Profil de données précédemment chargé avec initProfil()
+* \return bool
+*/
 int saveProfil(d_save * profil);
+/**
+* \fn int writeParam(d_save * profil, char * param, char * value)
+* \brief Sauve un paramètre avec sa valeur dans la mémoire (crypté)
+*
+* \param profil Profil de données précédemment chargé avec initProfil()
+* \param param Nom du paramètre
+* \param value Contenu associé à param en clair.
+* \return bool
+*/
 int writeParam(d_save * profil, char * param, char * value);
+/**
+* \fn char * readParam(d_save * profil, char * param)
+* \brief Récupère le contenu associé au paramètre
+*
+* \param profil Profil de données précédemment chargé avec initProfil()
+* \param param Nom du paramètre
+* \return bool
+*/
 char * readParam(d_save * profil, char * param);
+/**
+* \fn d_save * initProfil(char * filename)
+* \brief Initialise le profil, obligatoire pour manipuler un profil de donnée
+*
+* \param filename Fichier sauvegarde à manipuler
+* \return Pointeur vers le jeu de donnée d_save*
+*/
 d_save * initProfil(char * filename);
+/**
+* \fn void freeProfil(d_save * profil)
+* \brief Libère le profil
+*
+* \param profil Profil de données précédemment chargé avec initProfil()
+* \return void
+*/
 void freeProfil(d_save * profil);
 
 /* db_lite.c */
@@ -759,7 +809,6 @@ void aes_clean();
 unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len);
 unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
 int aes_custom_32key(const unsigned char *key32);
-
 
 extern int DELAY_EACH_FRAME;
 

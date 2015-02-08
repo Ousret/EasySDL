@@ -52,6 +52,20 @@ if (NOT OPENSSL_FOUND)
 endif()
 
 #find fmodex (manual + print licence)
+message("This lib use FMODex, licence at: http://www.fmod.com/files/public/LICENSE.TXT (NO COMMERCIAL USE)")
+message("FMOD Sound System, copyright © Firelight Technologies Pty, Ltd., 1994-2014.")
+message("Audio engine : FMOD Sound System by Firelight Technologies")
+message("FMOD by Firelight Technologies")
+if (LINUX)
+	message("Linux FMODex dir added")
+	include_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/linux)
+elseif (UNIX)
+	message("Unix FMODex dir added")
+	include_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/unix)
+elseif (WIN32)
+	message("Win32 FMODex dir added")
+	include_directories(${CMAKE_SOURCE_DIR}/deps/fmodex/win32)
+endif()
 
 file(
         GLOB_RECURSE

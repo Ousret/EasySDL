@@ -6,7 +6,6 @@
 */
 
 
-
 typedef struct {
 	
 	char *param;
@@ -21,8 +20,6 @@ typedef struct {
 	int elem;
 	
 } d_save;
-
-
 
 int saveProfil(d_save * profil);
 int writeParam(d_save * profil, char * param, char * value);

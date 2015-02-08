@@ -2,18 +2,24 @@
  * \file ESDL.h
  * \brief EasySDL header
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.5.2
+ * \version 0.6.0
  * \date 25-01-2015
  *
  * EasySDL est une extension de la librairie SDL standard
  *
  */
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_ttf.h>
 #include <SDL/SDL_image.h>
 #include <fmodex/fmod.h>
+#include <openssl/aes.h>
+#include <openssl/evp.h>
+#include <sqlite3.h>
+
+#define DEBUGLINE fprintf(stdout, "<? Debug> %s %i\n", __FILE__, __LINE__);
 
 typedef enum {
 
@@ -190,6 +196,21 @@ typedef struct
     char quit;
     
 } Input;
+
+typedef struct {
+	
+	char *param;
+	unsigned char *value;
+	
+} d_param;
+
+typedef struct {
+	
+	char * filename;
+	d_param * data;
+	int elem;
+	
+} d_save;
 
 /**
 * \fn void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support)
@@ -702,6 +723,43 @@ void SDL_setTTFFolder(char * newFolder);
 * \return void
 */
 void SDL_setIMGFolder(char * newFolder);
+
+/* esave.c */
+int saveProfil(d_save * profil);
+int writeParam(d_save * profil, char * param, char * value);
+char * readParam(d_save * profil, char * param);
+d_save * initProfil(char * filename);
+void freeProfil(d_save * profil);
+
+/* db_lite.c */
+extern sqlite3 *db;
+
+int db_open(char * filename);
+void db_close();
+int writeBlob(sqlite3 *db, const char *zKey, const unsigned char *zBlob, int nBlob);
+int readBlob(sqlite3 *db, const char *zKey, unsigned char **pzBlob, int *pnBlob);
+int readText(sqlite3 *db, int zID, unsigned char **pzBlob, int *pnBlob);
+int dropBlobTable(sqlite3 *db);
+int createBlobTable(sqlite3 *db);
+
+/* cstring.c */
+long getcharocc(char * text, char elem);
+void replaceinstring(char * text, char elem, char newc);
+void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len);
+void formatedcpy(char *dst, char *src, size_t srclen);
+
+/* aes.c */
+extern EVP_CIPHER_CTX en, de;
+extern unsigned int salt[];
+extern const unsigned char key_data[];
+extern const int key_data_len;
+
+int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx, EVP_CIPHER_CTX *d_ctx);
+void aes_clean();
+unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len);
+unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
+int aes_custom_32key(const unsigned char *key32);
+
 
 extern int DELAY_EACH_FRAME;
 

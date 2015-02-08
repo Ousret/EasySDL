@@ -10,7 +10,8 @@
  */
 
 #include <string.h>
-#include "cstring.h"
+
+#include "ESDL.h"
 
 long getcharocc(char * text, char elem) {
 	unsigned long i = 0, cpt = 0;
@@ -39,5 +40,27 @@ void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len) {
 	for (i = 0; i < len; i++) {
 		dest[i] = src[i];
 	}
+	
+	dest[i] = '\0';
+	
+}
+
+void formatedcpy(char *dst, char *src, size_t srclen) {
+
+	if (!(dst || src)) return;
+	int i = 0;
+	
+	for (i = 0; i < (int) srclen; i++) {
+		
+		if ((src[i] >= 'a' && src[i] <= 'z') || (src[i] >= 'A' && src[i] <= 'Z') || (src[i] == '\0') || (src[i] == ' ')) {
+			dst[i] = src[i];
+		}else{
+			src[i] = '\0';
+			break;
+		}
+
+	}
+	
+	if (src[i] != '\0') dst[i+1] = '\0';
 	
 }

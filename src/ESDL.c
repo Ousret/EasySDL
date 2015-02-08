@@ -12,13 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sqlite3.h>
 
 #include "ESDL.h"
-#include "cstring.h"
-#include "esave.h"
-#include "aes.h"
-#include "db_lite.h"
 
 /* SDL */
 SDL_Surface *screen = NULL, *BTN_NOTOVER = NULL, *BTN_OVER = NULL, *FORM = NULL;

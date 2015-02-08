@@ -64,7 +64,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	file(
         GLOB_RECURSE
         fmodex_libs
-        deps/fmodex/unix/*.so
+        ${CMAKE_SOURCE_DIR}/deps/fmodex/unix/*.so
 	)
 
 endif()
@@ -75,7 +75,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 	file(
         GLOB_RECURSE
         fmodex_libs
-        deps/fmodex/unix/*.dylib
+        ${CMAKE_SOURCE_DIR}/deps/fmodex/unix/*.dylib
 	)
 endif()
 
@@ -128,7 +128,7 @@ set_target_properties(ESDL PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
-INSTALL(FILES ${fmodex_header}
-  DESTINATION include/fmodex)
 INSTALL(FILES ${fmodex_libs}
   DESTINATION /usr/local/lib)
+INSTALL(FILES ${fmodex_header}
+  DESTINATION include/fmodex)

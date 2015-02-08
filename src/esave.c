@@ -38,30 +38,24 @@ d_save * initProfil(char * filename) {
 		i++;
 	}
 	
-	/* If "filename" could'nt be readed, just alloc new zone.. Save Later ! */
-	//if (!savfile) return tmp;
-	
-	//fclose(savfile);
+	db_close();
 	return tmp;
 }
 
 char * readParam(d_save * profil, char * param) {
 
 	if (!profil) return NULL;
-	int i;
-	int len = (int) strlen(param)+1, olen = (int) strlen(param)+1;
+	int len = (int) strlen(param)+1, i = 0;
 	char * plaintext = NULL;
 	
 	for (i = 0; i < (profil->elem); i++) {
 		
-		//plaintext = (char *)aes_decrypt(&de, profil->data[i].param, &len);
-		if (!strncmp(plaintext, param, olen)) {
-			//free (plaintext);
-			//plaintext = (char *)aes_decrypt(&de, profil->data[i].value, &len);
-			//EVP_CIPHER_CTX_cleanup(&de);
+		if (!strcmp(plaintext, param)) {
+			
+			plaintext = (char *)aes_decrypt(&de, profil->data[i].value, &len);
 			return plaintext;
+			
 		}
-		//free (plaintext);
 		
 	}
 	
@@ -71,12 +65,9 @@ char * readParam(d_save * profil, char * param) {
 int writeParam(d_save * profil, char * param, char * value) {
 	
 	if (!profil) return 0;
-	int i;
-	int len = (int) strlen(param)+1, olen = (int) strlen(param)+1;
-	char * plaintext = NULL;
+	int len = (int) strlen(param)+1, i = 0;
 	unsigned char *encryptedval = NULL;
 	
-
 	//Check if param is already in here.
 	for (i = 0; i < (profil->elem); i++) {
 		
@@ -115,19 +106,18 @@ int saveProfil(d_save * profil) {
 	
 	if (!profil) return 0;
 	if (!(profil->filename)) return 0;
+	if (!db_open(profil->filename)) return 0;
 	
 	int i = 0;
 	
-	//savfile = fopen(profil->filename, "w");
-	//if (!savfile) return 0;
-	
 	for (i = 0; i < (profil->elem); i++) {
 		
-		//fprintf(savfile, "%s\n%s\n", profil->data[i].param, profil->data[i].value);
+		writeBlob(db, profil->data[i].param, profil->data[i].value, sizeof(unsigned char)*strlen((char*)profil->data[i].value));
 		
 	}
 	
-	//fclose(savfile);
+	db_close();
+	
 	return 1;
 	
 }

@@ -1,0 +1,35 @@
+#
+# LuaDist Travis-CI Hook
+#
+
+# We assume C build environments
+language: C
+
+# Try using multiple Lua Implementations
+env:
+  - TOOL="gcc"                  # Use native compiler (GCC usually)
+  - TOOL="clang"                # Use clang
+
+# Install dependencies
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libsdl1.2debian libsdl1.2-dev libsdl-image1.2 libsdl-image1.2-dev libsdl-ttf2.0-0 libsdl-ttf2.0-dev cmake
+
+# Build the module
+script:
+  - cmake -G "Unix Makefiles"
+  - make
+  - make install
+  
+# Only watch the master branch
+branches:
+  only:
+    - master
+
+# Notify the LuaDist Dev group if needed
+#notifications:
+#  recipients:
+#    - luadist-dev@googlegroups.com
+#  email:
+#    on_success: change
+#    on_failure: always

@@ -235,7 +235,7 @@
 		SET( OPENSSL_FOUND TRUE )
 		MARK_AS_ADVANCED(OPENSSL_INCLUDE_DIR OPENSSL_LIBRARIES)
 	else()
-		message(FATAL_ERROR "Could not find OpenSSL: ${OPENSSL_INCLUDE_DIR}" ", " ${OPENSSL_LIBRARIES})
+		message(STATUS "OpenSSL dev is not installed on this machine")
 		SET( OPENSSL_FOUND FALSE )
 	endif()
      

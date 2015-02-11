@@ -35,8 +35,8 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   		/usr/local/lib #Linux
   		/opt/csw
   		/opt
-  		$ENV{HOME}/local
   		deps/fmodex/linux
+  		$ENV{HOME}/local
 	)
 	endif()
 
@@ -53,8 +53,8 @@ else()
   /usr/local/lib #Linux
   /opt/csw
   /opt
-  $ENV{HOME}/local
   deps/fmodex/linux
+  $ENV{HOME}/local
 )
 endif()
 
@@ -74,8 +74,8 @@ FIND_LIBRARY(LIBFMODEX_LIBRARY
   /usr/local/lib #Linux
   /opt/csw
   /opt
-  $ENV{HOME}/local
   deps/fmodex/unix
+  $ENV{HOME}/local
 )
 endif()
 

@@ -20,7 +20,28 @@ FIND_PATH(LIBFMODEX_INCLUDE_DIR fmodex/fmod.h
 )
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-FIND_LIBRARY(LIBFMODEX_LIBRARY 
+
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8) 
+	
+    	FIND_LIBRARY(LIBFMODEX_LIBRARY 
+		NAMES fmodex64 libfmodex64
+  		HINTS
+  		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
+  		PATH_SUFFIXES lib64 lib x86_64-linux-gnu
+  		PATHS
+  		/sw
+  		/opt/local
+  		/usr/local
+  		/usr/local/lib #Linux
+  		/opt/csw
+  		/opt
+  		$ENV{HOME}/local
+  		deps/fmodex/linux
+	)
+	endif()
+
+else() 
+    FIND_LIBRARY(LIBFMODEX_LIBRARY 
   NAMES fmodex libfmodex
   HINTS
   ${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
@@ -36,6 +57,9 @@ FIND_LIBRARY(LIBFMODEX_LIBRARY
   deps/fmodex/linux
 )
 endif()
+
+
+
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
 FIND_LIBRARY(LIBFMODEX_LIBRARY 

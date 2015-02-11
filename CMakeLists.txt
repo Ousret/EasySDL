@@ -107,7 +107,18 @@ target_link_libraries(
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
-INSTALL(FILES ${LIBFMODEX_LIBRARIES}
-  DESTINATION lib)
+#if LINUX.. x86_64-linux-gnu/
+if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+
+	if(CMAKE_SIZEOF_VOID_P EQUAL 8) 
+		INSTALL(FILES ${LIBFMODEX_LIBRARIES} DESTINATION lib/x86_64-linux-gnu)
+	else()
+		INSTALL(FILES ${LIBFMODEX_LIBRARIES} DESTINATION lib/i386-linux-gnu)
+	endif()
+	
+else()
+	INSTALL(FILES ${LIBFMODEX_LIBRARIES} DESTINATION lib)
+endif()
+
 INSTALL(FILES ${fmodex_header}
   DESTINATION include/fmodex)

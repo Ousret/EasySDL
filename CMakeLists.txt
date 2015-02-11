@@ -2,6 +2,18 @@ cmake_minimum_required(VERSION 2.6)
 
 project(libESDL)
 
+file(
+        GLOB_RECURSE
+        source_files
+        src/*.c
+)
+
+add_library(
+        ESDL
+        SHARED
+        ${source_files}
+)
+
 set(LIBRARY_OUTPUT_PATH bin)
 set(CMAKE_MODULE_PATH "cmake_modules")
 add_definitions(-Wall -Wextra)
@@ -57,39 +69,16 @@ message("FMOD by Firelight Technologies")
 
 message("Your kernel is: ${CMAKE_SYSTEM_NAME}")
 
-if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-	message("Linux FMODex added")
-	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/linux/libfmodex64.so")
-
+set(FMODEX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
+find_package(FMODEX REQUIRED)
+if (NOT LIBFMODEX_FOUND)
+	message(STATUS "EasySDL: FMODex lib cannot be found, re clone EasySDL may solve this !")
 endif()
-
-if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
-	message("Unix FMODex added")
-	set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
-endif()
-
-#Todo..
-if ("${CMAKE_SYSTEM_NAME}" MATCHES "Cygwin")
-	message("Unix FMODex added")
-	#set(FMODEXLib "${CMAKE_SOURCE_DIR}/deps/fmodex/unix/libfmodex.dylib")
-endif()
-
-file(
-        GLOB_RECURSE
-        source_files
-        src/*.c
-)
 
 file(
         GLOB_RECURSE
         fmodex_header
         include/fmodex/*.h
-)
-
-add_library(
-        ESDL
-        SHARED
-        ${source_files}
 )
 
 if (NOT OPENSSL_FOUND)
@@ -101,21 +90,21 @@ if (NOT SQLITE3_FOUND)
 endif()
 
 target_link_libraries(
-
+		
         ESDL
         ${SDL_LIBRARY}
         ${SDLTTF_LIBRARY}
         ${SDLIMAGE_LIBRARY}
         ${SQLITE3_LIBRARIES}
-        ${FMODEXLib}
+        ${LIBFMODEX_LIBRARIES}
         ${OPENSSL_LIBRARIES}
-
+		
 )
 
 INSTALL_TARGETS(/lib ESDL)
 INSTALL(FILES include/ESDL.h 
   DESTINATION include)
-INSTALL(FILES ${FMODEXLib}
+INSTALL(FILES ${LIBFMODEX_LIBRARIES}
   DESTINATION lib)
 INSTALL(FILES ${fmodex_header}
   DESTINATION include/fmodex)

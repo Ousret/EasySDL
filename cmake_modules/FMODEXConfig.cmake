@@ -23,7 +23,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 
 	if(CMAKE_SIZEOF_VOID_P EQUAL 8) 
 	
-    	FIND_LIBRARY(LIBFMODEX_LIBRARY 
+    FIND_LIBRARY(LIBFMODEX_LIBRARY 
 		NAMES fmodex64 libfmodex64
   		HINTS
   		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
@@ -38,24 +38,27 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   		deps/fmodex/linux
   		$ENV{HOME}/local
 	)
+	
+	else()
+	
+	FIND_LIBRARY(LIBFMODEX_LIBRARY 
+  		NAMES fmodex libfmodex
+  		HINTS
+  		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
+  		PATH_SUFFIXES lib64 lib x86_64-linux-gnu
+  		PATHS
+  		/sw
+  		/opt/local
+  		/usr/local
+  		/usr/local/lib #Linux
+  		/opt/csw
+  		/opt
+  		deps/fmodex/linux
+  		$ENV{HOME}/local
+	)
+	
 	endif()
 
-else() 
-    FIND_LIBRARY(LIBFMODEX_LIBRARY 
-  NAMES fmodex libfmodex
-  HINTS
-  ${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
-  PATH_SUFFIXES lib64 lib x86_64-linux-gnu
-  PATHS
-  /sw
-  /opt/local
-  /usr/local
-  /usr/local/lib #Linux
-  /opt/csw
-  /opt
-  deps/fmodex/linux
-  $ENV{HOME}/local
-)
 endif()
 
 

@@ -22,7 +22,13 @@ $ make
 $ sudo make install
 ```
 
-`#include <ESDL.h>` to your project
+```objc
+		#include <ESDL.h>
+```
+
+```
+CFLAGS = `sdl-config --libs --cflags` -lESDL
+```
 
 Doc: http://spitajoke.com/tahri/EasySDL/doxygen/
 

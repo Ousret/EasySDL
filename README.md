@@ -26,7 +26,9 @@ $ sudo make install
 
 Doc: http://spitajoke.com/tahri/EasySDL/doxygen/
 
-### Licenses
+--------------------------------
+Licenses
+--------------------------------
 ### libSDL, libSDL_ttf, libSDL_image
 
 SDL & SDL_ttf & SDL_image are under zlib license.

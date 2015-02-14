@@ -46,7 +46,7 @@ void replaceinstring(char * text, char elem, char newc) {
 void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len) {
 	
 	unsigned long i = 0;
-	if (!(dest || src)) return;
+	if (!dest || !src)) return;
 	
 	for (i = 0; i < len; i++) {
 		dest[i] = src[i];
@@ -58,7 +58,7 @@ void unsignedchar_memcpy(unsigned char *dest, unsigned char *src, size_t len) {
 
 void formatedcpy(char *dst, char *src, size_t srclen) {
 
-	if (!(dst || src)) return;
+	if (!dst || !src)) return;
 	int i = 0;
 	
 	for (i = 0; i < (int) srclen; i++) {

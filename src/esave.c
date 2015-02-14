@@ -49,32 +49,25 @@ d_save * SDL_initProfil(char * filename) {
 	
 	while (readText(db, i, &sqlAnswer, &sizesqlAnser) == SQLITE_ROW) {
 		
-		//DEBUGLINE;
 		Rparam = malloc(sizeof(char)*(strlen((char*)sqlAnswer)+1));
 		formatedcpy(Rparam, (char*) sqlAnswer, strlen((char*)sqlAnswer)+1);
-		//DEBUGLINE;
 		if (sqlAnswer) {
 			free(sqlAnswer);
 			sqlAnswer = NULL;
 		}
-		//DEBUGLINE;
 		readBlob(db, Rparam, &sqlAnswer, &sizesqlAnser);
 		if (!sqlAnswer) break; //Something went wrong..
-		 //DEBUGLINE;
 		len = (int) strlen((char*)sqlAnswer)+1;
 		Rvalue = (char *)aes_decrypt(&de, sqlAnswer, &len);
-		//DEBUGLINE;
 		SDL_writeParam(tmp, Rparam, Rvalue);
-		//DEBUGLINE;
 		free(Rparam); 
-		//DEBUGLINE;
 		free(Rvalue);
-		//DEBUGLINE;
+		
 		if (sqlAnswer) {
 			free(sqlAnswer);
 			sqlAnswer = NULL;
 		}
-		//DEBUGLINE;
+
 		i++;
 	}
 	 
@@ -120,6 +113,7 @@ int SDL_writeParam(d_save * profil, char * param, char * value) {
 			profil->data[i].value = malloc(sizeof(unsigned char)*len);
 			unsignedchar_memcpy(profil->data[i].value, encryptedval, sizeof(unsigned char)*len);
 			free (encryptedval);
+			encryptedval = NULL;
 			 
 			return 1;
 		}
@@ -142,6 +136,8 @@ int SDL_writeParam(d_save * profil, char * param, char * value) {
 	unsignedchar_memcpy(profil->data[profil->elem].value, encryptedval, sizeof(unsigned char)*len);
 	
 	profil->elem = (profil->elem)+1;
+	free (encryptedval);
+	encryptedval = NULL;
 	
 	return 1;
 }

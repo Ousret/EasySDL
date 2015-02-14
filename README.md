@@ -16,8 +16,15 @@ EasySDL 0.6
 CMake is needed.
 Install included.
 
+```
+$ git clone https://github.com/Ousret/EasySDL/
+$ cd EasySDL
+$ cmake -G"Unix Makefiles"
+$ make
+$ sudo make install
+```
+
 `#include <ESDL.h>` to your project
-- Then link with ``sdl-config --libs` -lESDL`
 
 Doxygen: http://spitajoke.com/tahri/EasySDL/doxygen/
 

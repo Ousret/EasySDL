@@ -18,7 +18,7 @@
 
 #include "ESDL.h"
 
-void freeProfil(d_save * profil) {
+void SDL_freeProfil(d_save * profil) {
 	if (!profil) return;
 	int i = 0;
 	
@@ -32,7 +32,7 @@ void freeProfil(d_save * profil) {
 	
 }
 
-d_save * initProfil(char * filename) {
+d_save * SDL_initProfil(char * filename) {
 /* Load profil file or start new one */
 	
 	if (!db_open(filename)) return NULL;
@@ -64,7 +64,7 @@ d_save * initProfil(char * filename) {
 		len = (int) strlen((char*)sqlAnswer)+1;
 		Rvalue = (char *)aes_decrypt(&de, sqlAnswer, &len);
 		//DEBUGLINE;
-		writeParam(tmp, Rparam, Rvalue);
+		SDL_writeParam(tmp, Rparam, Rvalue);
 		//DEBUGLINE;
 		free(Rparam); 
 		//DEBUGLINE;
@@ -82,7 +82,7 @@ d_save * initProfil(char * filename) {
 	return tmp;
 }
 
-char * readParam(d_save * profil, char * param) {
+char * SDL_readParam(d_save * profil, char * param) {
 
 	if (!profil) return NULL;
 	int len = (int) strlen(param)+1, i = 0;
@@ -103,7 +103,7 @@ char * readParam(d_save * profil, char * param) {
 	return NULL;
 }
 
-int writeParam(d_save * profil, char * param, char * value) {
+int SDL_writeParam(d_save * profil, char * param, char * value) {
 	
 	if (!profil) return 0;
 	int len = (int) strlen(value)+1, i = 0;
@@ -134,10 +134,10 @@ int writeParam(d_save * profil, char * param, char * value) {
 	}
 	
 	encryptedval = aes_encrypt(&en, (unsigned char*)value, &len);
-	 
+	
 	profil->data[profil->elem].param = malloc(sizeof(char)*strlen(param)+1);
 	profil->data[profil->elem].value = malloc(sizeof(unsigned char)*sizeof(unsigned char)*len);
-	 
+	
 	memcpy (profil->data[profil->elem].param, param, strlen(param)+1);
 	unsignedchar_memcpy(profil->data[profil->elem].value, encryptedval, sizeof(unsigned char)*len);
 	
@@ -146,7 +146,7 @@ int writeParam(d_save * profil, char * param, char * value) {
 	return 1;
 }
 
-int saveProfil(d_save * profil) {
+int SDL_saveProfil(d_save * profil) {
 	
 	if (!profil) return 0;
 	if (!(profil->filename)) return 0;

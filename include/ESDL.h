@@ -19,8 +19,6 @@
 #include <openssl/evp.h>
 #include <sqlite3.h>
 
-//#define DEBUGLINE fprintf(stdout, "<? Debug> %s %i\n", __FILE__, __LINE__);
-
 typedef enum {
 
 	ALIGN_CENTER = 1, /*!< Texte aligné au centre */
@@ -615,7 +613,7 @@ int SDL_isMousePressed(int MOUSE_S);
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
 */
-int SDL_playSound(char * sndfile);
+int SDL_playSound(const char * sndfile);
 /**
 * \fn int SDL_loadSound(char * sndfile)
 * \brief Chargement en mémoire d'un fichier audio
@@ -623,7 +621,7 @@ int SDL_playSound(char * sndfile);
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
 */
-int SDL_loadSound(char * sndfile);
+int SDL_loadSound(const char * sndfile);
 /**
 * \fn int SDL_unloadSound(char * sndfile)
 * \brief Libérer un fichier audio de la mémoire au préalable chargé avec SDL_loadSound
@@ -631,7 +629,7 @@ int SDL_loadSound(char * sndfile);
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
 */
-int SDL_unloadSound(char * sndfile);
+int SDL_unloadSound(const char * sndfile);
 /**
 * \fn int SDL_unloadallSound()
 * \brief Libère tout les fichiers audio chargé avec SDL_loadSound
@@ -738,15 +736,15 @@ void SDL_setIMGFolder(char * newFolder);
 
 /* esave.c */
 /**
-* \fn int saveProfil(d_save * profil)
+* \fn int SDL_saveProfil(d_save * profil)
 * \brief Sauvegarde le profil de données dans le fichier
 *
 * \param profil Profil de données précédemment chargé avec initProfil()
 * \return bool
 */
-int saveProfil(d_save * profil);
+int SDL_saveProfil(d_save * profil);
 /**
-* \fn int writeParam(d_save * profil, char * param, char * value)
+* \fn int SDL_writeParam(d_save * profil, char * param, char * value)
 * \brief Sauve un paramètre avec sa valeur dans la mémoire (crypté)
 *
 * \param profil Profil de données précédemment chargé avec initProfil()
@@ -754,32 +752,32 @@ int saveProfil(d_save * profil);
 * \param value Contenu associé à param en clair.
 * \return bool
 */
-int writeParam(d_save * profil, char * param, char * value);
+int SDL_writeParam(d_save * profil, char * param, char * value);
 /**
-* \fn char * readParam(d_save * profil, char * param)
+* \fn char * SDL_readParam(d_save * profil, char * param)
 * \brief Récupère le contenu associé au paramètre
 *
 * \param profil Profil de données précédemment chargé avec initProfil()
 * \param param Nom du paramètre
 * \return bool
 */
-char * readParam(d_save * profil, char * param);
+char * SDL_readParam(d_save * profil, char * param);
 /**
-* \fn d_save * initProfil(char * filename)
+* \fn d_save * SDL_initProfil(char * filename)
 * \brief Initialise le profil, obligatoire pour manipuler un profil de donnée
 *
 * \param filename Fichier sauvegarde à manipuler
 * \return Pointeur vers le jeu de donnée d_save*
 */
-d_save * initProfil(char * filename);
+d_save * SDL_initProfil(char * filename);
 /**
-* \fn void freeProfil(d_save * profil)
+* \fn void SDL_freeProfil(d_save * profil)
 * \brief Libère le profil
 *
 * \param profil Profil de données précédemment chargé avec initProfil()
 * \return void
 */
-void freeProfil(d_save * profil);
+void SDL_freeProfil(d_save * profil);
 
 /* db_lite.c */
 extern sqlite3 *db;

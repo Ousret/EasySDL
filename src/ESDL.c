@@ -31,7 +31,7 @@ Input in;
 
 void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
 
-int SDL_playSound(char * sndfile) {
+int SDL_playSound(const char * sndfile) {
 	
 	if (!audio_loaded) return 0;
 	char filePath[256];
@@ -62,7 +62,7 @@ int SDL_playSound(char * sndfile) {
 	
 }
 
-int SDL_loadSound(char * sndfile) {
+int SDL_loadSound(const char * sndfile) {
 	
 	if (!audio_loaded) return 0;
 	char filePath[256];
@@ -107,7 +107,7 @@ int SDL_loadSound(char * sndfile) {
 	
 }
 
-int SDL_unloadSound(char * sndfile) {
+int SDL_unloadSound(const char * sndfile) {
 	
 	if (!audio_loaded) return 0;
 	int i = 0, alreadyLoaded = -1;
@@ -970,7 +970,6 @@ int SDL_delImage(t_context * context, int idimg) {
 		}
 	}
 	
-	
 	if (context->contextImg[idimg].buffer && !multipleLoad) {
 		SDL_FreeSurface(context->contextImg[idimg].buffer);
 		context->contextImg[idimg].buffer = NULL;
@@ -1394,7 +1393,7 @@ void SDL_generateFrame(t_context * context) {
 	SDL_Rect positionFond, spritePos; 
 	char saisie_content[100]; //Form ONLY
 	
-	if (context == NULL) return;
+	if (!context) return;
 	
 	context->contextSurface = SDL_CreateRGBSurface(0, context->height, context->width, 16, 0, 0, 0, 0);
 	
@@ -1409,7 +1408,6 @@ void SDL_generateFrame(t_context * context) {
 	}
 	
 	//Scan for Rectangle to Blit
-	
 	for (i = 0; i < (context->nbRect); i++) {
 		
 		SDL_FillRect(context->contextSurface, &(context->contextRect[i].def), SDL_MapRGB(context->contextSurface->format, context->contextRect[i].color.r, context->contextRect[i].color.g, context->contextRect[i].color.b));
@@ -1447,7 +1445,6 @@ void SDL_generateFrame(t_context * context) {
 				
 				
 				positionFond.y += 5;
-				
 				SDL_BlitSurface(context->contextObj[i].buffer_title, NULL, context->contextSurface, &positionFond);
 				
 				break;
@@ -1455,7 +1452,6 @@ void SDL_generateFrame(t_context * context) {
 			case INPUT: //Form
 				
 				memset (saisie_content, 0, sizeof (saisie_content));
-				
 				if (context->contextObj[i].MouseOver == 1) {
 					
 					strcpy (saisie_content, context->contextObj[i].dest);

@@ -2,6 +2,7 @@ EasySDL lib 0.6.0 [![Build Status](https://travis-ci.org/Ousret/EasySDL.svg)](ht
 ===========================
 
 SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
+[Detailed example using EasySDL.](https://github.com/Ousret/EasySDL-Sample)
 
 Author(s): 
 - TAHRI Ahmed @Ousret

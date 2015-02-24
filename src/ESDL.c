@@ -24,12 +24,15 @@ TTF_Font *ttf_police = NULL;
 FMOD_SOUND *SELECT = NULL, *ENTER = NULL;
 FMOD_SYSTEM *fmod_system = NULL;
 t_audio * fmodbuffer;
+unsigned int nbChannel = 2;
 /* Ref */
-int buffer_deliver = 1, nbSnd = 0, ttf_loaded = 0, audio_loaded = 0, DELAY_EACH_FRAME = 50;
+int buffer_deliver = 1, nbSnd = 0, ttf_loaded = 0, audio_loaded = 0; 
+unsigned int DELAY_EACH_FRAME = 50;
 char * resSND = NULL, * resIMG = NULL, * resTTF = NULL, buffer = 0;
 Input in;
 
-void SDL_setDelaySingleFrame(int delay) { DELAY_EACH_FRAME = delay; }
+void SDL_setDelaySingleFrame(unsigned int delay) { DELAY_EACH_FRAME = delay; }
+void SDL_setmaxChannel(unsigned int nbch) { nbChannel = nbch; }
 
 int SDL_playSound(const char * sndfile) {
 	
@@ -99,6 +102,51 @@ int SDL_loadSound(const char * sndfile) {
 	if (!(fmodbuffer[nbSnd].file)) return 0;
 	
 	strcpy(fmodbuffer[nbSnd].file, sndfile);
+	fmodbuffer[nbSnd].buffer = tmp_audio;
+	
+	nbSnd++;
+	
+	return 1;
+	
+}
+
+int SDL_loadMusic(const char * musicfile) {
+	
+	if (!audio_loaded) return 0;
+	char filePath[256];
+	FMOD_SOUND * tmp_audio = NULL;
+	t_audio * tmp_realloc = NULL;
+	
+	sprintf(filePath, "%s%s", resSND, musicfile);
+	
+	if (FMOD_System_CreateSound(fmod_system, filePath, FMOD_SOFTWARE | FMOD_2D | FMOD_CREATESTREAM, 0, &tmp_audio) != FMOD_OK) {
+		fprintf(stderr, "<! Warning> EasySDL: FMODex cannot load sound file %s, ignoring..\n", filePath);
+		return 0;
+	}
+	
+	if (!fmodbuffer) {
+		fmodbuffer = (t_audio*) malloc(sizeof(t_audio));
+		
+		if (!fmodbuffer) {
+			FMOD_Sound_Release(tmp_audio);
+			return 0;
+		}
+	}else{
+		tmp_realloc = (t_audio*) realloc(fmodbuffer, sizeof(t_audio)*(nbSnd+1));
+		
+		if (tmp_realloc) {
+			fmodbuffer = tmp_realloc;
+		}else{
+			FMOD_Sound_Release(tmp_audio);
+			return 0; //Out of memory..!
+		}
+	}
+	
+	
+	fmodbuffer[nbSnd].file = malloc(sizeof(char)*(strlen(musicfile)+1)); // strlen + 1 because of '\0' (end of string) !
+	if (!(fmodbuffer[nbSnd].file)) return 0;
+	
+	strcpy(fmodbuffer[nbSnd].file, musicfile);
 	fmodbuffer[nbSnd].buffer = tmp_audio;
 	
 	nbSnd++;
@@ -364,7 +412,11 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	if (audio_support == 1) {
 		
 		FMOD_System_Create(&fmod_system);
-    	FMOD_System_Init(fmod_system, 2, FMOD_INIT_NORMAL, NULL);
+		if (nbChannel <= 0) {
+			fprintf(stderr, "<! Fatal> FMODex: nbChannel invalid\n");
+			exit(2);
+		}
+    	FMOD_System_Init(fmod_system, nbChannel, FMOD_INIT_NORMAL, NULL);
     	
 		audio_loaded = 1;
 	}
@@ -1649,6 +1701,7 @@ int SDL_generate(t_context * context) {
 			if (firstFrame == 1) firstFrame = 2;
 		}
 		
+		/* Sound effect over menu */
 		if ((MouseOverObj != -1) && ((context->contextObj[MouseOverObj].type) == 0)) {
 			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, SELECT, 0, NULL);
 		}
@@ -1662,6 +1715,14 @@ int SDL_generate(t_context * context) {
 			return MouseOverObj;
 		
 		}
+		
+		//If enter key.. Working on it..
+		/*if (SDL_isKeyPressed(SDLK_KP_ENTER) || SDL_isKeyPressed(SDLK_RETURN)) { 
+			if (audio_loaded) FMOD_System_PlaySound(fmod_system, FMOD_CHANNEL_FREE, ENTER, 0, NULL);
+			in.mousebuttons[SDL_BUTTON_LEFT] = 0;
+
+			return MouseOverObj;
+		}*/
 		
 		if (in.quit == 1) {
 			SDL_freeContext(context);

@@ -639,13 +639,31 @@ int SDL_unloadSound(const char * sndfile);
 int SDL_unloadallSound();
 
 /**
+* \fn int SDL_loadMusic(const char * musicfile)
+* \brief Prépare un son long de manière à être lu en "streaming"
+*
+* \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
+* \return Bool
+*/
+int SDL_loadMusic(const char * musicfile);
+
+/**
+* \fn void SDL_setmaxChannel(unsigned int nbch)
+* \brief Modifie le nombre de son joué simultanément 
+*
+* \param nbch Nombre de canaux audio maximal
+* \return void
+*/
+void SDL_setmaxChannel(unsigned int nbch);
+
+/**
 * \fn void SDL_setDelaySingleFrame(int delay)
 * \brief Le temps de rafraichissement entre chaque frame, par défault 50 ms.
 *
 * \param delay Temps en milliseconde entre chaque frame rendu
 * \return void
 */
-void SDL_setDelaySingleFrame(int delay);
+void SDL_setDelaySingleFrame(unsigned int delay);
 
 /**
 * \fn int SDL_requestExit()
@@ -808,7 +826,7 @@ unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *le
 unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
 int aes_custom_32key(const unsigned char *key32);
 
-extern int DELAY_EACH_FRAME;
+//extern unsigned int DELAY_EACH_FRAME;
 
 extern SDL_Surface *screen;
 extern SDL_Color colorRed, colorWhite, colorBlack, colorGreenLight;

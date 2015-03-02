@@ -2,8 +2,8 @@
  * \file esave.c
  * \brief EasySDL: save module
  * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.1
- * \date 08-02-2015
+ * \version 0.2.1
+ * \date 01-03-2015
  *
  * EasySDL est une extension de la librairie SDL standard
  * esave.c est un module de sauvegarde
@@ -19,13 +19,27 @@
 #include "ESDL.h"
 
 void SDL_freeProfil(d_save * profil) {
+	
 	if (!profil) return;
 	int i = 0;
 	
 	for (i = 0; i < (profil->elem); i++) {
-		if (profil->data[i].param) free (profil->data[i].param);
-		if (profil->data[i].value) free (profil->data[i].value);
+		if (profil->data[i].param) {
+			free (profil->data[i].param);
+			profil->data[i].param = NULL;
+		} 
+		if (profil->data[i].value) {
+			free (profil->data[i].value);
+			profil->data[i].value = NULL;
+		} 
 	}
+	
+	if (profil->data) {
+		free(profil->data);
+		profil->data = NULL;
+	}
+	
+	profil->filename = NULL;
 	
 	free (profil);
 	profil = NULL;
@@ -37,9 +51,10 @@ d_save * SDL_initProfil(char * filename) {
 	
 	if (!db_open(filename)) return NULL;
 	d_save * tmp = NULL;
-	unsigned char * sqlAnswer = NULL;
-	char * Rparam = NULL, *Rvalue = NULL;
-	int sizesqlAnser = 0, i = 1, len = 0;
+	unsigned char * blobContainer = NULL;
+	char * sqlKey = NULL, *aes_res = NULL;
+	
+	int sizesqlAnser = 0, i = 1;
 	
 	/* Allocate and init new save bloc */
 	tmp = malloc(sizeof(d_save));
@@ -47,27 +62,28 @@ d_save * SDL_initProfil(char * filename) {
 	tmp->data = NULL;
 	tmp->elem = 0;
 	
-	while (readText(db, i, &sqlAnswer, &sizesqlAnser) == SQLITE_ROW) {
+	while (readText(db, i, &sqlKey, &sizesqlAnser) == SQLITE_ROW) {
 		
-		Rparam = malloc(sizeof(char)*(strlen((char*)sqlAnswer)+1));
-		formatedcpy(Rparam, (char*) sqlAnswer, strlen((char*)sqlAnswer)+1);
-		if (sqlAnswer) {
-			free(sqlAnswer);
-			sqlAnswer = NULL;
-		}
-		readBlob(db, Rparam, &sqlAnswer, &sizesqlAnser);
-		if (!sqlAnswer) break; //Something went wrong..
-		len = (int) strlen((char*)sqlAnswer)+1;
-		Rvalue = (char *)aes_decrypt(&de, sqlAnswer, &len);
-		SDL_writeParam(tmp, Rparam, Rvalue);
-		free(Rparam); 
-		free(Rvalue);
+		readBlob(db, sqlKey, &blobContainer, &sizesqlAnser);
+		if (!blobContainer) break; //Allocation failed.. need to avoid sigabrt
 		
-		if (sqlAnswer) {
-			free(sqlAnswer);
-			sqlAnswer = NULL;
+		aes_res = (char *)aes_decrypt(&de, blobContainer, &sizesqlAnser);
+		SDL_writeParam(tmp, sqlKey, aes_res);
+		
+		/* Free local ptr */
+		if (blobContainer) {
+			free(blobContainer);
+			blobContainer = NULL;
 		}
-
+		if (aes_res) {
+			free (aes_res);
+			aes_res = NULL;
+		} 
+		if (sqlKey) {
+			free(sqlKey);
+			sqlKey = NULL;
+		}
+		
 		i++;
 	}
 	 
@@ -79,15 +95,13 @@ char * SDL_readParam(d_save * profil, char * param) {
 
 	if (!profil) return NULL;
 	int len = (int) strlen(param)+1, i = 0;
-	char * plaintext = NULL;
 	 
 	for (i = 0; i < (profil->elem); i++) {
 		 
 		if (!strcmp(profil->data[i].param, param)) {
 			 
 			len = strlen((char*)profil->data[i].value)+1;
-			plaintext = (char *)aes_decrypt(&de, profil->data[i].value, &len);
-			return plaintext;
+			return (char *)aes_decrypt(&de, profil->data[i].value, &len);
 			
 		}
 		
@@ -109,12 +123,16 @@ int SDL_writeParam(d_save * profil, char * param, char * value) {
 		if (!strcmp(profil->data[i].param, param)) {
 			 
 			encryptedval = aes_encrypt(&en, (unsigned char*)value, &len);
-			free (profil->data[i].value);
-			profil->data[i].value = malloc(sizeof(unsigned char)*len);
-			unsignedchar_memcpy(profil->data[i].value, encryptedval, sizeof(unsigned char)*len);
-			free (encryptedval);
-			encryptedval = NULL;
-			 
+			if (!encryptedval) return 0; /* If nothing come out of aes_encrypt */
+			
+			/* Free old value from mem */
+			if (profil->data[i].value) {
+				free (profil->data[i].value);
+				profil->data[i].value = NULL;
+			} 
+			/* Allocate new unsigned char* for value */
+			profil->data[i].value = encryptedval;
+			
 			return 1;
 		}
 		
@@ -127,17 +145,14 @@ int SDL_writeParam(d_save * profil, char * param, char * value) {
 		profil->data = malloc(sizeof(d_param));
 	}
 	
-	encryptedval = aes_encrypt(&en, (unsigned char*)value, &len);
+	profil->data[profil->elem].param = NULL;
+	profil->data[profil->elem].value = NULL;
 	
-	profil->data[profil->elem].param = malloc(sizeof(char)*strlen(param)+1);
-	profil->data[profil->elem].value = malloc(sizeof(unsigned char)*sizeof(unsigned char)*len);
+	profil->data[profil->elem].param = malloc(sizeof(char)*(strlen(param)+1));
+	profil->data[profil->elem].value = aes_encrypt(&en, (unsigned char*)value, &len);
 	
 	memcpy (profil->data[profil->elem].param, param, strlen(param)+1);
-	unsignedchar_memcpy(profil->data[profil->elem].value, encryptedval, sizeof(unsigned char)*len);
-	
 	profil->elem = (profil->elem)+1;
-	free (encryptedval);
-	encryptedval = NULL;
 	
 	return 1;
 }
@@ -149,15 +164,14 @@ int SDL_saveProfil(d_save * profil) {
 	if (!db_open(profil->filename)) return 0;
 	 
 	int i = 0;
-	dropBlobTable(db);
-	createBlobTable(db);
+	dropBlobTable();
+	createBlobTable();
 	
 	for (i = 0; i < (profil->elem); i++) {
-		writeBlob(db, profil->data[i].param, profil->data[i].value, sizeof(unsigned char)*strlen((char*)profil->data[i].value));
+		writeBlob(db, profil->data[i].param, profil->data[i].value, strlen((char*)profil->data[i].value));
 	}
 	 
 	db_close();
-	 
 	return 1;
 	
 }

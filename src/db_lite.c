@@ -7,7 +7,7 @@
  *
  * EasySDL est une extension de la librairie SDL standard
  * Utilise SQLite3
- * Fortement inspiré de https://www.sqlite.org/cvstrac/wiki?p=BlobExample
+ * Fortement inspirÃ© de https://www.sqlite.org/cvstrac/wiki?p=BlobExample
  *
  */
 
@@ -22,14 +22,25 @@ sqlite3 *db = NULL;
 /*
 ** Create the blobs table in database db. Return an SQLite error code.
 */ 
-int createBlobTable(sqlite3 *db){
+int createBlobTable(){
+	
 	const char *zSql = "CREATE TABLE sdata(id INTEGER PRIMARY KEY AUTOINCREMENT, param TEXT, value BLOB)";
-	return sqlite3_exec(db, zSql, 0, 0, 0);
+	sqlite3_stmt *pStmt;
+	
+	sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+	sqlite3_step(pStmt);
+	
+	return sqlite3_finalize(pStmt);
 }
 
-int dropBlobTable(sqlite3 *db){
-	const char *zSql = "DROP TABLE IF EXISTS sdata";
-	return sqlite3_exec(db, zSql, 0, 0, 0);
+int dropBlobTable(){
+	const char *zSql = "DROP TABLE sdata";
+	sqlite3_stmt *pStmt;
+	
+	sqlite3_prepare(db, zSql, -1, &pStmt, 0);
+	sqlite3_step(pStmt);
+	
+	return sqlite3_finalize(pStmt);
 }
 
 int db_open(char * filename) {
@@ -43,7 +54,7 @@ int db_open(char * filename) {
         
         return 0;
     }else{
-    	createBlobTable(db);
+    	createBlobTable();
     }
     
     return 1;
@@ -72,12 +83,12 @@ int writeBlob(
 	int nBlob                      /* Length of data pointed to by zBlob */
 ){
   	
-  	  
 	const char *zSql = "INSERT INTO sdata(param, value) VALUES(?, ?)";
 	sqlite3_stmt *pStmt;
 	int rc;
 	 
-  do {
+	
+	do{
     /* Compile the INSERT statement into a virtual machine. */
     rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
       
@@ -96,7 +107,7 @@ int writeBlob(
     //sqlite3_bind_int(pStmt, 1, (int) sqlite3_last_insert_rowid (db));
     sqlite3_bind_text(pStmt, 1, zKey, -1, SQLITE_STATIC);
     sqlite3_bind_blob(pStmt, 2, zBlob, nBlob, SQLITE_STATIC);
-	 
+	
     /* Call sqlite3_step() to run the virtual machine. Since the SQL being
     ** executed is not a SELECT statement, we assume no data will be returned.
     */
@@ -111,9 +122,8 @@ int writeBlob(
     /* If sqlite3_finalize() returned SQLITE_SCHEMA, then try to execute
     ** the statement again.
     */
-  } while( rc==SQLITE_SCHEMA );
-	 
-  return rc;
+	} while (rc == SQLITE_SCHEMA);
+	return rc;
 }
 
 /*
@@ -134,14 +144,13 @@ int readBlob(
   ** set *pzBlob and *pnBlob to 0 now.
   */
 	 
-  
     /* Compile the SELECT statement into a virtual machine. */
     rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
      
     if( rc!=SQLITE_OK ){
       return rc;
     }
-	 
+	
     /* Bind the key to the SQL variable. */
     sqlite3_bind_text(pStmt, 1, zKey, -1, SQLITE_STATIC);
 	 
@@ -151,6 +160,7 @@ int readBlob(
     ** returned something other than SQLITE_ROW.
     */
     rc = sqlite3_step(pStmt);
+    
     if( rc==SQLITE_ROW ){
       /* The pointer returned by sqlite3_column_blob() points to memory
       ** that is owned by the statement handle (pStmt). It is only good
@@ -161,12 +171,12 @@ int readBlob(
       */
        
       *pnBlob = sqlite3_column_bytes(pStmt, 0);
-      *pzBlob = (unsigned char *)malloc(*pnBlob);
+      *pzBlob = (unsigned char *) malloc(sizeof(unsigned char)*(*pnBlob));
        
-      memcpy(*pzBlob, sqlite3_column_blob(pStmt, 0), *pnBlob);
+    	memcpy(*pzBlob, sqlite3_column_blob(pStmt, 0), *pnBlob);
        
     }
-
+	
     /* Finalize the statement (this releases resources allocated by 
     ** sqlite3_prepare() ).
     */
@@ -177,8 +187,7 @@ int readBlob(
     ** the statement all over again.
     */
   
-	 
-  return rc;
+	return rc;
 }
 
 /*
@@ -187,58 +196,52 @@ int readBlob(
 int readText(
 	sqlite3 *db,               /* Database containing blobs table */
 	int zID,          /* Null-terminated key to retrieve blob for */
-	unsigned char **pzBlob,    /* Set *pzBlob to point to the retrieved blob */
+	char **pzBlob,    /* Set *pzBlob to point to the retrieved blob */
 	int *pnBlob                /* Set *pnBlob to the size of the retrieved blob */
 ){
 	
 	const char *zSql = "SELECT param FROM sdata WHERE id = ?";
-	 
-	sqlite3_stmt *pStmt;
-	 
+	sqlite3_stmt *pStmt = NULL;
+	const char *tal;
+	
 	int rc;
 
-  /* In case there is no table entry for key zKey or an error occurs, 
-  ** set *pzBlob and *pnBlob to 0 now.
-  */
-
     /* Compile the SELECT statement into a virtual machine. */
-    rc = sqlite3_prepare(db, zSql, -1, &pStmt, 0);
-     
+    rc = sqlite3_prepare(db, zSql, -1, &pStmt, &tal);
+    
     if( rc!=SQLITE_OK ){
-      return rc;
+	  return rc;
     }
 	 
     /* Bind the key to the SQL variable. */
     sqlite3_bind_int(pStmt, 1, zID);
-	 
+	
     /* Run the virtual machine. We can tell by the SQL statement that
     ** at most 1 row will be returned. So call sqlite3_step() once
     ** only. Normally, we would keep calling sqlite3_step until it
     ** returned something other than SQLITE_ROW.
     */
     rc = sqlite3_step(pStmt);
-    if( rc==SQLITE_ROW ){
-      /* The pointer returned by sqlite3_column_blob() points to memory
-      ** that is owned by the statement handle (pStmt). It is only good
-      ** until the next call to an sqlite3_XXX() function (e.g. the 
-      ** sqlite3_finalize() below) that involves the statement handle. 
-      ** So we need to make a copy of the blob into memory obtained from 
-      ** malloc() to return to the caller.
-      */
-      *pnBlob = sqlite3_column_bytes(pStmt, 0);
-      *pzBlob = malloc(sizeof(unsigned char)*(*pnBlob));
-       
-      //memcpy(*pzBlob, sqlite3_column_text(pStmt, 0), *pnBlob);
-      unsignedchar_memcpy(*pzBlob, (unsigned char *) sqlite3_column_text(pStmt, 0), *pnBlob);
-      
+	if( rc==SQLITE_ROW ){
+    	/* The pointer returned by sqlite3_column_blob() points to memory
+    	** that is owned by the statement handle (pStmt). It is only good
+    	** until the next call to an sqlite3_XXX() function (e.g. the 
+    	** sqlite3_finalize() below) that involves the statement handle. 
+    	** So we need to make a copy of the blob into memory obtained from 
+    	** malloc() to return to the caller.
+    	*/
+    	*pnBlob = sqlite3_column_bytes(pStmt, 0);
+    	*pzBlob = malloc(sizeof(char)*(*pnBlob));
+    	
+      	memset(*pzBlob, 0, (*pnBlob+1));
+      	memcpy(*pzBlob, sqlite3_column_text(pStmt, 0), *pnBlob);
+		
     }
 
     /* Finalize the statement (this releases resources allocated by 
     ** sqlite3_prepare() ).
     */
-    sqlite3_finalize(pStmt);
-     
- 
-	 
-  return rc;
+	sqlite3_finalize(pStmt);
+	return rc;
+	
 }

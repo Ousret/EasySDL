@@ -54,7 +54,7 @@ int db_open(char * filename) {
         
         return 0;
     }else{
-    	createBlobTable(db);
+    	createBlobTable();
     }
     
     return 1;

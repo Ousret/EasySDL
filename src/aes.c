@@ -38,11 +38,6 @@ int aes_custom_32key(const unsigned char *key32) {
 	return 1;
 } 
 
-void aes_clean() {
-	EVP_CIPHER_CTX_cleanup(&en);
-	EVP_CIPHER_CTX_cleanup(&de);
-}
-
 /**
  * Create an 256 bit key and IV using the supplied key_data. salt can be added for taste.
  * Fills in the encryption and decryption ctx objects and returns 0 on success
@@ -107,7 +102,7 @@ unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len
 	
 	*len = c_len + f_len;
 	
-	aes_clean();
+	EVP_CIPHER_CTX_cleanup(&en);
 	
 	return ciphertext;
 }
@@ -132,7 +127,7 @@ unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *le
 	
 	*len = p_len + f_len;
 	
-	aes_clean();
+	EVP_CIPHER_CTX_cleanup(&de);
 	
 	return plaintext;
 }

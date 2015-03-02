@@ -1,9 +1,9 @@
 /**
  * \file ESDL.h
  * \brief EasySDL header
- * \author TAHRI Ahmed, SIMON Jérémy
- * \version 0.6.0
- * \date 25-01-2015
+ * \author TAHRI Ahmed, SIMON JÃ©rÃ©my
+ * \version 0.7.0
+ * \date 01-03-2015
  *
  * EasySDL est une extension de la librairie SDL standard
  *
@@ -21,17 +21,17 @@
 
 typedef enum {
 
-	ALIGN_CENTER = 1, /*!< Texte aligné au centre */
-	ALIGN_LEFT, /*!< Texte aligné à gauche */
-	ALIGN_RIGHT /*!< Texte aligné à droite */
+	ALIGN_CENTER = 1, /*!< Texte alignÃ© au centre */
+	ALIGN_LEFT, /*!< Texte alignÃ© Ã  gauche */
+	ALIGN_RIGHT /*!< Texte alignÃ© Ã  droite */
 	
 } t_typeAlign;
 
 typedef enum {
 	
-	NUMERIC, /*!< Capture uniquement les chiffres de 0 à 9 */
-	ALPHA, /*!< Capture uniquement les caractères de A à Z */
-	ALPHANUMERIC, /*!< Capture uniquement les caractères alphanumériques */
+	NUMERIC, /*!< Capture uniquement les chiffres de 0 Ã  9 */
+	ALPHA, /*!< Capture uniquement les caractÃ¨res de A Ã  Z */
+	ALPHANUMERIC, /*!< Capture uniquement les caractÃ¨res alphanumÃ©riques */
 	NOMASK, /*!< Capture tout, aucun masque de saisie */
 	NONE /*!< Lorsqu'il ne s'agit pas d'un champ de saisie */
 	
@@ -50,9 +50,9 @@ typedef enum {
 
 /**
  * \struct t_object
- * \brief Décrit de quoi est fait un objet
+ * \brief DÃ©crit de quoi est fait un objet
  *
- * t_object décrit un bouton ou un champs de saisie
+ * t_object dÃ©crit un bouton ou un champs de saisie
  */
 
 typedef struct {
@@ -72,9 +72,9 @@ typedef struct {
 
 /**
  * \struct t_rect
- * \brief Décrit un rectangle simple avec une couleur
+ * \brief DÃ©crit un rectangle simple avec une couleur
  *
- * t_rect contient les données nécessaires au dessin d'un rectangle
+ * t_rect contient les donnÃ©es nÃ©cessaires au dessin d'un rectangle
  */
 typedef struct {
 
@@ -88,7 +88,7 @@ typedef struct {
  * \struct t_text
  * \brief Contient une ligne de texte pour un rendu SDL
  *
- * t_text décrit une chaine de caractère à transformer en SDL_Surface, ne supporte pas les caractères de type '\\x' !
+ * t_text dÃ©crit une chaine de caractÃ¨re Ã  transformer en SDL_Surface, ne supporte pas les caractÃ¨res de type '\\x' !
  */
 typedef struct {
 	
@@ -103,9 +103,9 @@ typedef struct {
 
 /**
  * \struct t_image
- * \brief Une image et ses paramètres
+ * \brief Une image et ses paramÃ¨tres
  *
- * t_image contient la SDL_Surface de une image ainsi que ses paramètres pour le rendu.
+ * t_image contient la SDL_Surface de une image ainsi que ses paramÃ¨tres pour le rendu.
  */
 typedef struct {
 	
@@ -119,39 +119,39 @@ typedef struct {
 
 /**
  * \struct t_audio
- * \brief Un son avec le nom fichier associé
+ * \brief Un son avec le nom fichier associÃ©
  *
- * t_audio contient un son chargé et le nom de fichier associé à celui-ci
+ * t_audio contient un son chargÃ© et le nom de fichier associÃ© Ã  celui-ci
  */
 typedef struct {
 	
-	char * file; /*!< Nom du fichier audio associé */
-	FMOD_SOUND * buffer; /*!< Buffer du fichier audio chargé */
+	char * file; /*!< Nom du fichier audio associÃ© */
+	FMOD_SOUND * buffer; /*!< Buffer du fichier audio chargÃ© */
 	
 } t_audio;
 
 /**
  * \struct t_sprite
- * \brief Une image sprite et ses paramètres
+ * \brief Une image sprite et ses paramÃ¨tres
  *
- * t_sprite contient les paramètres utiles à la mise en place d'un sprite (ex: personnage animé).
+ * t_sprite contient les paramÃ¨tres utiles Ã  la mise en place d'un sprite (ex: personnage animÃ©).
  */
 typedef struct {
 
 	SDL_Surface *buffer; /*!< Buffer de l'image sprite utile */
-	SDL_Color transparancy; /*!< Couleur clé pour la transparence */
+	SDL_Color transparancy; /*!< Couleur clÃ© pour la transparence */
 	int sp_height, sp_width; 
 	int x, y;
 	int position, animation;
-	int hide; /*!< Indique si le sprite doit être afficher */
+	int hide; /*!< Indique si le sprite doit Ãªtre afficher */
 	
 } t_sprite;
 
 /**
  * \struct t_context
- * \brief Représentation d'un contexte et son rendu.
+ * \brief ReprÃ©sentation d'un contexte et son rendu.
  *
- * t_context contient un ensemble de donnée pour la formation d'une frame dans un état donnée.
+ * t_context contient un ensemble de donnÃ©e pour la formation d'une frame dans un Ã©tat donnÃ©e.
  */
 typedef struct {
 
@@ -180,9 +180,9 @@ typedef struct {
 
 /**
  * \struct Input
- * \brief Contient le mapping des évènements liés au clavier et la souris.
+ * \brief Contient le mapping des Ã©vÃ¨nements liÃ©s au clavier et la souris.
  *
- * L'état des touches / souris à un instant t.
+ * L'Ã©tat des touches / souris Ã  un instant t.
  */
 typedef struct
 {
@@ -197,9 +197,9 @@ typedef struct
 
 /**
  * \struct d_param
- * \brief Contient un couple (Paramètre, Valeur)
+ * \brief Contient un couple (ParamÃ¨tre, Valeur)
  *
- * Un couple indisociable dont la valeur est crypté
+ * Un couple indisociable dont la valeur est cryptÃ©
  */
 typedef struct {
 	
@@ -210,9 +210,9 @@ typedef struct {
 
 /**
  * \struct d_save
- * \brief Décrit un jeu de données
+ * \brief DÃ©crit un jeu de donnÃ©es
  *
- * Contient les couples (paramètre, valeur) et le nom du fichier à manipuler.
+ * Contient les couples (paramÃ¨tre, valeur) et le nom du fichier Ã  manipuler.
  */
 typedef struct {
 	
@@ -224,16 +224,16 @@ typedef struct {
 
 /**
 * \fn void SDL_initWindow(int width, int height, int fullscreen, char * title, char * icon_name, int ttf_support, char * police_name, int police_size, int audio_support)
-* \brief Initialise les modules de base et ouvre une fenêtre SDL
+* \brief Initialise les modules de base et ouvre une fenÃªtre SDL
 *
-* \param width Largeur de la fenêtre SDL
-* \param height Hauteur de la fenêtre SDL
-* \param fullscreen Plein écran = 1, fenêtre = 0.
-* \param title Titre de la fenêtre SDL
+* \param width Largeur de la fenÃªtre SDL
+* \param height Hauteur de la fenÃªtre SDL
+* \param fullscreen Plein Ã©cran = 1, fenÃªtre = 0.
+* \param title Titre de la fenÃªtre SDL
 * \param icon_name Chemin vers l'icone de l'application sinon NULL pour aucune icone
 * \param ttf_support Charge le module de rendu texte = 1 sinon 0
 * \param police_name Nom du fichier *.ttf pour le moteur de rendu texte
-* \param police_size Taille en pt de la police d'écriture
+* \param police_size Taille en pt de la police d'Ã©criture
 * \param audio_support Prend en charge l'audio avec fmodex = 1 sinon 0
 * \return void
 */
@@ -241,7 +241,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 
 /**
 * \fn void SDL_unload()
-* \brief Décharge la mémoire des modules précédemment chargés et ferme le processus
+* \brief DÃ©charge la mÃ©moire des modules prÃ©cÃ©demment chargÃ©s et ferme le processus
 *
 * \return void
 */
@@ -249,24 +249,24 @@ void SDL_unload();
 
 /**
 * \fn int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions)
-* \brief Génère un menu générique et attends que l'utilisateur fasse un choix
+* \brief GÃ©nÃ¨re un menu gÃ©nÃ©rique et attends que l'utilisateur fasse un choix
 *
-* \param backgroundPic Nom de l'image à utiliser en fond
-* \param nbEntries Nombre de bouton à générer
-* \param captions Contient le texte associés au(x) bouton(s) (matrice **char)
+* \param backgroundPic Nom de l'image Ã  utiliser en fond
+* \param nbEntries Nombre de bouton Ã  gÃ©nÃ©rer
+* \param captions Contient le texte associÃ©s au(x) bouton(s) (matrice **char)
 * \return Identifiant du bouton choisis
 */
 int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions);
 
 /**
 * \fn int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y)
-* \brief Vérifie si la souris est dans la zone définie en paramètre
+* \brief VÃ©rifie si la souris est dans la zone dÃ©finie en paramÃ¨tre
 *
-* \param context Contexte de référence concerné
+* \param context Contexte de rÃ©fÃ©rence concernÃ©
 * \param height Hauteur de la zone en pixel
 * \param width Largeur de la zone en pixel
-* \param x Coordonnée x du point supérieur gauche
-* \param y Coordonnée y du point supérieur gauche
+* \param x CoordonnÃ©e x du point supÃ©rieur gauche
+* \param y CoordonnÃ©e y du point supÃ©rieur gauche
 * \return bool
 */
 int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y);
@@ -275,15 +275,15 @@ int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y
 * \fn int SDL_ismouseover(t_context * context, t_typeData type)
 * \brief Renvoie l'identifiant d'un objet (bouton, champ de saisie, image, sprite, texte) sur lequel la souris survol le-dit objet.
 *
-* \param context Le contexte pour lequel il faut vérifier
-* \param type Le type à vérifier
+* \param context Le contexte pour lequel il faut vÃ©rifier
+* \param type Le type Ã  vÃ©rifier
 * \return Identifiant de l'objet ou -1 si rien.
 */
 int SDL_ismouseover(t_context * context, t_typeData type);
 
 /**
 * \fn void SDL_generateFrame(t_context * context)
-* \brief Construit une frame pour un contexte donnée et la stocke dans la surface principale en attente de rafraichissement.
+* \brief Construit une frame pour un contexte donnÃ©e et la stocke dans la surface principale en attente de rafraichissement.
 *
 * \param context Le contexte pour lequel il faut construire une frame
 * \return void
@@ -292,34 +292,34 @@ void SDL_generateFrame(t_context * context);
 
 /**
 * \fn void SDL_UpdateEvents(Input* in)
-* \brief Met à jour la table des évènements à un instant t.
+* \brief Met Ã  jour la table des Ã©vÃ¨nements Ã  un instant t.
 *
-* \param in Tableau dans lequel les données seront inscrite.
+* \param in Tableau dans lequel les donnÃ©es seront inscrite.
 * \return void
 */
 void SDL_UpdateEvents(Input* in);
 
 /**
 * \fn int SDL_captureInput(t_context * context, int obj)
-* \brief Copie le dernier caractère capturé dans la bonne destination
+* \brief Copie le dernier caractÃ¨re capturÃ© dans la bonne destination
 *
-* \param context Contexte concerné
-* \param obj Identifiant de l'objet concerné
+* \param context Contexte concernÃ©
+* \param obj Identifiant de l'objet concernÃ©
 * \return bool
 */
 int SDL_captureInput(t_context * context, int obj);
 
 /**
 * \fn int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y)
-* \brief Création d'un nouvelle objet (bouton ou champs de saisie)
+* \brief CrÃ©ation d'un nouvelle objet (bouton ou champs de saisie)
 *
-* \param context Contexte concerné
-* \param id Retourne l'identifiant de l'objet crée mettre à NULL si vous ne souhaitez pas récupérer son identifiant.
+* \param context Contexte concernÃ©
+* \param id Retourne l'identifiant de l'objet crÃ©e mettre Ã  NULL si vous ne souhaitez pas rÃ©cupÃ©rer son identifiant.
 * \param type Bouton ou champ de saisie
 * \param title Titre de l'objet
 * \param align Alignement du texte
-* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquelle sera stocké le résultat, sinon mettre à NULL.
-* \param typeForm S'il s'agit d'un champs de saisie, préciser le masque de saisie, sinon mettre NONE.
+* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquelle sera stockÃ© le rÃ©sultat, sinon mettre Ã  NULL.
+* \param typeForm S'il s'agit d'un champs de saisie, prÃ©ciser le masque de saisie, sinon mettre NONE.
 * \param x Position x relative au contexte de l'objet
 * \param y Position y relative au contexte de l'objet
 * \return bool
@@ -327,15 +327,15 @@ int SDL_captureInput(t_context * context, int obj);
 int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y);
 /**
 * \fn int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y)
-* \brief Modifie les propriétés d'un objet
+* \brief Modifie les propriÃ©tÃ©s d'un objet
 *
-* \param context Contexte concerné
-* \param obj Identifiant de l'objet à modifier
+* \param context Contexte concernÃ©
+* \param obj Identifiant de l'objet Ã  modifier
 * \param type Bouton ou champ de saisie
 * \param title Titre de l'objet
 * \param align Alignement du texte
-* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquel sera stocké le résultat, sinon mettre à NULL.
-* \param typeForm S'il s'agit d'un champs de saisie, préciser le masque de saisie, sinon mettre NONE.
+* \param dest S'il s'agit d'un champs de saisie, mettre la variable string dans laquel sera stockÃ© le rÃ©sultat, sinon mettre Ã  NULL.
+* \param typeForm S'il s'agit d'un champs de saisie, prÃ©ciser le masque de saisie, sinon mettre NONE.
 * \param x Position x relative au contexte de l'objet
 * \param y Position y relative au contexte de l'objet
 * \return bool
@@ -345,19 +345,19 @@ int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int
 * \fn int SDL_delObj(t_context * context, int obj)
 * \brief Supprime d'un contexte un objet
 *
-* \param context Contexte concerné
-* \param obj Identifiant de l'objet à supprimer
+* \param context Contexte concernÃ©
+* \param obj Identifiant de l'objet Ã  supprimer
 * \return bool
 */
 int SDL_delObj(t_context * context, int obj);
 
 /**
 * \fn int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y)
-* \brief Créer une ligne de texte à afficher pour un contexte 
+* \brief CrÃ©er une ligne de texte Ã  afficher pour un contexte 
 *
-* \param context Contexte concerné
-* \param id Retourne l'identifiant de l'objet texte crée mettre à NULL si vous ne souhaitez pas récupérer son identifiant.
-* \param content La chaine de caractère à associé à cette objet texte.
+* \param context Contexte concernÃ©
+* \param id Retourne l'identifiant de l'objet texte crÃ©e mettre Ã  NULL si vous ne souhaitez pas rÃ©cupÃ©rer son identifiant.
+* \param content La chaine de caractÃ¨re Ã  associÃ© Ã  cette objet texte.
 * \param couleur La couleur du texte
 * \param x Position x relative au contexte
 * \param y Position y relative au contexte
@@ -366,11 +366,11 @@ int SDL_delObj(t_context * context, int obj);
 int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y);
 /**
 * \fn int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y)
-* \brief Modifie une entrée texte au préalable chargée avec SDL_newText()
+* \brief Modifie une entrÃ©e texte au prÃ©alable chargÃ©e avec SDL_newText()
 *
-* \param context Contexte concerné
-* \param idtext Identifiant de l'objet texte à modifier
-* \param content La chaine de caractère à associé à cette objet texte.
+* \param context Contexte concernÃ©
+* \param idtext Identifiant de l'objet texte Ã  modifier
+* \param content La chaine de caractÃ¨re Ã  associÃ© Ã  cette objet texte.
 * \param couleur La couleur du texte
 * \param x Position x relative au contexte
 * \param y Position y relative au contexte
@@ -381,19 +381,19 @@ int SDL_editText(t_context * context, int idtext, char * content, SDL_Color coul
 * \fn int SDL_delText(t_context * context, int idtext)
 * \brief Supprime d'un contexte un objet texte
 *
-* \param context Contexte concerné
-* \param idtext Identifiant de l'objet texte à supprimer
+* \param context Contexte concernÃ©
+* \param idtext Identifiant de l'objet texte Ã  supprimer
 * \return bool
 */
 int SDL_delText(t_context * context, int idtext);
 
 /**
 * \fn int SDL_newImage(t_context * context, int * id, char * file, int x, int y)
-* \brief Ajoute une image à un contexte
+* \brief Ajoute une image Ã  un contexte
 *
-* \param context Contexte concerné
-* \param id Retourne l'identifiant de l'image crée mettre à NULL si vous ne souhaitez pas récupérer son identifiant.
-* \param file Le fichier image concerné
+* \param context Contexte concernÃ©
+* \param id Retourne l'identifiant de l'image crÃ©e mettre Ã  NULL si vous ne souhaitez pas rÃ©cupÃ©rer son identifiant.
+* \param file Le fichier image concernÃ©
 * \param x Position x relative au contexte
 * \param y Position y relative au contexte
 * \return bool
@@ -401,10 +401,10 @@ int SDL_delText(t_context * context, int idtext);
 int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
 /**
 * \fn int SDL_editImage(t_context * context, int idimg, int x, int y)
-* \brief Modifie les propriétés d'une image
+* \brief Modifie les propriÃ©tÃ©s d'une image
 *
-* \param context Contexte concerné
-* \param idimg Identifiant de l'image dont les propriétés sont à modifier
+* \param context Contexte concernÃ©
+* \param idimg Identifiant de l'image dont les propriÃ©tÃ©s sont Ã  modifier
 * \param x Position x relative au contexte
 * \param y Position y relative au contexte
 * \return bool
@@ -414,8 +414,8 @@ int SDL_editImage(t_context * context, int idimg, int x, int y);
 * \fn int SDL_delImage(t_context * context, int idimg)
 * \brief Supprimer une image d'un contexte
 *
-* \param context Contexte concerné
-* \param idimg Identifiant de l'image à supprimer
+* \param context Contexte concernÃ©
+* \param idimg Identifiant de l'image Ã  supprimer
 * \return bool
 */
 int SDL_delImage(t_context * context, int idimg);
@@ -424,8 +424,8 @@ int SDL_delImage(t_context * context, int idimg);
 * \fn int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide)
 * \brief Ajoute un sprite pour un contexte
 *
-* \param context Contexte concerné
-* \param filename Fichier image du sprite (transparence png recommandé)
+* \param context Contexte concernÃ©
+* \param filename Fichier image du sprite (transparence png recommandÃ©)
 * \param transparancy Couleur de transparence 
 * \param sp_height Hauteur d'une partie (souvent le personnage)
 * \param sp_width Largeur d'une partie (souvent le personnage)
@@ -439,10 +439,10 @@ int SDL_delImage(t_context * context, int idimg);
 int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
 /**
 * \fn int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide)
-* \brief Modifie le sprite d'un contexte donnée à condition qu'il soit déjà chargé avec SDL_newSprite()
+* \brief Modifie le sprite d'un contexte donnÃ©e Ã  condition qu'il soit dÃ©jÃ  chargÃ© avec SDL_newSprite()
 *
-* \param context Contexte concerné
-* \param idSprite Identifiant du sprite concerné
+* \param context Contexte concernÃ©
+* \param idSprite Identifiant du sprite concernÃ©
 * \param x Position x relative au contexte
 * \param y Position y relative au contexte
 * \param position Identifiant de la colonne (verticale)
@@ -453,20 +453,20 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
 /**
 * \fn int SDL_delSprite(t_context *context, int idSprite)
-* \brief Supprime un sprite d'un contexte donnée
+* \brief Supprime un sprite d'un contexte donnÃ©e
 *
-* \param context Contexte concerné
-* \param idSprite Identifiant du sprite à supprimer
+* \param context Contexte concernÃ©
+* \param idSprite Identifiant du sprite Ã  supprimer
 * \return bool
 */
 int SDL_delSprite(t_context *context, int idSprite);
 
 /**
 * \fn int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y)
-* \brief Ajoute un nouveau rectangle pour un contexte donnée
+* \brief Ajoute un nouveau rectangle pour un contexte donnÃ©e
 *
-* \param context Contexte concerné
-* \param idrect Lier à un entier le nouveau rectangle sinon mettre à NULL
+* \param context Contexte concernÃ©
+* \param idrect Lier Ã  un entier le nouveau rectangle sinon mettre Ã  NULL
 * \param color Couleur du rectangle (SDL_Color)
 * \param height Hauteur du nouveau rectangle
 * \param width Largeur du nouveau rectangle
@@ -477,10 +477,10 @@ int SDL_delSprite(t_context *context, int idSprite);
 int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y);
 /**
 * \fn int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y)
-* \brief Modifie un rectangle existant dans un contexte donnée
+* \brief Modifie un rectangle existant dans un contexte donnÃ©e
 *
-* \param context Contexte concerné
-* \param idrect Identifiant du rectangle concerné
+* \param context Contexte concernÃ©
+* \param idrect Identifiant du rectangle concernÃ©
 * \param color Couleur du rectangle (SDL_Color)
 * \param height Hauteur du rectangle
 * \param width Largeur du rectangle
@@ -491,98 +491,98 @@ int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, 
 int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, int width, int x, int y);
 /**
 * \fn int SDL_delRect(t_context *context, int idrect)
-* \brief Supprime un rectangle existant dans un contexte donnée
+* \brief Supprime un rectangle existant dans un contexte donnÃ©e
 *
-* \param context Contexte concerné
-* \param idrect Identifiant du rectangle concerné
+* \param context Contexte concernÃ©
+* \param idrect Identifiant du rectangle concernÃ©
 * \return bool
 */
 int SDL_delRect(t_context *context, int idrect);
 
 /**
 * \fn int SDL_generate(t_context * context)
-* \brief Génère une frame et l'affiche à l'écran, fonction blocante s'il existe des objets (bouton(s) ou champ(s) de saisie).
+* \brief GÃ©nÃ¨re une frame et l'affiche Ã  l'Ã©cran, fonction blocante s'il existe des objets (bouton(s) ou champ(s) de saisie).
 *
-* \param context Le contexte pour lequel il faut générer une frame
+* \param context Le contexte pour lequel il faut gÃ©nÃ©rer une frame
 * \return L'identifiant du bouton choisis ou rien.
 */
 int SDL_generate(t_context * context);
 
 /**
 * \fn int SDL_nbObj(t_context * context)
-* \brief Compte le nombre d'objet chargée en mémoire pour un contexte donnée (Comprend les bouttons et les champs de saisie)
+* \brief Compte le nombre d'objet chargÃ©e en mÃ©moire pour un contexte donnÃ©e (Comprend les bouttons et les champs de saisie)
 *
-* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
-* \return Nombre d'objet chargée
+* \param context Le contexte Ã  vÃ©rifier, au prÃ©alable chargÃ© avec SDL_newContext
+* \return Nombre d'objet chargÃ©e
 */
 int SDL_nbObj(t_context * context);
 /**
 * \fn int SDL_nbText(t_context * context)
-* \brief Compte le nombre d'objet texte chargée en mémoire pour un contexte donnée
+* \brief Compte le nombre d'objet texte chargÃ©e en mÃ©moire pour un contexte donnÃ©e
 *
-* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
-* \return Nombre d'objet texte chargée
+* \param context Le contexte Ã  vÃ©rifier, au prÃ©alable chargÃ© avec SDL_newContext
+* \return Nombre d'objet texte chargÃ©e
 */
 int SDL_nbText(t_context * context);
 /**
 * \fn int SDL_nbImage(t_context * context)
-* \brief Compte le nombre d'image chargée en mémoire pour un contexte donnée
+* \brief Compte le nombre d'image chargÃ©e en mÃ©moire pour un contexte donnÃ©e
 *
-* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
-* \return Nombre d'image chargée
+* \param context Le contexte Ã  vÃ©rifier, au prÃ©alable chargÃ© avec SDL_newContext
+* \return Nombre d'image chargÃ©e
 */
 int SDL_nbImage(t_context * context);
 
 /**
 * \fn int SDL_nbSprite(t_context * context)
-* \brief Compte le nombre de sprite chargée en mémoire pour un contexte donnée
+* \brief Compte le nombre de sprite chargÃ©e en mÃ©moire pour un contexte donnÃ©e
 *
-* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
-* \return Nombre de sprite chargée
+* \param context Le contexte Ã  vÃ©rifier, au prÃ©alable chargÃ© avec SDL_newContext
+* \return Nombre de sprite chargÃ©e
 */
 int SDL_nbSprite(t_context * context);
 
 /**
 * \fn int SDL_contextEmpty(t_context * context)
-* \brief Vérifie si un contexte n'a pas de donnée chargé en mémoire
+* \brief VÃ©rifie si un contexte n'a pas de donnÃ©e chargÃ© en mÃ©moire
 *
-* \param context Le contexte à vérifier, au préalable chargé avec SDL_newContext
+* \param context Le contexte Ã  vÃ©rifier, au prÃ©alable chargÃ© avec SDL_newContext
 * \return Bool
 */
 int SDL_contextEmpty(t_context * context);
 
 /**
 * \fn t_context * SDL_newContext(char * title, int x, int y, int height, int width)
-* \brief Création d'un nouveau contexte
+* \brief CrÃ©ation d'un nouveau contexte
 *
-* \param title Le titre associé à ce nouveau contexte
-* \param x Position x relative à la fenêtre SDL
-* \param y Position y relative à la fenêtre SDL
-* \param height Hauteur occupé en pixel par ce nouveau contexte
-* \param width Largeur occupé en pixel par ce nouveau contexte
+* \param title Le titre associÃ© Ã  ce nouveau contexte
+* \param x Position x relative Ã  la fenÃªtre SDL
+* \param y Position y relative Ã  la fenÃªtre SDL
+* \param height Hauteur occupÃ© en pixel par ce nouveau contexte
+* \param width Largeur occupÃ© en pixel par ce nouveau contexte
 * \return Adresse du nouvelle element t_context *
 */
 t_context * SDL_newContext(char * title, int x, int y, int height, int width);
 
 /**
 * \fn void SDL_freeContext(t_context * context)
-* \brief Libère la mémoire, supprime les données chargés pour un contexte donnée.
+* \brief LibÃ¨re la mÃ©moire, supprime les donnÃ©es chargÃ©s pour un contexte donnÃ©e.
 *
-* \param context Contexte concerné
+* \param context Contexte concernÃ©
 * \return void
 */
 void SDL_freeContext(t_context * context);
 
 /**
 * \fn void SDL_loadRessources()
-* \brief Charge en mémoire les ressources de base (Image bouton, champ saisie, son de selection, etc..)
+* \brief Charge en mÃ©moire les ressources de base (Image bouton, champ saisie, son de selection, etc..)
 *
 * \return void
 */
 void SDL_loadRessources();
 /**
 * \fn void SDL_unloadRessources()
-* \brief Libère la mémoire des ressources de base, précédemment chargées avec SDL_loadRessources()
+* \brief LibÃ¨re la mÃ©moire des ressources de base, prÃ©cÃ©demment chargÃ©es avec SDL_loadRessources()
 *
 * \return void
 */
@@ -590,7 +590,7 @@ void SDL_unloadRessources();
 
 /**
 * \fn int SDL_isKeyPressed(int KEY_S)
-* \brief Vérifie si une touche du clavier est enfoncée.
+* \brief VÃ©rifie si une touche du clavier est enfoncÃ©e.
 *
 * \param KEY_S Identifiant de la touche (constante SDL_Keycode) (https://wiki.libsdl.org/SDL_Keycode)
 * \return Bool
@@ -599,7 +599,7 @@ int SDL_isKeyPressed(int KEY_S);
 
 /**
 * \fn int SDL_isMousePressed(int MOUSE_S)
-* \brief Vérifie si une touche de la souris est enfoncée.
+* \brief VÃ©rifie si une touche de la souris est enfoncÃ©e.
 *
 * \param MOUSE_S Identifiant de la touche (constante SDL_Keycode) (https://wiki.libsdl.org/SDL_Keycode)
 * \return Bool
@@ -608,7 +608,7 @@ int SDL_isMousePressed(int MOUSE_S);
 
 /**
 * \fn int SDL_playSound(char * sndfile)
-* \brief Lecture d'un fichier son court au préalable chargé avec SDL_loadSound
+* \brief Lecture d'un fichier son court au prÃ©alable chargÃ© avec SDL_loadSound
 *
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
@@ -616,7 +616,7 @@ int SDL_isMousePressed(int MOUSE_S);
 int SDL_playSound(const char * sndfile);
 /**
 * \fn int SDL_loadSound(char * sndfile)
-* \brief Chargement en mémoire d'un fichier audio
+* \brief Chargement en mÃ©moire d'un fichier audio
 *
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
@@ -624,7 +624,7 @@ int SDL_playSound(const char * sndfile);
 int SDL_loadSound(const char * sndfile);
 /**
 * \fn int SDL_unloadSound(char * sndfile)
-* \brief Libérer un fichier audio de la mémoire au préalable chargé avec SDL_loadSound
+* \brief LibÃ©rer un fichier audio de la mÃ©moire au prÃ©alable chargÃ© avec SDL_loadSound
 *
 * \param sndfile Fichier audio source (*.wav, *.mp3, *.ogg)
 * \return Bool
@@ -632,7 +632,7 @@ int SDL_loadSound(const char * sndfile);
 int SDL_unloadSound(const char * sndfile);
 /**
 * \fn int SDL_unloadallSound()
-* \brief Libère tout les fichiers audio chargé avec SDL_loadSound
+* \brief LibÃ¨re tout les fichiers audio chargÃ© avec SDL_loadSound
 *
 * \return Bool
 */
@@ -640,7 +640,7 @@ int SDL_unloadallSound();
 
 /**
 * \fn void SDL_setDelaySingleFrame(int delay)
-* \brief Le temps de rafraichissement entre chaque frame, par défault 50 ms.
+* \brief Le temps de rafraichissement entre chaque frame, par dÃ©fault 50 ms.
 *
 * \param delay Temps en milliseconde entre chaque frame rendu
 * \return void
@@ -649,7 +649,7 @@ void SDL_setDelaySingleFrame(int delay);
 
 /**
 * \fn int SDL_requestExit()
-* \brief Vérifie si l'utilisateur requiert la fermeture du programme
+* \brief VÃ©rifie si l'utilisateur requiert la fermeture du programme
 *
 * \return bool
 */
@@ -657,32 +657,32 @@ int SDL_requestExit();
 
 /**
 * \fn int SDL_getmousex()
-* \brief Rend la position x de la souris par rapport à la fenêtre
+* \brief Rend la position x de la souris par rapport Ã  la fenÃªtre
 *
 * \return Position x (entier)
 */
 int SDL_getmousex();
 /**
 * \fn int SDL_getmousey()
-* \brief Rend la position y de la souris par rapport à la fenêtre
+* \brief Rend la position y de la souris par rapport Ã  la fenÃªtre
 *
 * \return Position y (entier)
 */
 int SDL_getmousey();
 /**
 * \fn int SDL_getimagewidth(t_context * context, int imgid)
-* \brief Nous informe de la largeur d'une image depuis un contexte précis
+* \brief Nous informe de la largeur d'une image depuis un contexte prÃ©cis
 *
-* \param context Le contexte concerné
+* \param context Le contexte concernÃ©
 * \param imgid Identifiant de l'image
 * \return Largeur en pixel (entier)
 */
 int SDL_getimagewidth(t_context * context, int imgid);
 /**
 * \fn int SDL_getimageheight(t_context * context, int imgid)
-* \brief Nous informe de la hauteur d'une image depuis un contexte précis
+* \brief Nous informe de la hauteur d'une image depuis un contexte prÃ©cis
 *
-* \param context Le contexte concerné
+* \param context Le contexte concernÃ©
 * \param imgid Identifiant de l'image
 * \return Hauteur en pixel (entier)
 */
@@ -690,9 +690,9 @@ int SDL_getimageheight(t_context * context, int imgid);
 
 /**
 * \fn int SDL_getposx(t_context * context, int id, t_typeData type)
-* \brief Nous informe de la position x d'un objet depuis un contexte précis
+* \brief Nous informe de la position x d'un objet depuis un contexte prÃ©cis
 *
-* \param context Le contexte concerné
+* \param context Le contexte concernÃ©
 * \param id Identifiant de l'objet
 * \param type Type d'objet, bouton, champs de saisie, image, etc..
 * \return Position x, pixel (entier).
@@ -700,9 +700,9 @@ int SDL_getimageheight(t_context * context, int imgid);
 int SDL_getposx(t_context * context, int id, t_typeData type);
 /**
 * \fn int SDL_getposy(t_context * context, int id, t_typeData type)
-* \brief Nous informe de la position y d'un objet depuis un contexte précis
+* \brief Nous informe de la position y d'un objet depuis un contexte prÃ©cis
 *
-* \param context Le contexte concerné
+* \param context Le contexte concernÃ©
 * \param id Identifiant de l'objet
 * \param type Type d'objet, bouton, champs de saisie, image, etc..
 * \return Position y, pixel (entier).
@@ -719,7 +719,7 @@ int SDL_getposy(t_context * context, int id, t_typeData type);
 void SDL_setSNDFolder(char * newFolder);
 /**
 * \fn void SDL_setTTFFolder(char * newFolder)
-* \brief Change le dossier source pour les polices d'écritures
+* \brief Change le dossier source pour les polices d'Ã©critures
 *
 * \param newFolder Chemin relatif ou absolu ce terminant par /
 * \return void
@@ -737,44 +737,44 @@ void SDL_setIMGFolder(char * newFolder);
 /* esave.c */
 /**
 * \fn int SDL_saveProfil(d_save * profil)
-* \brief Sauvegarde le profil de données dans le fichier
+* \brief Sauvegarde le profil de donnÃ©es dans le fichier
 *
-* \param profil Profil de données précédemment chargé avec initProfil()
+* \param profil Profil de donnÃ©es prÃ©cÃ©demment chargÃ© avec initProfil()
 * \return bool
 */
 int SDL_saveProfil(d_save * profil);
 /**
 * \fn int SDL_writeParam(d_save * profil, char * param, char * value)
-* \brief Sauve un paramètre avec sa valeur dans la mémoire (crypté)
+* \brief Sauve un paramÃ¨tre avec sa valeur dans la mÃ©moire (cryptÃ©)
 *
-* \param profil Profil de données précédemment chargé avec initProfil()
-* \param param Nom du paramètre
-* \param value Contenu associé à param en clair.
+* \param profil Profil de donnÃ©es prÃ©cÃ©demment chargÃ© avec initProfil()
+* \param param Nom du paramÃ¨tre
+* \param value Contenu associÃ© Ã  param en clair.
 * \return bool
 */
 int SDL_writeParam(d_save * profil, char * param, char * value);
 /**
 * \fn char * SDL_readParam(d_save * profil, char * param)
-* \brief Récupère le contenu associé au paramètre
+* \brief RÃ©cupÃ¨re le contenu associÃ© au paramÃ¨tre
 *
-* \param profil Profil de données précédemment chargé avec initProfil()
-* \param param Nom du paramètre
+* \param profil Profil de donnÃ©es prÃ©cÃ©demment chargÃ© avec initProfil()
+* \param param Nom du paramÃ¨tre
 * \return bool
 */
 char * SDL_readParam(d_save * profil, char * param);
 /**
 * \fn d_save * SDL_initProfil(char * filename)
-* \brief Initialise le profil, obligatoire pour manipuler un profil de donnée
+* \brief Initialise le profil, obligatoire pour manipuler un profil de donnÃ©e
 *
-* \param filename Fichier sauvegarde à manipuler
-* \return Pointeur vers le jeu de donnée d_save*
+* \param filename Fichier sauvegarde Ã  manipuler
+* \return Pointeur vers le jeu de donnÃ©e d_save*
 */
 d_save * SDL_initProfil(char * filename);
 /**
 * \fn void SDL_freeProfil(d_save * profil)
-* \brief Libère le profil
+* \brief LibÃ¨re le profil
 *
-* \param profil Profil de données précédemment chargé avec initProfil()
+* \param profil Profil de donnÃ©es prÃ©cÃ©demment chargÃ© avec initProfil()
 * \return void
 */
 void SDL_freeProfil(d_save * profil);
@@ -786,9 +786,9 @@ int db_open(char * filename);
 void db_close();
 int writeBlob(sqlite3 *db, const char *zKey, const unsigned char *zBlob, int nBlob);
 int readBlob(sqlite3 *db, const char *zKey, unsigned char **pzBlob, int *pnBlob);
-int readText(sqlite3 *db, int zID, unsigned char **pzBlob, int *pnBlob);
-int dropBlobTable(sqlite3 *db);
-int createBlobTable(sqlite3 *db);
+int readText(sqlite3 *db, int zID, char **pzBlob, int *pnBlob);
+int dropBlobTable();
+int createBlobTable();
 
 /* cstring.c */
 long getcharocc(char * text, char elem);
@@ -803,7 +803,6 @@ extern const unsigned char key_data[];
 extern const int key_data_len;
 
 int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx, EVP_CIPHER_CTX *d_ctx);
-void aes_clean();
 unsigned char *aes_decrypt(EVP_CIPHER_CTX *e, unsigned char *ciphertext, int *len);
 unsigned char *aes_encrypt(EVP_CIPHER_CTX *e, unsigned char *plaintext, int *len);
 int aes_custom_32key(const unsigned char *key32);
@@ -812,10 +811,10 @@ extern int DELAY_EACH_FRAME;
 
 extern SDL_Surface *screen;
 extern SDL_Color colorRed, colorWhite, colorBlack, colorGreenLight;
-/** \brief Contient la suite des événements capturés par la SDL (Clavier+Souris) */
+/** \brief Contient la suite des Ã©vÃ©nements capturÃ©s par la SDL (Clavier+Souris) */
 extern SDL_Event GlobalEvent;
 
-/** \brief Identifiant du bouton survolé */
+/** \brief Identifiant du bouton survolÃ© */
 extern char buffer; //Where we will keep last char from keyboard !
 extern int buffer_deliver;
 extern Input in;

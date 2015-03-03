@@ -231,7 +231,7 @@ int readText(
     	** malloc() to return to the caller.
     	*/
     	*pnBlob = sqlite3_column_bytes(pStmt, 0);
-    	*pzBlob = malloc(sizeof(char)*(*pnBlob));
+    	*pzBlob = malloc(sizeof(char)*((*pnBlob)+1));
     	
       	memset(*pzBlob, 0, (*pnBlob+1));
       	memcpy(*pzBlob, sqlite3_column_text(pStmt, 0), *pnBlob);

@@ -1,4 +1,4 @@
-EasySDL lib 0.7.0 [![Build Status](https://travis-ci.org/Ousret/EasySDL.svg)](https://travis-ci.org/Ousret/EasySDL)
+EasySDL lib 0.7.1 [![Build Status](https://travis-ci.org/Ousret/EasySDL.svg)](https://travis-ci.org/Ousret/EasySDL)
 ===========================
 
 SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
@@ -7,9 +7,10 @@ SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
 Author(s): 
 - TAHRI Ahmed @Ousret
 
-What new in 0.7.0 ?
+What new in 0.7.1 ?
 - Major improvements.
-- Fix leaks
+- Fix mem leaks when using aes save
+- Fix unexpected crashs when using data save with NT Kernel (Win)
 
 ### EasySDL 0.7
 

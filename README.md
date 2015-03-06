@@ -4,6 +4,9 @@ EasySDL lib 0.7.1 [![Build Status](https://travis-ci.org/Ousret/EasySDL.svg)](ht
 SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
 [Detailed example using EasySDL.](https://github.com/Ousret/EasySDL-Sample)
 
+Binaries available at Sourceforge: http://sourceforge.net/projects/easysdl-sdk/
+DevPak for DevCpp included.
+
 Author(s): 
 - TAHRI Ahmed @Ousret
 

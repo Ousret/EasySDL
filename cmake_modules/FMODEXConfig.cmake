@@ -22,26 +22,6 @@ FIND_PATH(LIBFMODEX_INCLUDE_DIR fmodex/fmod.h
 )
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-
-	if(PROCESSOR_ARCHITECTURE == amd64)
-	
-	FIND_LIBRARY(LIBFMODEX_LIBRARY 
-  		NAMES fmodexamd libfmodexamd
-  		HINTS
-  		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
-  		PATH_SUFFIXES lib64 lib x86_64-linux-gnu
-  		PATHS
-  		/sw
-  		/opt/local
-  		/usr/local
-  		/usr/local/lib #Linux
-  		/opt/csw
-  		/opt
-  		deps/fmodex/linux
-  		$ENV{HOME}/local
-	)
-	
-	else()
 	
 	FIND_LIBRARY(LIBFMODEX_LIBRARY 
 		NAMES fmodex64 libfmodex64
@@ -58,12 +38,8 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
   		deps/fmodex/linux
   		$ENV{HOME}/local
 	)
-	
-	endif()
 
 endif()
-
-
 
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")

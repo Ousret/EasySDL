@@ -88,6 +88,9 @@ message("FMOD Sound System, copyright © Firelight Technologies Pty, Ltd., 1994-
 message("Audio engine : FMOD Sound System by Firelight Technologies")
 message("FMOD by Firelight Technologies")
 
+EXEC_PROGRAM("uname -m" OUTPUT_VARIABLE UNAME_MACHINE)
+MESSAGE(${UNAME_MACHINE})
+
 set(FMODEX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
 find_package(FMODEX REQUIRED)
 if (NOT LIBFMODEX_FOUND)

@@ -4,7 +4,10 @@
 #  LIBFMODEX_FOUND - System has FMODex
 #  LIBFMODEX_INCLUDE_DIRS - The FMODex include directories
 #  LIBFMODEX_LIBRARIES - The libraries needed to use FMODex
-     
+
+#x86_64, amd64
+EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE )
+
 FIND_PATH(LIBFMODEX_INCLUDE_DIR fmodex/fmod.h
   HINTS
   $ENV{FMODDIR}
@@ -21,10 +24,10 @@ FIND_PATH(LIBFMODEX_INCLUDE_DIR fmodex/fmod.h
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 
-	if(CMAKE_SIZEOF_VOID_P EQUAL 8) 
+	if(${ARCHITECTURE} STREQUAL "amd64") 
 	
-    FIND_LIBRARY(LIBFMODEX_LIBRARY 
-		NAMES fmodex64 libfmodex64
+	FIND_LIBRARY(LIBFMODEX_LIBRARY 
+  		NAMES fmodexamd libfmodexamd
   		HINTS
   		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
   		PATH_SUFFIXES lib64 lib x86_64-linux-gnu
@@ -42,7 +45,7 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
 	else()
 	
 	FIND_LIBRARY(LIBFMODEX_LIBRARY 
-  		NAMES fmodex libfmodex
+		NAMES fmodex64 libfmodex64
   		HINTS
   		${PC_LIBFMODEX_LIBDIR} ${PC_LIBFMODEX_LIBRARY_DIRS}
   		PATH_SUFFIXES lib64 lib x86_64-linux-gnu

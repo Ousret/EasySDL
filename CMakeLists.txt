@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(libESDL)
 
+option(ForceAMD64 "ForceAMD64" OFF)
+
 #Use defined FMODex header
 file(
         GLOB_RECURSE
@@ -91,10 +93,16 @@ message("FMOD by Firelight Technologies")
 EXEC_PROGRAM("uname -m" OUTPUT_VARIABLE UNAME_MACHINE)
 MESSAGE(${UNAME_MACHINE})
 
-set(FMODEX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
-find_package(FMODEX REQUIRED)
+if (ForceAMD64) 
+	set(FMODEXAMD_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
+	find_package(FMODEXAMD REQUIRED)
+else()
+	set(FMODEX_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
+	find_package(FMODEX REQUIRED)
+endif()
+
 if (NOT LIBFMODEX_FOUND)
-	message(STATUS "EasySDL: FMODex lib cannot be found, re clone EasySDL may solve this !")
+	message(FATAL "EasySDL: FMODex lib cannot be found, re clone EasySDL may solve this !")
 endif()
 
 target_link_libraries(

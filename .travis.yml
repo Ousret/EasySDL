@@ -17,7 +17,7 @@ install:
 
 # Build the module
 script:
-  - cmake -G "Unix Makefiles"
+  - cmake -G "Unix Makefiles" -DForceAMD64=ON
   - make
   - sudo make install
   

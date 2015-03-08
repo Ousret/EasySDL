@@ -6,6 +6,11 @@ SDL lib, EasySDL permit to create program / game with SDL 1.2 easily.
 
 Binaries available at Sourceforge: http://sourceforge.net/projects/easysdl-sdk/
 DevPak for DevCpp included.
+If you wish to make target for arch AMD64 (FMODex), please run cmake with :
+
+```
+$ cmake -G"Unix Makefiles" -DForceAMD64=ON
+```
 
 Author(s): 
 - TAHRI Ahmed @Ousret

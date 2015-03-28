@@ -69,4 +69,6 @@ please contact openssl-core@openssl.org.
 
 ### libEasySDL
 
-EasySDL is under license GNU GPL v2.0
+EasySDL is under license zlib.
+Do not forget to mention FMODex license.
+Any commercial use of EasySDL with FMODex must be conform !

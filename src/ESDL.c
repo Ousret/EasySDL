@@ -662,6 +662,8 @@ void SDL_freeContext(t_context * context) {
 
 int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, int width, int x, int y) {
 	
+	// Add SDL Surface to get multiple layer access, actually draw on foreground, it should be possible to draw on background
+	
 	t_rect *n_realloc = NULL;
 	
 	if (!context) return 0;

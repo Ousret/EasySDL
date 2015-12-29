@@ -249,6 +249,7 @@ int SDL_contextEmpty(t_context * context) {
 }
 
 int SDL_requestExit() {
+	SDL_UpdateEvents(&in);
 	return (in.quit);
 }
 
@@ -742,15 +743,29 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	
 	t_sprite * n_realloc = NULL;
 	SDL_Surface *tmp = NULL;
+	int alreadyLoaded = - 1, i = 0;
 	char texturePath[150];
 	
 	if (!context) return 0;
 	if (!strlen(filename)) return 0;
 	
+	/* Check if not already loaded */
+	for (i = 0; i < context->nbSprite; i++) {
+		if (strcmp(context->contextSprite[i].file, filename) == 0) {
+			alreadyLoaded = i;
+			break;
+		}
+	}
+
 	/* Check if file exist or not.. */
 	sprintf(texturePath, "%s%s", resIMG ,filename);
-	tmp = IMG_Load(texturePath);
 	
+	if (alreadyLoaded != -1) {
+		tmp = context->contextSprite[alreadyLoaded].buffer;
+	}else{
+		tmp = IMG_Load(texturePath);
+	}
+
 	if (!tmp) {
 		fprintf(stdout, "<! Warning> EasySDL: Cannot load sprite %s, ignoring..\n", texturePath);
 		return 0;
@@ -773,7 +788,9 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	}
 	
 	context->contextSprite[context->nbSprite].buffer = tmp;
-	
+	context->contextSprite[context->nbSprite].file = malloc(sizeof(char)*(strlen(filename)+1));
+	strcpy(context->contextSprite[context->nbSprite].file, filename);
+
 	/* Does not work for now.. need help for this one */
 	SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 	

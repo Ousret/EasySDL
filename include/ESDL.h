@@ -138,6 +138,7 @@ typedef struct {
  */
 typedef struct {
 
+	char * file;
 	SDL_Surface *buffer; /*!< Buffer de l'image sprite utile */
 	SDL_Color transparancy; /*!< Couleur clÃ© pour la transparence */
 	int sp_height, sp_width; 

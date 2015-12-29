@@ -1152,6 +1152,185 @@ int SDL_delObj(t_context * context, int obj) {
 
 }
 
+/**
+ * Glisse un objet
+ * @param  context Contexte dans lequel glisser
+ * @param  typeObj Type de l'objet à glisser
+ * @param  idObj   Identifiant de l'objet
+ * @return         Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drag(t_context * context, t_typeData typeObj, int idObj){
+	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
+	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
+
+	switch (typeObj) {
+	
+		case IMG:
+		
+			if (!(context->contextImg) || !(context->nbImg)) return -1;
+
+			if(idObj <= context->nbImg - 1){
+				
+				posX = context->contextImg[idObj].x + context->contextImg[idObj].buffer->w / 2;;
+				posY = context->contextImg[idObj].y + context->contextImg[idObj].buffer->h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editImage(context, idObj, mouseX - context->contextImg[idObj].buffer->w / 2, mouseY - context->contextImg[idObj].buffer->h / 2);
+					generate = 1;
+				}
+
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		case TEXT:
+			
+			if (!(context->contextText) || !(context->nbText)) return -1;
+			
+			if(idObj <= context->nbText - 1){
+				
+				posX = context->contextText[idObj].x + context->contextText[idObj].buffer->w / 2;
+				posY = context->contextText[idObj].y + context->contextText[idObj].buffer->h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, 
+						mouseX - context->contextText[idObj].buffer->w / 2, mouseY - context->contextText[idObj].buffer->h / 2);
+					generate = 1;
+				}
+
+			}else{
+				return -1;
+			}
+			
+			break;
+
+		case SPRITE:
+			
+			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
+			
+			if(idObj <= context->nbSprite - 1){
+				
+				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].buffer->w / 2;
+				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					
+					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].buffer->w / 2, mouseY - context->contextSprite[idObj].buffer->h / 2,
+									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+					generate = 1;
+				}
+
+			}else{
+				return -1;
+			}
+			
+			break;
+			
+		case RECTANGLE:
+			
+			if (!(context->contextRect) || !(context->nbRect)) return -1;
+			
+			if(idObj <= context->nbRect - 1){
+				
+				posX = context->contextRect[idObj].def.x + context->contextRect[idObj].def.w / 2;;
+				posY = context->contextRect[idObj].def.y + context->contextRect[idObj].def.h / 2;;
+
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+					SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, 
+						mouseX - context->contextRect[idObj].def.w / 2, mouseY - context->contextRect[idObj].def.h / 2);
+					generate = 1;
+				}
+
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		default:
+			return -1;
+			break;
+	}
+	
+	if(generate == 1){
+		SDL_generate(context);
+	}
+
+	return 1;
+}
+
+/**
+ * Dépose un objet
+ * @param context Contexte dans lequel déposer
+ * @param typeObj Type de l'objet
+ * @param idObj   Identifiant de l'objet
+ * @param posX    Position X où déposer l'objet
+ * @param posY    Position Y où déposer l'objet
+ * @return 		  Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
+
+	switch (typeObj) {
+	
+		case IMG:
+		
+			if (!(context->contextImg) || !(context->nbImg)) return -1;
+			
+			if(idObj <= context->nbImg - 1){
+				SDL_editImage(context, idObj, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		case TEXT:
+			
+			if (!(context->contextText) || !(context->nbText)) return -1;
+			
+			if(idObj <= context->nbText - 1){
+				SDL_editText(context, idObj, context->contextText[idObj].content, context->contextText[idObj].couleur, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+
+		case SPRITE:
+			
+			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
+			
+			if(idObj <= context->nbSprite - 1){
+				SDL_editSprite(context, idObj, posX, posY, context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+			}else{
+				return -1;
+			}
+			
+			break;
+			
+		case RECTANGLE:
+			
+			if (!(context->contextRect) || !(context->nbRect)) return -1;
+			
+			if(idObj <= context->nbRect - 1){
+				SDL_editRect(context, idObj,  context->contextRect[idObj].color, context->contextRect[idObj].def.h, context->contextRect[idObj].def.w, posX, posY);
+			}else{
+				return -1;
+			}
+			
+			break;
+		
+		default:
+			return -1;
+			break;
+	}
+	
+
+	return 1;
+}
+
 int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y) {
 	
 	t_text * n_realloc = NULL;

@@ -729,6 +729,26 @@ int SDL_getposx(t_context * context, int id, t_typeData type);
 int SDL_getposy(t_context * context, int id, t_typeData type);
 
 /**
+ * Glisse un objet
+ * \param  context Contexte dans lequel glisser
+ * \param  typeObj Type de l'objet à glisser
+ * \param  idObj   Identifiant de l'objet
+ * \return         Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drag(t_context * context, t_typeData typeObj, int idObj);
+
+/**
+ * Dépose un objet
+ * \param context Contexte dans lequel déposer
+ * \param typeObj Type de l'objet
+ * \param idObj   Identifiant de l'objet
+ * \param posX    Position X où déposer l'objet
+ * \param posY    Position Y où déposer l'objet
+ * \return 		  Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY);
+
+/**
 * \fn void SDL_setSNDFolder(char * newFolder)
 * \brief Change le dossier source pour les sons
 *

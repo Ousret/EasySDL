@@ -772,7 +772,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 		fprintf(stdout, "<! Warning> EasySDL: Cannot load sprite %s, ignoring..\n", texturePath);
 		return 0;
 	}
-	
+
 	if (!(context->nbSprite)) {
 		if (!(context->contextSprite)) {
 			context->contextSprite = (t_sprite*) malloc(sizeof(t_sprite));
@@ -1588,13 +1588,12 @@ void SDL_generateFrame(t_context * context) {
 	for (i = 0; i < (context->nbSprite); i++) {
 		
 		if (!(context->contextSprite[i].hide)) {
-			
 			//Animation .. Orientation
-			spritePos.x = ((context->contextSprite[i].animation % ((context->contextSprite[i].buffer->w) / (context->contextSprite[i].sp_width))) * (context->contextSprite[i].sp_width))-(context->contextSprite[i].sp_width);
+			spritePos.x = context->contextSprite[i].animation  * context->contextSprite[i].sp_width  - context->contextSprite[i].sp_width;
     		spritePos.y = ((context->contextSprite[i].position) * (context->contextSprite[i].sp_height))-(context->contextSprite[i].sp_height);
     		spritePos.w = context->contextSprite[i].sp_width;
     		spritePos.h = context->contextSprite[i].sp_height;
-    		
+
     		positionFond.x = context->contextSprite[i].x;
 			positionFond.y = context->contextSprite[i].y;
     		

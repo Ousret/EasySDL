@@ -330,8 +330,10 @@ int SDL_ismouseover(t_context * context, t_typeData type) {
 			
 			for (i = 0; i < (context->nbSprite); i++) {
 				
-				if (SDL_ismouseoverArea(context, context->contextSprite[i].sp_height, context->contextSprite[i].sp_width, context->contextSprite[i].x, context->contextSprite[i].y)) {
-					overobj = i;
+				if(!context->contextSprite[i].hide){
+					if (SDL_ismouseoverArea(context, context->contextSprite[i].sp_height, context->contextSprite[i].sp_width, context->contextSprite[i].x, context->contextSprite[i].y)) {
+						overobj = i;
+					}
 				}
 				
 			}
@@ -847,7 +849,7 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	
 	context->nbSprite = (context->nbSprite)-1;
 	
-	context->contextSprite = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite)*(context->nbSprite));
+	context->contextSprite = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite)* (context->nbSprite));
 	
 	return 1;
 }
@@ -1159,7 +1161,7 @@ int SDL_delObj(t_context * context, int obj) {
  * @param  idObj   Identifiant de l'objet
  * @return         Retourne 1 en cas de succés, -1 le cas échéant
  */
-int drag(t_context * context, t_typeData typeObj, int idObj){
+int SDL_Drag(t_context * context, t_typeData typeObj, int idObj){
 	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
 	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
 
@@ -1270,7 +1272,7 @@ int drag(t_context * context, t_typeData typeObj, int idObj){
  * @param posY    Position Y où déposer l'objet
  * @return 		  Retourne 1 en cas de succés, -1 le cas échéant
  */
-int drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
+int SDL_Drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
 
 	switch (typeObj) {
 	

@@ -645,10 +645,7 @@ void SDL_freeContext(t_context * context) {
 	if (context->contextSprite) {
 		for (i = 0; i < (context->nbSprite); i++) {
 			
-			if (context->contextSprite[i].buffer) {
-				SDL_FreeSurface(context->contextSprite[i].buffer);
-				context->contextSprite[i].buffer = NULL;
-			}
+			SDL_delSprite(context, i);
 				
 		}
 		free (context->contextSprite);
@@ -657,7 +654,7 @@ void SDL_freeContext(t_context * context) {
 	if (context->contextRect) {
 		free (context->contextRect);
 	}
-	
+
 	free (context);
 	
 }
@@ -831,13 +828,24 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 
 int SDL_delSprite(t_context *context, int idSprite) {
 
-	int i = 0;
+	int i, multipleLoad = 0;
 
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
 	
-	if (context->contextSprite[idSprite].buffer) {
+	for (i = 0; i < context->nbSprite; i++) {
+		if (context->contextSprite[i].buffer == context->contextSprite[idSprite].buffer) {
+			if (i != idSprite) {
+				multipleLoad = 1;
+				break;
+			}
+		}
+	}
+
+	if (context->contextSprite[idSprite].buffer && multipleLoad != 0) {
 		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
+		context->contextSprite[idSprite].buffer = NULL;
+	}else if(multipleLoad){
 		context->contextSprite[idSprite].buffer = NULL;
 	}
 	

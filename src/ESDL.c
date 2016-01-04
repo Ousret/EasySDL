@@ -1169,7 +1169,7 @@ int SDL_delObj(t_context * context, int obj) {
  * @param  idObj   Identifiant de l'objet
  * @return         Retourne 1 en cas de succés, -1 le cas échéant
  */
-int SDL_Drag(t_context * context, t_typeData typeObj, int idObj){
+int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
 	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
 
@@ -1280,7 +1280,7 @@ int SDL_Drag(t_context * context, t_typeData typeObj, int idObj){
  * @param posY    Position Y où déposer l'objet
  * @return 		  Retourne 1 en cas de succés, -1 le cas échéant
  */
-int SDL_Drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
+int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY){
 
 	switch (typeObj) {
 	

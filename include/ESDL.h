@@ -735,7 +735,7 @@ int SDL_getposy(t_context * context, int id, t_typeData type);
  * \param  idObj   Identifiant de l'objet
  * \return         Retourne 1 en cas de succés, -1 le cas échéant
  */
-int SDL_Drag(t_context * context, t_typeData typeObj, int idObj);
+int SDL_drag(t_context * context, t_typeData typeObj, int idObj);
 
 /**
  * Dépose un objet
@@ -746,7 +746,7 @@ int SDL_Drag(t_context * context, t_typeData typeObj, int idObj);
  * \param posY    Position Y où déposer l'objet
  * \return 		  Retourne 1 en cas de succés, -1 le cas échéant
  */
-int SDL_Drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY);
+int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY);
 
 /**
 * \fn void SDL_setSNDFolder(char * newFolder)

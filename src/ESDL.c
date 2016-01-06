@@ -842,10 +842,10 @@ int SDL_delSprite(t_context *context, int idSprite) {
 		}
 	}
 
-	if (context->contextSprite[idSprite].buffer && multipleLoad != 0) {
+	if (context->contextSprite[idSprite].buffer && multipleLoad == 0) {
 		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
 		context->contextSprite[idSprite].buffer = NULL;
-	}else if(multipleLoad){
+	}else if(multipleLoad == 1){
 		context->contextSprite[idSprite].buffer = NULL;
 	}
 	

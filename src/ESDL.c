@@ -1170,6 +1170,7 @@ int SDL_delObj(t_context * context, int obj) {
  * @return         Retourne 1 en cas de succés, -1 le cas échéant
  */
 int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
+	SDL_Rect spritePos;
 	int posX = - 1, posY = - 1, mouseX = SDL_getmousex(), mouseY = SDL_getmousey();
 	int generate = -1, zoneM = 10; // Zone d'erreur de la souris pour plus de précision
 
@@ -1225,9 +1226,12 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].buffer->w / 2;
 				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
 
-				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
+				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){ // Déplacement qu'en cas de mouvement assez important
 					
-					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].buffer->w / 2, mouseY - context->contextSprite[idObj].buffer->h / 2,
+					spritePos.x = context->contextSprite[idObj].animation  * context->contextSprite[idObj].sp_width  - context->contextSprite[idObj].sp_width;
+    				spritePos.y = ((context->contextSprite[idObj].position) * (context->contextSprite[idObj].sp_height))-(context->contextSprite[idObj].sp_height);
+
+					SDL_editSprite(context, idObj, mouseX + spritePos.x - context->contextSprite[idObj].sp_width / 2, mouseY + spritePos.y - context->contextSprite[idObj].sp_height / 2,
 									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
 					generate = 1;
 				}

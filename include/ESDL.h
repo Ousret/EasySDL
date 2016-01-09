@@ -149,6 +149,18 @@ typedef struct {
 } t_sprite;
 
 /**
+ * \struct t_layer
+ * \brief gestion des calques
+ *
+ * t_layer contient la position d'un t_typeData dans la profondeure.
+ */
+typedef struct {
+	t_typeData type;
+	int idObj;
+	int z_index;
+}t_layer;
+
+/**
  * \struct t_context
  * \brief ReprÃ©sentation d'un contexte et son rendu.
  *
@@ -184,18 +196,6 @@ typedef struct {
 	int nbLayer;
 
 } t_context;
-
-/**
- * \struct t_layer
- * \brief gestion des calques
- *
- * t_layer contient la position d'un t_typeData dans la profondeure.
- */
-typedef struct {
-	t_typeData type;
-	int idObj;
-	int z-index;
-}t_layer;
 
 /**
  * \struct Input

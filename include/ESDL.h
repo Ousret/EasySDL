@@ -51,7 +51,7 @@ typedef enum {
 /**
  * \struct t_object
  * \brief DÃ©crit de quoi est fait un objet
- *
+ * 
  * t_object dÃ©crit un bouton ou un champs de saisie
  */
 
@@ -67,6 +67,7 @@ typedef struct {
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	SDL_Surface *buffer_title, *buffer_content;
 	int * id;
+	int idLayer;
 
 } t_object;
 
@@ -81,6 +82,7 @@ typedef struct {
 	SDL_Rect def;
 	SDL_Color color;
 	int *id;
+	int idLayer;
 
 } t_rect;
 
@@ -98,6 +100,7 @@ typedef struct {
 	int y;
 	SDL_Surface *buffer;
 	int * id;
+	int idLayer;
 
 } t_text;
 
@@ -114,7 +117,8 @@ typedef struct {
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */
 	int * id;
-
+	int idLayer;
+	
 } t_image;
 
 /**
@@ -145,6 +149,7 @@ typedef struct {
 	int x, y;
 	int position, animation;
 	int hide; /*!< Indique si le sprite doit Ãªtre afficher */
+	int idLayer;
 
 } t_sprite;
 

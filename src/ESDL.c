@@ -1906,6 +1906,7 @@ void SDL_unload() {
 void SDL_generateFrame(t_context * context) {
 
 	int i = 0;
+	int currentObj;
 
 	SDL_Rect positionFond, spritePos;
 	char saisie_content[100]; //Form ONLY
@@ -1916,128 +1917,126 @@ void SDL_generateFrame(t_context * context) {
 
 	for (i = 0; i < (context->nbLayer); i++) {
 		
-		if (i == context->contextLayer[i].z_index) {
+		currentObj = context->contextLayer[i].idObj;
+		switch (context->contextLayer[i].type) {
 			
-			switch (context->contextLayer[i].type) {
-				
-				case BUTTON: //Simple btn
+			case BUTTON: //Simple btn
 
-					positionFond.x = context->contextObj[i].x;
-					positionFond.y = context->contextObj[i].y;
+				positionFond.x = context->contextObj[currentObj].x;
+				positionFond.y = context->contextObj[currentObj].y;
 
-					if (context->contextObj[i].MouseOver == 1) {
-						SDL_BlitSurface(BTN_OVER, NULL, context->contextSurface, &positionFond);
-					}else{
-						SDL_BlitSurface(BTN_NOTOVER, NULL, context->contextSurface, &positionFond);
-					}
-
-					switch (context->contextObj[i].align) {
-						case ALIGN_CENTER:
-							positionFond.x += ((BTN_OVER->w)/2)-((context->contextObj[i].buffer_title->w)/2);
-							break;
-						case ALIGN_LEFT:
-							positionFond.x += 20;
-							break;
-						case ALIGN_RIGHT:
-							positionFond.x += ((BTN_OVER->w)-(context->contextObj[i].buffer_title->w))-5;
-
-							break;
-					}
-
-
-					positionFond.y += 5;
-					SDL_BlitSurface(context->contextObj[i].buffer_title, NULL, context->contextSurface, &positionFond);
-
-					break;
-
-				case INPUT: //Form
-
-					memset (saisie_content, 0, sizeof (saisie_content));
-					if (context->contextObj[i].MouseOver == 1) {
-
-						strcpy (saisie_content, context->contextObj[i].dest);
-	  					strcat (saisie_content,"|");
-
-					}else{
-
-						strcpy (saisie_content, context->contextObj[i].dest);
-
-					}
-
-					positionFond.x = context->contextObj[i].x;
-					positionFond.y = context->contextObj[i].y;
-
-					SDL_BlitSurface(FORM, NULL, context->contextSurface, &positionFond);
-
-					if (context->contextObj[i].buffer_content) {
-						SDL_FreeSurface(context->contextObj[i].buffer_content);
-						context->contextObj[i].buffer_content = NULL;
-					}
-
-					context->contextObj[i].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-
-					switch (context->contextObj[i].align) {
-						case ALIGN_CENTER:
-							positionFond.x += ((FORM->w)/2)-((context->contextObj[i].buffer_content->w)/2);
-							break;
-						case ALIGN_LEFT:
-							positionFond.x += 20;
-							break;
-						case ALIGN_RIGHT:
-							positionFond.x += 20;
-							break;
-					}
-
-					positionFond.y = (context->contextObj[i].y)+5;
-					SDL_BlitSurface(context->contextObj[i].buffer_content, NULL, context->contextSurface, &positionFond);
-
-					positionFond.x = (context->contextObj[i].x)-55;
-					positionFond.y = (context->contextObj[i].y)+5;
-					SDL_BlitSurface(context->contextObj[i].buffer_title, NULL, context->contextSurface, &positionFond);
-
-					break;
-
-				case RECTANGLE: //Scan for Rectangle to Blit
-					SDL_FillRect(context->contextSurface, &(context->contextRect[i].def),
-					SDL_MapRGB(context->contextSurface->format, context->contextRect[i].color.r, context->contextRect[i].color.g, context->contextRect[i].color.b));
-					
-					break;
-				
-				case IMG: //Scan textures to Blit !
-					positionFond.x = context->contextImg[i].x;
-					positionFond.y = context->contextImg[i].y;
-					SDL_BlitSurface(context->contextImg[i].buffer, NULL, context->contextSurface, &positionFond);
-					
-					break;
-				
-				case TEXT:
-					positionFond.x = context->contextText[i].x;
-					positionFond.y = context->contextText[i].y;
-			
-					SDL_BlitSurface(context->contextText[i].buffer, NULL, context->contextSurface, &positionFond);
-					
-					break;
-					
-				case SPRITE:
-				
-				if (!(context->contextSprite[i].hide)) {
-					//Animation .. Orientation
-					spritePos.x = context->contextSprite[i].animation  * context->contextSprite[i].sp_width  - context->contextSprite[i].sp_width;
-						spritePos.y = ((context->contextSprite[i].position) * (context->contextSprite[i].sp_height))-(context->contextSprite[i].sp_height);
-						spritePos.w = context->contextSprite[i].sp_width;
-						spritePos.h = context->contextSprite[i].sp_height;
-		
-						positionFond.x = context->contextSprite[i].x;
-					positionFond.y = context->contextSprite[i].y;
-		
-						SDL_BlitSurface(context->contextSprite[i].buffer, &spritePos, context->contextSurface, &positionFond );
+				if (context->contextObj[currentObj].MouseOver == 1) {
+					SDL_BlitSurface(BTN_OVER, NULL, context->contextSurface, &positionFond);
+				}else{
+					SDL_BlitSurface(BTN_NOTOVER, NULL, context->contextSurface, &positionFond);
 				}
+
+				switch (context->contextObj[currentObj].align) {
+					case ALIGN_CENTER:
+						positionFond.x += ((BTN_OVER->w)/2)-((context->contextObj[currentObj].buffer_title->w)/2);
+						break;
+					case ALIGN_LEFT:
+						positionFond.x += 20;
+						break;
+					case ALIGN_RIGHT:
+						positionFond.x += ((BTN_OVER->w)-(context->contextObj[currentObj].buffer_title->w))-5;
+
+						break;
+				}
+
+
+				positionFond.y += 5;
+				SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
+
+				break;
+
+			case INPUT: //Form
+
+				memset (saisie_content, 0, sizeof (saisie_content));
+				if (context->contextObj[currentObj].MouseOver == 1) {
+
+					strcpy (saisie_content, context->contextObj[currentObj].dest);
+  					strcat (saisie_content,"|");
+
+				}else{
+
+					strcpy (saisie_content, context->contextObj[currentObj].dest);
+
+				}
+
+				positionFond.x = context->contextObj[currentObj].x;
+				positionFond.y = context->contextObj[currentObj].y;
+
+				SDL_BlitSurface(FORM, NULL, context->contextSurface, &positionFond);
+
+				if (context->contextObj[currentObj].buffer_content) {
+					SDL_FreeSurface(context->contextObj[currentObj].buffer_content);
+					context->contextObj[currentObj].buffer_content = NULL;
+				}
+
+				context->contextObj[currentObj].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+
+				switch (context->contextObj[currentObj].align) {
+					case ALIGN_CENTER:
+						positionFond.x += ((FORM->w)/2)-((context->contextObj[currentObj].buffer_content->w)/2);
+						break;
+					case ALIGN_LEFT:
+						positionFond.x += 20;
+						break;
+					case ALIGN_RIGHT:
+						positionFond.x += 20;
+						break;
+				}
+
+				positionFond.y = (context->contextObj[currentObj].y)+5;
+				SDL_BlitSurface(context->contextObj[currentObj].buffer_content, NULL, context->contextSurface, &positionFond);
+
+				positionFond.x = (context->contextObj[currentObj].x)-55;
+				positionFond.y = (context->contextObj[currentObj].y)+5;
+				SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
+
+				break;
+
+			case RECTANGLE: //Scan for Rectangle to Blit
+				SDL_FillRect(context->contextSurface, &(context->contextRect[currentObj].def),
+				SDL_MapRGB(context->contextSurface->format, context->contextRect[currentObj].color.r, context->contextRect[currentObj].color.g, context->contextRect[currentObj].color.b));
+				
+				break;
+			
+			case IMG: //Scan textures to Blit !
+				positionFond.x = context->contextImg[currentObj].x;
+				positionFond.y = context->contextImg[currentObj].y;
+				SDL_BlitSurface(context->contextImg[currentObj].buffer, NULL, context->contextSurface, &positionFond);
+				
+				break;
+			
+			case TEXT:
+				positionFond.x = context->contextText[currentObj].x;
+				positionFond.y = context->contextText[currentObj].y;
+		
+				SDL_BlitSurface(context->contextText[currentObj].buffer, NULL, context->contextSurface, &positionFond);
+				
 				break;
 				
-				default:
-					break;
-				
+			case SPRITE:
+			
+			if (!(context->contextSprite[currentObj].hide)) {
+				//Animation .. Orientation
+				spritePos.x = context->contextSprite[currentObj].animation  * context->contextSprite[currentObj].sp_width  - context->contextSprite[currentObj].sp_width;
+					spritePos.y = ((context->contextSprite[currentObj].position) * (context->contextSprite[currentObj].sp_height))-(context->contextSprite[currentObj].sp_height);
+					spritePos.w = context->contextSprite[currentObj].sp_width;
+					spritePos.h = context->contextSprite[currentObj].sp_height;
+	
+					positionFond.x = context->contextSprite[currentObj].x;
+				positionFond.y = context->contextSprite[currentObj].y;
+	
+					SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
 			}
+			break;
+			
+			default:
+				break;
+			
 		}
 	}
 

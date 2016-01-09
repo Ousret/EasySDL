@@ -51,7 +51,7 @@ typedef enum {
 /**
  * \struct t_object
  * \brief DÃ©crit de quoi est fait un objet
- *
+ * 
  * t_object dÃ©crit un bouton ou un champs de saisie
  */
 

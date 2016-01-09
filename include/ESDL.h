@@ -24,17 +24,17 @@ typedef enum {
 	ALIGN_CENTER = 1, /*!< Texte alignÃ© au centre */
 	ALIGN_LEFT, /*!< Texte alignÃ© Ã  gauche */
 	ALIGN_RIGHT /*!< Texte alignÃ© Ã  droite */
-	
+
 } t_typeAlign;
 
 typedef enum {
-	
+
 	NUMERIC, /*!< Capture uniquement les chiffres de 0 Ã  9 */
 	ALPHA, /*!< Capture uniquement les caractÃ¨res de A Ã  Z */
 	ALPHANUMERIC, /*!< Capture uniquement les caractÃ¨res alphanumÃ©riques */
 	NOMASK, /*!< Capture tout, aucun masque de saisie */
 	NONE /*!< Lorsqu'il ne s'agit pas d'un champ de saisie */
-	
+
 } t_typeForm;
 
 typedef enum {
@@ -45,7 +45,7 @@ typedef enum {
 	SPRITE, /*!< Les sprites */
 	TEXT, /*!< Le texte */
 	RECTANGLE /*!< Rectangles */
-	
+
 } t_typeData;
 
 /**
@@ -56,7 +56,7 @@ typedef enum {
  */
 
 typedef struct {
-	
+
 	t_typeData type;
 	int x;
 	int y;
@@ -67,7 +67,7 @@ typedef struct {
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	SDL_Surface *buffer_title, *buffer_content;
 	int * id;
-	
+
 } t_object;
 
 /**
@@ -81,7 +81,7 @@ typedef struct {
 	SDL_Rect def;
 	SDL_Color color;
 	int *id;
-	
+
 } t_rect;
 
 /**
@@ -91,14 +91,14 @@ typedef struct {
  * t_text dÃ©crit une chaine de caractÃ¨re Ã  transformer en SDL_Surface, ne supporte pas les caractÃ¨res de type '\\x' !
  */
 typedef struct {
-	
+
 	SDL_Color couleur;
 	char * content;
 	int x;
 	int y;
 	SDL_Surface *buffer;
 	int * id;
-	
+
 } t_text;
 
 /**
@@ -108,13 +108,13 @@ typedef struct {
  * t_image contient la SDL_Surface de une image ainsi que ses paramÃ¨tres pour le rendu.
  */
 typedef struct {
-	
+
 	char * file;
 	int x; /*!< Position x relative au contexte parent */
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */
 	int * id;
-	
+
 } t_image;
 
 /**
@@ -124,10 +124,10 @@ typedef struct {
  * t_audio contient un son chargÃ© et le nom de fichier associÃ© Ã  celui-ci
  */
 typedef struct {
-	
+
 	char * file; /*!< Nom du fichier audio associÃ© */
 	FMOD_SOUND * buffer; /*!< Buffer du fichier audio chargÃ© */
-	
+
 } t_audio;
 
 /**
@@ -141,11 +141,11 @@ typedef struct {
 	char * file;
 	SDL_Surface *buffer; /*!< Buffer de l'image sprite utile */
 	SDL_Color transparancy; /*!< Couleur clÃ© pour la transparence */
-	int sp_height, sp_width; 
+	int sp_height, sp_width;
 	int x, y;
 	int position, animation;
 	int hide; /*!< Indique si le sprite doit Ãªtre afficher */
-	
+
 } t_sprite;
 
 /**
@@ -158,29 +158,44 @@ typedef struct {
 
 	char * title;
 	SDL_Surface * contextSurface;
-	
+
 	t_object * contextObj;
 	int nbObj;
-	
+
 	t_text * contextText;
 	int nbText;
-	
+
 	t_image * contextImg;
 	int nbImg;
-	
+
 	t_sprite * contextSprite;
 	int nbSprite;
-	
+
 	t_rect * contextRect;
 	int nbRect;
 
 	SDL_Rect * updatedZones;
 	int nbZone;
-	
+
 	int x, y;
 	int height, width;
-	
+
+	t_layer * contextLayer;
+	int nbLayer;
+
 } t_context;
+
+/**
+ * \struct t_layer
+ * \brief gestion des calques
+ *
+ * t_layer contient la position d'un t_typeData dans la profondeure.
+ */
+typedef struct {
+	t_typeData type;
+	int idObj;
+	int z-index;
+}t_layer;
 
 /**
  * \struct Input
@@ -190,13 +205,13 @@ typedef struct {
  */
 typedef struct
 {
-	
+
 	char key[SDLK_LAST];
 	int mousex,mousey;
 	int mousexrel,mouseyrel;
 	char mousebuttons[8];
     char quit;
-    
+
 } Input;
 
 /**
@@ -206,10 +221,10 @@ typedef struct
  * Un couple indisociable dont la valeur est cryptÃ©
  */
 typedef struct {
-	
+
 	char *param;
 	unsigned char *value;
-	
+
 } d_param;
 
 /**
@@ -219,11 +234,11 @@ typedef struct {
  * Contient les couples (paramÃ¨tre, valeur) et le nom du fichier Ã  manipuler.
  */
 typedef struct {
-	
+
 	char * filename;
 	d_param * data;
 	int elem;
-	
+
 } d_save;
 
 /**
@@ -371,7 +386,7 @@ int SDL_delObj(t_context * context, int obj);
 
 /**
 * \fn int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y)
-* \brief CrÃ©er une ligne de texte Ã  afficher pour un contexte 
+* \brief CrÃ©er une ligne de texte Ã  afficher pour un contexte
 *
 * \param context Contexte concernÃ©
 * \param id Retourne l'identifiant de l'objet texte crÃ©e mettre Ã  NULL si vous ne souhaitez pas rÃ©cupÃ©rer son identifiant.
@@ -444,7 +459,7 @@ int SDL_delImage(t_context * context, int idimg);
 *
 * \param context Contexte concernÃ©
 * \param filename Fichier image du sprite (transparence png recommandÃ©)
-* \param transparancy Couleur de transparence 
+* \param transparancy Couleur de transparence
 * \param sp_height Hauteur d'une partie (souvent le personnage)
 * \param sp_width Largeur d'une partie (souvent le personnage)
 * \param x Position x relative au contexte
@@ -481,10 +496,10 @@ int SDL_delSprite(t_context *context, int idSprite);
 
 /**
  * Libère le sprite de la mémoire
-* 
+*
 * \param context Contexte concernÃ©
 * \param idSprite Identifiant du sprite Ã  supprimer
-* 
+*
  */
 void SDL_freeSprite(t_context *context, int idSprite);
 
@@ -676,7 +691,7 @@ int SDL_loadMusic(const char * musicfile);
 
 /**
 * \fn void SDL_setmaxChannel(unsigned int nbch)
-* \brief Modifie le nombre de son joué simultanément 
+* \brief Modifie le nombre de son joué simultanément
 *
 * \param nbch Nombre de canaux audio maximal
 * \return void

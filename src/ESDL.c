@@ -701,7 +701,7 @@ int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, i
 
 	context->nbRect = (context->nbRect) + 1;
 
-	if(SDL_getClip(context, RECTANGLE, context->nbRect - 1, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, context->nbRect - 1, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -713,7 +713,7 @@ int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, in
 
 	if (!context || !(context->contextRect) || idrect <= (context->nbRect)) return 0;
 	
-	if(( context->contextRect[idrect].def.x != x || context->contextRect[idrect].def.y != y) && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
+	if(( context->contextRect[idrect].def.x != x || context->contextRect[idrect].def.y != y) && !SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	context->contextRect[idrect].color = color;
@@ -722,7 +722,7 @@ int SDL_editRect(t_context *context, int idrect, SDL_Color color, int height, in
 	context->contextRect[idrect].def.x = x;
 	context->contextRect[idrect].def.y = y;
 	
-	if(SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	return 1;
@@ -736,7 +736,7 @@ int SDL_delRect(t_context *context, int idrect) {
 	t_rect * n_realloc = NULL;
 	int i = 0;
 	
-	if(SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	if (context->contextRect[idrect].id) *(context->contextRect[idrect].id) = -1;
@@ -827,7 +827,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 
 	context->nbSprite = (context->nbSprite)+1;
 
-	if(SDL_getClip(context, SPRITE, context->nbSprite - 1, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, SPRITE, context->nbSprite - 1, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	return 1;
@@ -835,12 +835,22 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 
 int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
 	SDL_Rect tmpRect;
+	int greatMove = 0;
+	int oldX = 0, oldY = 0;
 
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
 	
-	if(( context->contextSprite[idSprite].x != x || context->contextSprite[idSprite].y != y) && SDL_getClip(context, SPRITE, idSprite, &tmpRect))
-		SDL_updateFrame(context, tmpRect); // Mise à jour lors d'un déplacement
+	if(( context->contextSprite[idSprite].x != x || context->contextSprite[idSprite].y != y) && !SDL_isFullScreen() && SDL_getClip(context, SPRITE, idSprite, &tmpRect)){
+		
+		if(x < tmpRect.x - tmpRect.w || x > tmpRect.x + tmpRect.w || y < tmpRect.y - tmpRect.h || y > tmpRect.y + tmpRect.h){
+			SDL_updateFrame(context, tmpRect); // Mise à jour lors d'un déplacement important
+			greatMove = 1;
+		}
+	}
+
+	oldX = context->contextSprite[idSprite].x;
+	oldY = context->contextSprite[idSprite].y;
 
 	context->contextSprite[idSprite].x = x;
 	context->contextSprite[idSprite].y = y;
@@ -850,7 +860,27 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 	
 	context->contextSprite[idSprite].hide = hide;
 
-	if(SDL_getClip(context, SPRITE, idSprite, &tmpRect)){
+	if(!SDL_isFullScreen() && SDL_getClip(context, SPRITE, idSprite, &tmpRect)){
+		
+		if(!greatMove && (oldX != x || oldY != y) ){
+			
+			if(x > oldX){
+				tmpRect.x = oldX;
+				tmpRect.w += x - tmpRect.x;
+			}else{
+				tmpRect.w += oldX - x;
+			}
+			
+			if(y > oldY){
+				tmpRect.y = oldY;
+				tmpRect.h += y - tmpRect.y;
+			}else{
+				tmpRect.h += oldY - y;
+			}
+			
+			SDL_correctClipping(&tmpRect);
+		}
+
 		SDL_updateFrame(context, tmpRect);
 	}
 	
@@ -866,7 +896,7 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
 	
-	if(SDL_getClip(context, SPRITE, idSprite, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, SPRITE, idSprite, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	SDL_freeSprite(context, idSprite);
@@ -901,7 +931,6 @@ void SDL_freeSprite(t_context *context, int idSprite) {
 
 
 	if (context->contextSprite[idSprite].buffer && multipleLoad == 0) {
-		printf("ahah\n");
 		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
 		context->contextSprite[idSprite].buffer = NULL;
 	}else if(multipleLoad == 1){
@@ -977,7 +1006,7 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 	}
 	context->nbObj = (context->nbObj+1);
 
-	if(SDL_getClip(context, type, context->nbObj-1, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, type, context->nbObj-1, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -1054,7 +1083,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	
 	context->nbImg = (context->nbImg)+1;
 
-	if(SDL_getClip(context, IMG, (context->nbImg) - 1, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, (context->nbImg) - 1, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -1077,13 +1106,13 @@ int SDL_editImage(t_context * context, int idimg, int x, int y) {
 		return 0;
 	}
 
-	if(( context->contextImg[idimg].x != x || context->contextImg[idimg].y != y) && SDL_getClip(context, IMG, idimg, &tmpRect))
+	if(( context->contextImg[idimg].x != x || context->contextImg[idimg].y != y) && !SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	context->contextImg[idimg].x = x;
 	context->contextImg[idimg].y = y;
 
-	if(SDL_getClip(context, IMG, idimg, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -1117,7 +1146,7 @@ int SDL_delImage(t_context * context, int idimg) {
 		}
 	}
 	
-	if(SDL_getClip(context, IMG, idimg, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	if (context->contextImg[idimg].buffer && !multipleLoad) {
@@ -1160,7 +1189,7 @@ int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int
 		return 0;
 	}
 
-	if(( context->contextObj[obj].x != x || context->contextObj[obj].y != y) && SDL_getClip(context, type, obj, &tmpRect))
+	if(( context->contextObj[obj].x != x || context->contextObj[obj].y != y) && !SDL_isFullScreen() && SDL_getClip(context, type, obj, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	context->contextObj[obj].x = x;
@@ -1196,7 +1225,7 @@ int SDL_editObj(t_context * context, int obj, t_typeData type, char * title, int
 	
 	context->contextObj[obj].buffer_title = TTF_RenderText_Blended(ttf_police, title, colorWhite);
 
-	if(SDL_getClip(context, type, obj, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, type, obj, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -1212,7 +1241,7 @@ int SDL_delObj(t_context * context, int obj) {
 	
 	int i = 0;
 	
-	if(SDL_getClip(context, context->contextObj[obj].type, obj, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, context->contextObj[obj].type, obj, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	if (context->contextObj[obj].buffer_title) {
@@ -1243,10 +1272,22 @@ int SDL_delObj(t_context * context, int obj) {
 
 }
 
+void SDL_correctClipping(SDL_Rect * clip){
+
+	if(clip == NULL) return;
+
+	if(clip->x < 0) clip->x = 0; // Correction on clip to not get out of screen
+	if (clip->y < 0) clip->y = 0;
+	if ( clip->x + clip->w > screen->w) clip->x = screen->w - clip->w;
+	if ( clip->y + clip->h > screen->h) clip->y = screen->h - clip->h;
+	if(clip->y > screen->h) clip->y = screen->h - clip->h;
+
+}
+
 int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * clip){
 
 	if (!context) return 0;
-	//if(clip == NULL) return 0;
+	if(clip == NULL) return 0;
 
 	clip->x = 0;
 	clip->y = 0;
@@ -1325,12 +1366,7 @@ int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * cl
 			break;
 	}
 
-	if(clip->x < 0) clip->x = 0; // Correction on clip to not get out of screen
-	if (clip->y < 0) clip->y = 0;
-	if (clip->x > screen->w) clip->w = 0;
-	if (clip->y > screen->h) clip->h = 0;
-	if (clip->x + clip->w > screen->w) clip->x = screen->w - clip->w;
-	if (clip->y + clip->h > screen->h) clip->y = screen->h - clip->h;
+	SDL_correctClipping(clip);
 
 	return 1;
 
@@ -1393,7 +1429,6 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
 
 				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){ // Déplacement qu'en cas de mouvement assez important
-					
 					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].sp_width / 2, mouseY - context->contextSprite[idObj].sp_width / 2,
 									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
 					generate = 1;
@@ -1545,7 +1580,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 
 	context->nbText = (context->nbText)+1;
 
-		if(SDL_getClip(context, TEXT, context->nbText - 1, &tmpRect))
+		if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, context->nbText - 1, &tmpRect))
 			SDL_updateFrame(context, tmpRect);
 	
 	return 1;
@@ -1565,7 +1600,7 @@ int SDL_editText(t_context * context, int idtext, char * content, SDL_Color coul
 	if (x != -1) context->contextText[idtext].x = x;
 	if (y != -1) context->contextText[idtext].y = y;
 
-	if((context->contextText[idtext].x != x || context->contextText[idtext].y != y) && SDL_getClip(context, TEXT, idtext, &tmpRect))
+	if((context->contextText[idtext].x != x || context->contextText[idtext].y != y) && !SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 	
 	//Free old buffer
@@ -1576,7 +1611,7 @@ int SDL_editText(t_context * context, int idtext, char * content, SDL_Color coul
 	
 	context->contextText[idtext].buffer = TTF_RenderText_Blended(ttf_police, content, couleur);
 	
-	if(SDL_getClip(context, TEXT, idtext, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	return 1;
@@ -1592,7 +1627,7 @@ int SDL_delText(t_context * context, int idtext) {
 	
 	int i = 0;
 	
-	if(SDL_getClip(context, TEXT, idtext, &tmpRect))
+	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
 	if (context->contextText[idtext].buffer) {
@@ -2104,7 +2139,7 @@ int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char
  * Permet de savoir si plein écran
  * @return Retourne 1 si plein écran sinon 0
  */
-int isFullScreen(){
+int SDL_isFullScreen(){
 	return(screen->flags && SDL_FULLSCREEN);
 }
 
@@ -2141,7 +2176,7 @@ int SDL_generate(t_context * context) {
 		if ((MouseOverObjPrev != MouseOverObj) || (forceFrame == 1) || (uniqueFrame == 1) || (firstFrame == 1)) {		
 			SDL_generateFrame(context);
 			
-			if(isFullScreen())
+			if(SDL_isFullScreen())
 				SDL_Flip (screen); // Double buffering only works correctly in fullscreen mode else it copy all memory (too heavy)
 			else if (context->nbZone && context->updatedZones){
 

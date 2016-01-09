@@ -286,6 +286,12 @@ int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y
 int SDL_ismouseover(t_context * context, t_typeData type);
 
 /**
+ * Détermine si en plein écran ou non
+ * @return Retourne 1 si en plein écran sinon 0
+ */
+int SDL_isFullScreen();
+
+/**
 * \fn void SDL_generateFrame(t_context * context)
 * \brief Construit une frame pour un contexte donnÃ©e et la stocke dans la surface principale en attente de rafraichissement.
 *
@@ -767,10 +773,17 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj);
 int SDL_isInArea(SDL_Rect Rect1, SDL_Rect Rect2);
 
 /**
+ * Corrige le clipping
+ * @param context Contexte concerné
+ * @param clip    Clipping à corriger
+ */
+void SDL_correctClipping(SDL_Rect * clip);
+
+/**
  * Récupère le clipping
  * \param  context  Contexte dans lequel dessiner
  * \param  idSprite Identifiant de l'objet
- * \param  clip     
+ * \param  clip     Clipping à remplir
  * \return          Retourne 1 en cas de succès sinon 0
  */
 int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * clip);

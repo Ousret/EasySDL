@@ -448,7 +448,7 @@ int SDL_delText(t_context * context, int idtext);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
+int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z_index);
 /**
 * \fn int SDL_editImage(t_context * context, int idimg, int x, int y)
 * \brief Modifie les propriÃ©tÃ©s d'une image
@@ -459,7 +459,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_editImage(t_context * context, int idimg, int x, int y);
+int SDL_editImage(t_context * context, int idimg, int x, int y, int z_index);
 /**
 * \fn int SDL_delImage(t_context * context, int idimg)
 * \brief Supprimer une image d'un contexte
@@ -500,7 +500,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 * \param hide Pour ne pas afficher = 1, 0 pour afficher.
 * \return bool
 */
-int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int z_index, int position, int animation, int hide);
 /**
 * \fn int SDL_delSprite(t_context *context, int idSprite)
 * \brief Supprime un sprite d'un contexte donnÃ©e
@@ -900,6 +900,8 @@ d_save * SDL_initProfil(char * filename);
 * \return void
 */
 void SDL_freeProfil(d_save * profil);
+
+void printLayer(t_context * context);
 
 /* db_lite.c */
 extern sqlite3 *db;

@@ -173,6 +173,9 @@ typedef struct {
 	
 	t_rect * contextRect;
 	int nbRect;
+
+	SDL_Rect * updatedZones;
+	int nbZone;
 	
 	int x, y;
 	int height, width;
@@ -257,7 +260,7 @@ void SDL_unload();
 * \param captions Contient le texte associÃ©s au(x) bouton(s) (matrice **char)
 * \return Identifiant du bouton choisis
 */
-int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions);
+int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char ** captions);
 
 /**
 * \fn int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y)
@@ -290,6 +293,14 @@ int SDL_ismouseover(t_context * context, t_typeData type);
 * \return void
 */
 void SDL_generateFrame(t_context * context);
+
+/**
+ * Met à jour une image
+ * @param  context Contexte dans lequel dessiner
+ * @param  newZone Zone à mettre à jour
+ * @return         Retourne 1 en cas de succès sinon 0
+ */
+int SDL_updateFrame(t_context * context, SDL_Rect newZone);
 
 /**
 * \fn void SDL_UpdateEvents(Input* in)
@@ -736,6 +747,24 @@ int SDL_getposy(t_context * context, int id, t_typeData type);
  * \return         Retourne 1 en cas de succés, -1 le cas échéant
  */
 int SDL_drag(t_context * context, t_typeData typeObj, int idObj);
+
+/**
+ * Définis si deux rectangles se chevauchent
+ * \param  context Contexte dans lequel dessiner
+ * \param  Rect1   Rectangle 1
+ * \param  Rect2   Rectangle 2
+ * \return         Retourne 2 si Rect 2 dans Rect1, 1 si collision, 0 sinon
+ */
+int SDL_isInArea(SDL_Rect Rect1, SDL_Rect Rect2);
+
+/**
+ * Récupère le clipping
+ * \param  context  Contexte dans lequel dessiner
+ * \param  idSprite Identifiant de l'objet
+ * \param  clip     
+ * \return          Retourne 1 en cas de succès sinon 0
+ */
+int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * clip);
 
 /**
  * Dépose un objet

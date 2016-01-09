@@ -645,9 +645,9 @@ void SDL_freeContext(t_context * context) {
 	}
 	
 	if (context->contextSprite) {
-		for (i = 0; i < (context->nbSprite); i++) {
+		for (i = 0; i < context->nbSprite; i++) {
 			
-			SDL_delSprite(context, i);
+			SDL_freeSprite(context, i);
 				
 		}
 		free (context->contextSprite);
@@ -861,31 +861,15 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 int SDL_delSprite(t_context *context, int idSprite) {
 	SDL_Rect tmpRect;
 
-	int i, multipleLoad = 0;
+	int i;
 
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
 	
-	for (i = 0; i < context->nbSprite; i++) {
-		if (context->contextSprite[i].buffer == context->contextSprite[idSprite].buffer) {
-			if (i != idSprite) {
-				multipleLoad = 1;
-				break;
-			}
-		}
-	}
-
 	if(SDL_getClip(context, SPRITE, idSprite, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
-	if (context->contextSprite[idSprite].buffer && multipleLoad == 0) {
-		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
-		context->contextSprite[idSprite].buffer = NULL;
-	}else if(multipleLoad == 1){
-		context->contextSprite[idSprite].buffer = NULL;
-	}
-
-	free(context->contextSprite[idSprite].file);
+	SDL_freeSprite(context, idSprite);
 	
 	for (i = idSprite; i < (context->nbSprite)-1; i++) {
 	
@@ -898,6 +882,34 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	context->contextSprite = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite)* (context->nbSprite));
 	
 	return 1;
+}
+
+void SDL_freeSprite(t_context *context, int idSprite) {
+	int i, multipleLoad = 0;
+
+	if (!context) return ;
+	if (idSprite >= (context->nbSprite)) return ;
+	
+	for (i = 0; i < context->nbSprite; i++) {
+		if (context->contextSprite[i].buffer == context->contextSprite[idSprite].buffer) {
+			if (i != idSprite) {
+				multipleLoad = 1;
+				break;
+			}
+		}
+	}
+
+
+	if (context->contextSprite[idSprite].buffer && multipleLoad == 0) {
+		printf("ahah\n");
+		SDL_FreeSurface(context->contextSprite[idSprite].buffer);
+		context->contextSprite[idSprite].buffer = NULL;
+	}else if(multipleLoad == 1){
+		context->contextSprite[idSprite].buffer = NULL;
+	}
+
+	free(context->contextSprite[idSprite].file);
+	
 }
 
 int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int align, char * dest, t_typeForm typeForm, int x, int y) {

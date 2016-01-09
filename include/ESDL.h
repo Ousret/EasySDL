@@ -474,6 +474,15 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 int SDL_delSprite(t_context *context, int idSprite);
 
 /**
+ * Libère le sprite de la mémoire
+* 
+* \param context Contexte concernÃ©
+* \param idSprite Identifiant du sprite Ã  supprimer
+* 
+ */
+void SDL_freeSprite(t_context *context, int idSprite);
+
+/**
 * \fn int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y)
 * \brief Ajoute un nouveau rectangle pour un contexte donnÃ©e
 *

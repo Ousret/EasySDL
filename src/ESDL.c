@@ -614,7 +614,7 @@ void SDL_freeContext(t_context * context) {
 	}
 
 	if (context->contextImg) {
-		//tmp = context->nbImg;
+		
 		for (i = 0;i < (context->nbImg); i++) {
 			if (context->contextImg[i].buffer) {
 				for (j = i; j < (context->nbImg); j++) {
@@ -756,6 +756,13 @@ int SDL_delRect(t_context *context, int idrect) {
 
 	context->nbRect = (context->nbRect) - 1;
 
+	if(context->nbRect == 0 && context->contextRect){
+		
+		free(context->contextRect);
+		context->contextRect = NULL;
+
+	}
+
 	return 1;
 
 }
@@ -880,7 +887,6 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 
 			SDL_correctClipping(&tmpRect);
 		}
-
 		SDL_updateFrame(context, tmpRect);
 	}
 
@@ -910,6 +916,13 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	context->nbSprite = (context->nbSprite)-1;
 
 	context->contextSprite = (t_sprite*) realloc(context->contextSprite, sizeof(t_sprite)* (context->nbSprite));
+	
+	if(context->nbSprite == 0 && context->contextSprite){
+		
+		free(context->contextSprite);
+		context->contextSprite = NULL;
+
+	}
 
 	return 1;
 }
@@ -1168,6 +1181,11 @@ int SDL_delImage(t_context * context, int idimg) {
 
 	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
 	context->nbImg = (context->nbImg)-1;
+	
+	if(context->nbImg == 0 && context->contextImg){
+		free(context->contextImg); 
+		context->contextImg = NULL;
+	}
 
 	return 1;
 
@@ -1267,6 +1285,11 @@ int SDL_delObj(t_context * context, int obj) {
 
 	context->contextObj = (t_object*) realloc(context->contextObj, sizeof(t_object)*(context->nbObj));
 	context->nbObj = (context->nbObj)-1;
+	
+	if(context->nbObj == 0 && context->contextObj){
+		free(context->contextObj);
+		context->contextObj = NULL;
+	}
 
 	return 1;
 
@@ -1424,9 +1447,9 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
 
 			if(idObj <= context->nbSprite - 1){
-
-				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].buffer->w / 2;
-				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].buffer->h / 2;
+				
+				posX = context->contextSprite[idObj].x + context->contextSprite[idObj].sp_width / 2;
+				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].sp_height / 2;
 
 				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){ // Déplacement qu'en cas de mouvement assez important
 					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].sp_width / 2, mouseY - context->contextSprite[idObj].sp_width / 2,
@@ -1580,9 +1603,9 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 
 	context->nbText = (context->nbText)+1;
 
-		if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, context->nbText - 1, &tmpRect))
-			SDL_updateFrame(context, tmpRect);
-
+	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, context->nbText - 1, &tmpRect))
+		SDL_updateFrame(context, tmpRect);
+	
 	return 1;
 
 }
@@ -1646,6 +1669,11 @@ int SDL_delText(t_context * context, int idtext) {
 
 	context->contextText = (t_text*) realloc(context->contextText, sizeof(t_text)*(context->nbText));
 	context->nbText = (context->nbText)-1;
+
+	if(context->nbText == 0 && context->contextText){
+		free(context->contextText);
+		context->contextText = NULL;
+	}
 
 	return 1;
 }
@@ -2053,6 +2081,7 @@ int SDL_updateFrame(t_context * context, SDL_Rect newZone){
 				inArea = i;
 				break;
 			}*/
+
 		}
 
 		if(inArea == - 1){
@@ -2064,7 +2093,7 @@ int SDL_updateFrame(t_context * context, SDL_Rect newZone){
 			}else{
 				return 0;
 			}
-
+		
 		}
 
 	}

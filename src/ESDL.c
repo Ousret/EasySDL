@@ -1751,7 +1751,7 @@ void SDL_UpdateEvents(Input* in)
 			
 				in->key[GlobalEvent.key.keysym.sym]=1;
 				
-				if(GlobalEvent.key.keysym.sym == SDLK_F4){ // Quit program when ALT + F4 pressed
+				if(GlobalEvent.key.keysym.mod == KMOD_LALT && GlobalEvent.key.keysym.sym == SDLK_F4){ // Quit program when ALT + F4 pressed
 					in->quit = 1;
 					return;
 				}

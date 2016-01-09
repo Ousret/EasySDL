@@ -164,7 +164,7 @@ typedef struct {
 	t_typeData type;
 	int idObj;
 	int z_index;
-	
+
 }t_layer;
 
 /**

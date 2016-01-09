@@ -560,6 +560,7 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 	tmp->contextImg = NULL;
 	tmp->contextSprite = NULL;
 	tmp->contextRect = NULL;
+	tmp->contextLayer = NULL;
 	tmp->updatedZones = NULL;
 
 	tmp->nbObj = 0;
@@ -568,6 +569,8 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 	tmp->nbSprite = 0;
 	tmp->nbRect = 0;
 	tmp->nbZone = 0;
+	tmp->nbLayer = 0;
+
 
 	tmp->x = x;
 	tmp->y = y;
@@ -659,6 +662,10 @@ void SDL_freeContext(t_context * context) {
 
 	if(context->updatedZones){
 		free (context->updatedZones);
+	}
+
+	if(context->contextLayer){
+		free (context->contextLayer);
 	}
 
 	free (context);
@@ -767,7 +774,7 @@ int SDL_delRect(t_context *context, int idrect) {
 
 }
 
-int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int z_index, int position, int animation, int hide) {
 
 	t_sprite * n_realloc = NULL;
 	SDL_Surface *tmp = NULL;
@@ -831,6 +838,10 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	context->contextSprite[context->nbSprite].position = position;
 	context->contextSprite[context->nbSprite].animation = animation;
 	context->contextSprite[context->nbSprite].hide = hide;
+
+	context->contextSprite[context->nbSprite].idLayer = context->nbLayer;
+
+	SDL_addLayer(context, SPRITE, context->nbSprite, z_index);
 
 	context->nbSprite = (context->nbSprite)+1;
 
@@ -2103,6 +2114,66 @@ int SDL_updateFrame(t_context * context, SDL_Rect newZone){
 
 	return 1;
 
+}
+
+int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index ){
+	t_layer * n_Layer = NULL;
+	t_layer layer;
+	int i = 0, rank = -1;
+
+	layer.idObj = idObj;
+	layer.z_index = z_index;
+	layer.type = type;
+
+	if(!(context->nbLayer)){
+
+		if (!(context->contextLayer)) {
+
+			context->contextLayer = (t_layer*) malloc(sizeof(t_layer));
+			context->contextLayer[context->nbLayer] = layer;
+
+		}else{
+			return 0;
+		}
+
+	}else{
+
+		if(!context->contextLayer) return 0;
+
+		n_Layer = (t_layer*) realloc(context->contextLayer, sizeof(t_layer) * ((context->nbLayer)+1));
+
+		if (n_Layer) {
+			context->contextLayer = n_Layer;
+
+			for(i = 0; i < context->nbLayer && rank == -1; i++){
+
+				if(z_index < context->contextLayer[i].z_index) // Tri à la volée
+					rank = i;
+
+			}
+
+			if(rank != -1){
+				
+				for (i = context->nbLayer; i > rank; i--) {
+
+					context->contextLayer[i] = context->contextLayer[i-1]; // Décale les indices si besoin
+
+				}
+
+			}else{
+				rank = context->nbLayer;
+			}
+
+			context->contextLayer[rank] = layer;
+
+		}else{
+			return 0;
+		}
+
+	}
+
+	context->nbLayer = (context->nbLayer) + 1;
+	return 1;
 }
 
 int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char ** captions) {

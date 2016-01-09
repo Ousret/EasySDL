@@ -154,6 +154,20 @@ typedef struct {
 } t_sprite;
 
 /**
+ * \struct t_layer
+ * \brief gestion des calques
+ *
+ * t_layer contient la position d'un t_typeData dans la profondeure.
+ */
+typedef struct {
+
+	t_typeData type;
+	int idObj;
+	int z_index;
+	
+}t_layer;
+
+/**
  * \struct t_context
  * \brief ReprÃ©sentation d'un contexte et son rendu.
  *
@@ -189,20 +203,6 @@ typedef struct {
 	int nbLayer;
 
 } t_context;
-
-/**
- * \struct t_layer
- * \brief gestion des calques
- *
- * t_layer contient la position d'un t_typeData dans la profondeure.
- */
-typedef struct {
-
-	t_typeData type;
-	int idObj;
-	int z-index;
-	
-}t_layer;
 
 /**
  * \struct Input
@@ -312,6 +312,16 @@ int SDL_ismouseover(t_context * context, t_typeData type);
  * @return Retourne 1 si en plein écran sinon 0
  */
 int SDL_isFullScreen();
+
+/**
+ * Ajoute un calque
+ * \param  context Contexte concerné
+ * \param  type    Type de l'objet
+ * \param  idObj   Identifiant de l'objet
+ * \param  z_index Numéro de calque
+ * \return         Retourne 1 si réussi sinon 0
+ */
+int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index);
 
 /**
 * \fn void SDL_generateFrame(t_context * context)
@@ -476,7 +486,7 @@ int SDL_delImage(t_context * context, int idimg);
 * \param hide Pour ne pas afficher = 1, 0 pour afficher.
 * \return bool
 */
-int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int z_index, int position, int animation, int hide);
 /**
 * \fn int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide)
 * \brief Modifie le sprite d'un contexte donnÃ©e Ã  condition qu'il soit dÃ©jÃ  chargÃ© avec SDL_newSprite()

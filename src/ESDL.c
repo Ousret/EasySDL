@@ -2264,11 +2264,6 @@ int SDL_generate(t_context * context) {
 	if (!(context->nbObj)) {
 		uniqueFrame = 1;
 	}
-	// FPS
-	Uint32 startclock = 0;
-	Uint32 deltaclock = 0;
-	Uint32 currentFPS = 0;
-	startclock = SDL_GetTicks();
 	while (1) {
 
 		do {
@@ -2301,15 +2296,7 @@ int SDL_generate(t_context * context) {
 				context->updatedZones = NULL;
 
 			}
-			
-			deltaclock = SDL_GetTicks() - startclock;
-			startclock = SDL_GetTicks();
-			  
-			if ( deltaclock != 0 ){
-			  currentFPS = 1000 / deltaclock;
-			  printf("FPS %i\n", currentFPS);
-			}
-			
+
 			SDL_FreeSurface(screen);
 			forceFrame = 0;
 

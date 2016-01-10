@@ -2259,7 +2259,7 @@ int SDL_isFullScreen(){
 }
 
 int SDL_generate(t_context * context) {
-
+	
 	int MouseOverObj = -1, MouseOverObjPrev = 0, firstFrame = 0, forceFrame = 0;
 	int uniqueFrame = 0;
 
@@ -2268,7 +2268,6 @@ int SDL_generate(t_context * context) {
 	if (!(context->nbObj)) {
 		uniqueFrame = 1;
 	}
-
 	while (1) {
 
 		do {

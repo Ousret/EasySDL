@@ -324,6 +324,25 @@ int SDL_isFullScreen();
 int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index);
 
 /**
+ * Définis le calque d'un objet
+ * \param  context Contexte concerné
+ * \param  type    Type de l'objet
+ * \param  idObj   Identifiant de l'objet
+ * \param  z_index Calque
+ * \return         Retourne 1 si succès sinon 0
+ */
+int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index);
+
+/**
+ * Supprime un calque
+ * \param  context Contexte concerné
+ * \param  type    Type de donnée
+ * \param  idLayer Identifiant du calque
+ * \return         Retourne 1 en cas de succès sinon 0
+ */
+int SDL_delLayer(t_context * context, t_typeData type, int idLayer);
+
+/**
 * \fn void SDL_generateFrame(t_context * context)
 * \brief Construit une frame pour un contexte donnÃ©e et la stocke dans la surface principale en attente de rafraichissement.
 *
@@ -334,9 +353,9 @@ void SDL_generateFrame(t_context * context);
 
 /**
  * Met à jour une image
- * @param  context Contexte dans lequel dessiner
- * @param  newZone Zone à mettre à jour
- * @return         Retourne 1 en cas de succès sinon 0
+ * \param  context Contexte dans lequel dessiner
+ * \param  newZone Zone à mettre à jour
+ * \return         Retourne 1 en cas de succès sinon 0
  */
 int SDL_updateFrame(t_context * context, SDL_Rect newZone);
 
@@ -413,7 +432,7 @@ int SDL_delObj(t_context * context, int obj);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y, int z_index);
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y);
 /**
 * \fn int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y)
 * \brief Modifie une entrÃ©e texte au prÃ©alable chargÃ©e avec SDL_newText()
@@ -448,7 +467,7 @@ int SDL_delText(t_context * context, int idtext);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z_index);
+int SDL_newImage(t_context * context, int * id, char * file, int x, int y);
 /**
 * \fn int SDL_editImage(t_context * context, int idimg, int x, int y)
 * \brief Modifie les propriÃ©tÃ©s d'une image
@@ -459,7 +478,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_editImage(t_context * context, int idimg, int x, int y, int z_index);
+int SDL_editImage(t_context * context, int idimg, int x, int y);
 /**
 * \fn int SDL_delImage(t_context * context, int idimg)
 * \brief Supprimer une image d'un contexte
@@ -486,7 +505,7 @@ int SDL_delImage(t_context * context, int idimg);
 * \param hide Pour ne pas afficher = 1, 0 pour afficher.
 * \return bool
 */
-int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int z_index, int position, int animation, int hide);
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide);
 /**
 * \fn int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide)
 * \brief Modifie le sprite d'un contexte donnÃ©e Ã  condition qu'il soit dÃ©jÃ  chargÃ© avec SDL_newSprite()
@@ -500,7 +519,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 * \param hide Pour ne pas afficher = 1, 0 pour afficher.
 * \return bool
 */
-int SDL_editSprite(t_context *context, int idSprite, int x, int y, int z_index, int position, int animation, int hide);
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide);
 /**
 * \fn int SDL_delSprite(t_context *context, int idSprite)
 * \brief Supprime un sprite d'un contexte donnÃ©e
@@ -900,8 +919,6 @@ d_save * SDL_initProfil(char * filename);
 * \return void
 */
 void SDL_freeProfil(d_save * profil);
-
-void printLayer(t_context * context);
 
 /* db_lite.c */
 extern sqlite3 *db;

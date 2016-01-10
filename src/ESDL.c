@@ -702,6 +702,10 @@ int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, i
 	context->contextRect[context->nbRect].def.x = x;
 	context->contextRect[context->nbRect].def.y = y;
 
+	context->contextRect[context->nbRect].idLayer = context->nbLayer;
+
+	SDL_addLayer(context, RECTANGLE, context->nbRect, 1);
+
 	if (idrect) {
 		*idrect = context->nbRect;
 	}
@@ -746,6 +750,8 @@ int SDL_delRect(t_context *context, int idrect) {
 	if(!SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
+	SDL_delLayer(context, RECTANGLE, context->contextRect[idrect].idLayer);
+
 	if (context->contextRect[idrect].id) *(context->contextRect[idrect].id) = -1;
 
 	for (i = idrect; i < (context->nbRect)-1; i++) {
@@ -774,7 +780,7 @@ int SDL_delRect(t_context *context, int idrect) {
 
 }
 
-int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int z_index, int position, int animation, int hide) {
+int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, int sp_height, int sp_width, int x, int y, int position, int animation, int hide) {
 
 	t_sprite * n_realloc = NULL;
 	SDL_Surface *tmp = NULL;
@@ -841,7 +847,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 
 	context->contextSprite[context->nbSprite].idLayer = context->nbLayer;
 
-	SDL_addLayer(context, SPRITE, context->nbSprite, z_index);
+	SDL_addLayer(context, SPRITE, context->nbSprite, 1);
 
 	context->nbSprite = (context->nbSprite)+1;
 
@@ -851,7 +857,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	return 1;
 }
 
-int SDL_editSprite(t_context *context, int idSprite, int x, int y, int z_index, int position, int animation, int hide) {
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
 	SDL_Rect tmpRect;
 	int greatMove = 0;
 	int oldX = 0, oldY = 0;
@@ -872,8 +878,6 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int z_index, 
 
 	context->contextSprite[idSprite].x = x;
 	context->contextSprite[idSprite].y = y;
-
-	context->contextLayer[context->contextSprite[idSprite].idLayer].z_index = z_index;
 
 	context->contextSprite[idSprite].position = position;
 	context->contextSprite[idSprite].animation = animation;
@@ -915,6 +919,8 @@ int SDL_delSprite(t_context *context, int idSprite) {
 
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
+
+	SDL_delLayer(context, SPRITE, context->contextSprite[idSprite].idLayer);
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, SPRITE, idSprite, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
@@ -1031,6 +1037,11 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 		*id = context->nbObj;
 		context->contextObj[context->nbObj].id = id;
 	}
+
+	context->contextObj[context->nbObj].idLayer = context->nbLayer;
+
+	SDL_addLayer(context, type, context->nbObj, 1);
+
 	context->nbObj = (context->nbObj+1);
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, type, context->nbObj-1, &tmpRect))
@@ -1040,7 +1051,7 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 
 }
 
-int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z_index) {
+int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	SDL_Rect tmpRect;
 
 	char texturePath[150];
@@ -1110,7 +1121,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z
 		context->contextImg[context->nbImg].id = id;
 	}
 
-	SDL_addLayer(context, IMG, context->nbImg, z_index);
+	SDL_addLayer(context, IMG, context->nbImg, 1);
 
 	context->nbImg = (context->nbImg)+1;
 
@@ -1121,7 +1132,7 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y, int z
 
 }
 
-int SDL_editImage(t_context * context, int idimg, int x, int y, int z_index) {
+int SDL_editImage(t_context * context, int idimg, int x, int y) {
 	SDL_Rect tmpRect;
 
 	if (!context) {
@@ -1142,8 +1153,6 @@ int SDL_editImage(t_context * context, int idimg, int x, int y, int z_index) {
 
 	context->contextImg[idimg].x = x;
 	context->contextImg[idimg].y = y;
-
-	context->contextLayer[context->contextImg[idimg].idLayer].z_index = z_index;
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
@@ -1170,6 +1179,9 @@ int SDL_delImage(t_context * context, int idimg) {
 
 	int i = 0, multipleLoad = 0;
 
+	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
+		SDL_updateFrame(context, tmpRect);
+
 	for (i = 0; i < context->nbImg; i++) {
 		if (strcmp(context->contextImg[i].file, context->contextImg[idimg].file) == 0) {
 			if (i != idimg) {
@@ -1179,8 +1191,7 @@ int SDL_delImage(t_context * context, int idimg) {
 		}
 	}
 
-	if(!SDL_isFullScreen() && SDL_getClip(context, IMG, idimg, &tmpRect))
-		SDL_updateFrame(context, tmpRect);
+	SDL_delLayer(context, IMG, context->contextImg[idimg].idLayer);
 
 	if (context->contextImg[idimg].buffer && !multipleLoad) {
 		SDL_FreeSurface(context->contextImg[idimg].buffer);
@@ -1281,6 +1292,8 @@ int SDL_delObj(t_context * context, int obj) {
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, context->contextObj[obj].type, obj, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
+
+	SDL_delLayer(context, context->contextObj[obj].type, context->contextObj[obj].idLayer);
 
 	if (context->contextObj[obj].buffer_title) {
 		SDL_FreeSurface(context->contextObj[obj].buffer_title);
@@ -1431,7 +1444,7 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 				posY = context->contextImg[idObj].y + context->contextImg[idObj].buffer->h / 2;;
 
 				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){
-					SDL_editImage(context, idObj, mouseX - context->contextImg[idObj].buffer->w / 2, mouseY - context->contextImg[idObj].buffer->h / 2, context->contextLayer[context->contextImg[idObj].idLayer].z_index);
+					SDL_editImage(context, idObj, mouseX - context->contextImg[idObj].buffer->w / 2, mouseY - context->contextImg[idObj].buffer->h / 2);
 					generate = 1;
 				}
 
@@ -1472,8 +1485,7 @@ int SDL_drag(t_context * context, t_typeData typeObj, int idObj){
 				posY = context->contextSprite[idObj].y + context->contextSprite[idObj].sp_height / 2;
 
 				if(posX < mouseX - zoneM || posX > mouseX + zoneM || posY < mouseY - zoneM || posY > mouseY + zoneM){ // Déplacement qu'en cas de mouvement assez important
-					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].sp_width / 2, mouseY - context->contextSprite[idObj].sp_width / 2, 
-									context->contextLayer[context->contextSprite[idObj].idLayer].z_index,
+					SDL_editSprite(context, idObj, mouseX - context->contextSprite[idObj].sp_width / 2, mouseY - context->contextSprite[idObj].sp_width / 2,
 									context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
 					generate = 1;
 				}
@@ -1526,7 +1538,7 @@ int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int p
 			if (!(context->contextImg) || !(context->nbImg)) return -1;
 
 			if(idObj <= context->nbImg - 1){
-				SDL_editImage(context, idObj, posX, posY, context->contextLayer[context->contextImg[idObj].idLayer].z_index);
+				SDL_editImage(context, idObj, posX, posY);
 			}else{
 				return -1;
 			}
@@ -1550,7 +1562,7 @@ int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int p
 			if (!(context->contextSprite) || !(context->nbSprite)) return -1;
 
 			if(idObj <= context->nbSprite - 1){
-				SDL_editSprite(context, idObj, posX, posY,context->contextLayer[context->contextSprite[idObj].idLayer].z_index , context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
+				SDL_editSprite(context, idObj, posX, posY, context->contextSprite[idObj].position, context->contextSprite[idObj].animation, context->contextSprite[idObj].hide);
 			}else{
 				return -1;
 			}
@@ -1578,7 +1590,7 @@ int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int p
 	return 1;
 }
 
-int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y, int z_index) {
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y) {
 	SDL_Rect tmpRect;
 
 	t_text * n_realloc = NULL;
@@ -1611,8 +1623,6 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 	context->contextText[context->nbText].y = y;
 	context->contextText[context->nbText].idLayer = context->nbLayer;
 
-	SDL_addLayer(context, TEXT, context->nbText, z_index);
-
 	replaceinstring(content, '\n', ' ');
 	replaceinstring(content, '\t', ' ');
 
@@ -1624,7 +1634,9 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 		*id = (context->nbText);
 		context->contextText[context->nbText].id = id;
 	}
-
+	
+	SDL_addLayer(context, TEXT, context->nbText, 1);
+	
 	context->nbText = (context->nbText)+1;
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, context->nbText - 1, &tmpRect))
@@ -1644,11 +1656,11 @@ int SDL_editText(t_context * context, int idtext, char * content, SDL_Color coul
 	context->contextText[idtext].couleur = couleur;
 	if (content) context->contextText[idtext].content = content;
 
-	if (x != -1) context->contextText[idtext].x = x;
-	if (y != -1) context->contextText[idtext].y = y;
-
 	if((context->contextText[idtext].x != x || context->contextText[idtext].y != y) && !SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
+
+	if (x != -1) context->contextText[idtext].x = x;
+	if (y != -1) context->contextText[idtext].y = y;
 
 	//Free old buffer
 	if(context->contextText[idtext].buffer) {
@@ -1676,6 +1688,8 @@ int SDL_delText(t_context * context, int idtext) {
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
+
+	SDL_delLayer(context, TEXT, context->contextText[idtext].idLayer);
 
 	if (context->contextText[idtext].buffer) {
 		SDL_FreeSurface(context->contextText[idtext].buffer);
@@ -2047,14 +2061,14 @@ void SDL_generateFrame(t_context * context) {
 			if (!(context->contextSprite[currentObj].hide)) {
 				//Animation .. Orientation
 				spritePos.x = context->contextSprite[currentObj].animation  * context->contextSprite[currentObj].sp_width  - context->contextSprite[currentObj].sp_width;
-					spritePos.y = ((context->contextSprite[currentObj].position) * (context->contextSprite[currentObj].sp_height))-(context->contextSprite[currentObj].sp_height);
-					spritePos.w = context->contextSprite[currentObj].sp_width;
-					spritePos.h = context->contextSprite[currentObj].sp_height;
+				spritePos.y = ((context->contextSprite[currentObj].position) * (context->contextSprite[currentObj].sp_height))-(context->contextSprite[currentObj].sp_height);
+				spritePos.w = context->contextSprite[currentObj].sp_width;
+				spritePos.h = context->contextSprite[currentObj].sp_height;
 	
-					positionFond.x = context->contextSprite[currentObj].x;
+				positionFond.x = context->contextSprite[currentObj].x;
 				positionFond.y = context->contextSprite[currentObj].y;
 	
-					SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
+				SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
 			}
 
 			break;
@@ -2123,14 +2137,6 @@ int SDL_updateFrame(t_context * context, SDL_Rect newZone){
 
 }
 
-void printLayer(t_context * context){
-	int i;
-
-	for(i = 0; i < context->nbLayer; i++){
-		printf("Layer: %i idObj: %i type: %i \n",context->contextLayer[i].z_index,context->contextLayer[i].idObj, context->contextLayer[i].type);
-	}
-}
-
 int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index ){
 	t_layer * n_Layer = NULL;
 	t_layer layer;
@@ -2191,6 +2197,204 @@ int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index ){
 	return 1;
 }
 
+int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int idLayer){
+	
+	if(!context || !context->contextLayer || !context->nbLayer) return 0;
+
+	switch(type){
+		
+		case BUTTON:
+			
+			context->contextObj[idObj].idLayer = idLayer;
+			break;
+
+		case INPUT:
+
+			context->contextObj[idObj].idLayer = idLayer;
+			break;
+
+		case RECTANGLE:
+
+			context->contextRect[idObj].idLayer = idLayer;
+			break;
+
+		case IMG:
+
+			context->contextImg[idObj].idLayer = idLayer;
+			break;
+
+		case SPRITE:
+
+			context->contextSprite[idObj].idLayer = idLayer;
+			break;
+
+		case TEXT:
+
+			context->contextText[idObj].idLayer = idLayer;
+			break;
+
+		default:
+
+			return 0;
+			break;
+	
+	}
+
+	return 1;
+}
+
+int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index){
+	t_layer tmpLayer;
+	int idLayer = -1, i = 0, rank = -1;
+
+
+	if(!context || !context->contextLayer || !context->nbLayer) return 0;
+
+	switch(type){
+		
+		case BUTTON:
+
+			if(idObj >= context->nbObj) return 0;
+			
+			idLayer = context->contextObj[idObj].idLayer;
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		case INPUT:
+
+			if(idObj >= context->nbObj) return 0;
+
+			idLayer = context->contextObj[idObj].idLayer;
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		case RECTANGLE:
+
+			if(idObj >= context->nbRect) return 0;
+
+			idLayer = context->contextRect[idObj].idLayer;
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		case IMG:
+
+			if(idObj >= context->nbImg) return 0;
+
+			idLayer = context->contextImg[idObj].idLayer;
+
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		case SPRITE:
+
+			if(idObj >= context->nbSprite) return 0;
+
+			idLayer = context->contextSprite[idObj].idLayer;
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		case TEXT:
+
+			if(idObj >= context->nbText) return 0;
+
+			idLayer = context->contextText[idObj].idLayer;
+			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+
+			tmpLayer = context->contextLayer[idLayer];
+			
+			break;
+
+		default:
+
+			return 0;
+			break;
+	
+	}
+
+	if(z_index > tmpLayer.z_index){
+
+		for(i = idLayer; i < context->nbLayer; i++){
+
+			if(z_index <= context->contextLayer[i].z_index){
+				break;
+			}
+
+			rank = i;
+		}
+
+
+		for(i = idLayer; i < rank; i++){
+			SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i - 1);
+			context->contextLayer[i] = context->contextLayer[i+1]; // Décale les indices -> Tri
+		}
+
+	}else if(z_index < tmpLayer.z_index){
+
+		for(i = idLayer; i >= 0; i--){
+
+			if(z_index >= context->contextLayer[i].z_index)
+				break;
+
+			rank = i; // Position du calque
+		}
+
+		for(i = idLayer; i >= rank && i > 0 && rank != idLayer; i--){
+			SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i + 1);
+			context->contextLayer[i] = context->contextLayer[i-1]; // Décale les indices -> Tri
+		}
+
+	}else
+		return 0;
+
+	
+	context->contextLayer[rank] = tmpLayer;
+	context->contextLayer[rank].z_index = z_index;
+
+	SDL_updateLayer(context, type, idObj, rank);
+
+	return 1;
+}
+
+int SDL_delLayer(t_context * context, t_typeData type, int idLayer){
+	int i = 0;
+
+	if(!context || !context->nbLayer || !context->contextLayer) return 0;
+	
+	for (i = idLayer; i < (context->nbLayer)-1; i++) {
+
+		context->contextLayer[i] = context->contextLayer[i+1];
+		SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i);
+		if(type == context->contextLayer[i].type) context->contextLayer[i].idObj--;
+	}
+	
+	if(context->nbLayer == 0 && context->contextLayer){
+		free(context->contextLayer); 
+		context->contextLayer = NULL;
+
+		return 1;
+	}
+
+	context->contextLayer = (t_layer*) realloc(context->contextLayer, sizeof(t_layer)*(context->nbLayer));
+	context->nbLayer = (context->nbLayer)-1;
+
+	return 1;
+}
+
 int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char ** captions) {
 
 	int i = 0, MouseOverObj = 0, MouseOverObjPrev = 0, firstFrame = 0;
@@ -2199,7 +2403,7 @@ int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char
 		SDL_newObj(menu, NULL, BUTTON, captions[i], ALIGN_CENTER, NULL, NONE, 100, 100+(50*i));
 	}
 
-	SDL_newImage(menu, NULL, backgroundPic, 0, 0, 250);
+	SDL_newImage(menu, NULL, backgroundPic, 0, 0);
 
 	while (1) {
 

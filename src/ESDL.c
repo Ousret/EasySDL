@@ -1578,7 +1578,7 @@ int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int p
 	return 1;
 }
 
-int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y) {
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y, int z_index) {
 	SDL_Rect tmpRect;
 
 	t_text * n_realloc = NULL;
@@ -1609,6 +1609,9 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 
 	context->contextText[context->nbText].x = x;
 	context->contextText[context->nbText].y = y;
+	context->contextText[context->nbText].idLayer = context->nbLayer;
+
+	SDL_addLayer(context, TEXT, context->nbText, z_index);
 
 	replaceinstring(content, '\n', ' ');
 	replaceinstring(content, '\t', ' ');
@@ -2053,6 +2056,7 @@ void SDL_generateFrame(t_context * context) {
 	
 					SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
 			}
+
 			break;
 			
 			default:

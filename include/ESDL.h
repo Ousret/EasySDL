@@ -413,7 +413,7 @@ int SDL_delObj(t_context * context, int obj);
 * \param y Position y relative au contexte
 * \return bool
 */
-int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y);
+int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y, int z_index);
 /**
 * \fn int SDL_editText(t_context * context, int idtext, char * content, SDL_Color couleur, int x, int y)
 * \brief Modifie une entrÃ©e texte au prÃ©alable chargÃ©e avec SDL_newText()

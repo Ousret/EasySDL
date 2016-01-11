@@ -555,13 +555,14 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 
 	tmp->contextSurface = NULL;
 
-	tmp->contextObj = NULL;
-	tmp->contextText = NULL;
-	tmp->contextImg = NULL;
+	tmp->contextObj    = NULL;
+	tmp->contextText   = NULL;
+	tmp->contextImg    = NULL;
 	tmp->contextSprite = NULL;
-	tmp->contextRect = NULL;
-	tmp->contextLayer = NULL;
-	tmp->updatedZones = NULL;
+	tmp->contextRect   = NULL;
+	tmp->contextSet    = NULL;
+	tmp->updatedZones  = NULL;
+	tmp->nbLayer       = NULL;
 
 	tmp->nbObj = 0;
 	tmp->nbText = 0;
@@ -569,8 +570,7 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
 	tmp->nbSprite = 0;
 	tmp->nbRect = 0;
 	tmp->nbZone = 0;
-	tmp->nbLayer = 0;
-
+	tmp->nbSet = 0;
 
 	tmp->x = x;
 	tmp->y = y;
@@ -664,8 +664,16 @@ void SDL_freeContext(t_context * context) {
 		free (context->updatedZones);
 	}
 
-	if(context->contextLayer){
-		free (context->contextLayer);
+	if(context->contextSet){
+
+		if(context->nbSet){
+
+			for(i = 0; i < context->nbSet; i++){
+				SDL_freeSet(context, i);
+			}
+
+		}
+
 	}
 
 	free (context);
@@ -702,9 +710,9 @@ int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, i
 	context->contextRect[context->nbRect].def.x = x;
 	context->contextRect[context->nbRect].def.y = y;
 
-	context->contextRect[context->nbRect].idLayer = context->nbLayer;
+	context->contextRect[context->nbRect].z_index = 1;
 
-	SDL_addLayer(context, RECTANGLE, context->nbRect, 1);
+	SDL_addLayer(context, RECTANGLE, context->nbRect);
 
 	if (idrect) {
 		*idrect = context->nbRect;
@@ -750,12 +758,13 @@ int SDL_delRect(t_context *context, int idrect) {
 	if(!SDL_isFullScreen() && SDL_getClip(context, RECTANGLE, idrect, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
-	SDL_delLayer(context, RECTANGLE, context->contextRect[idrect].idLayer);
+	SDL_delLayer(context, RECTANGLE, idrect, context->contextRect[idrect].z_index);
 
 	if (context->contextRect[idrect].id) *(context->contextRect[idrect].id) = -1;
 
 	for (i = idrect; i < (context->nbRect)-1; i++) {
 
+		SDL_updateLayer(context, RECTANGLE, i + 1, i, context->contextRect[i+1].z_index);
 		context->contextRect[i] = context->contextRect[i+1];
 		if (context->contextRect[i].id) *(context->contextRect[i].id) = *(context->contextRect[i].id) - 1;
 
@@ -845,9 +854,9 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	context->contextSprite[context->nbSprite].animation = animation;
 	context->contextSprite[context->nbSprite].hide = hide;
 
-	context->contextSprite[context->nbSprite].idLayer = context->nbLayer;
+	context->contextSprite[context->nbSprite].z_index = 1;
 
-	SDL_addLayer(context, SPRITE, context->nbSprite, 1);
+	SDL_addLayer(context, SPRITE, context->nbSprite);
 
 	context->nbSprite = (context->nbSprite)+1;
 
@@ -920,7 +929,7 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	if (!context) return 0;
 	if (idSprite >= (context->nbSprite)) return 0;
 
-	SDL_delLayer(context, SPRITE, context->contextSprite[idSprite].idLayer);
+	SDL_delLayer(context, SPRITE, idSprite, context->contextSprite[idSprite].z_index);
 
 	if(!SDL_isFullScreen() && SDL_getClip(context, SPRITE, idSprite, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
@@ -928,9 +937,8 @@ int SDL_delSprite(t_context *context, int idSprite) {
 	SDL_freeSprite(context, idSprite);
 
 	for (i = idSprite; i < (context->nbSprite)-1; i++) {
-
+		SDL_updateLayer(context, SPRITE, i + 1, i, context->contextSprite[i+1].z_index);
 		context->contextSprite[i] = context->contextSprite[i+1];
-
 	}
 
 	context->nbSprite = (context->nbSprite)-1;
@@ -1038,9 +1046,9 @@ int SDL_newObj(t_context * context, int * id, t_typeData type, char * title, int
 		context->contextObj[context->nbObj].id = id;
 	}
 
-	context->contextObj[context->nbObj].idLayer = context->nbLayer;
+	context->contextObj[context->nbObj].z_index = 1;
 
-	SDL_addLayer(context, type, context->nbObj, 1);
+	SDL_addLayer(context, type, context->nbObj);
 
 	context->nbObj = (context->nbObj+1);
 
@@ -1114,14 +1122,14 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	context->contextImg[context->nbImg].buffer = tmp;
 	context->contextImg[context->nbImg].id = NULL;
 
-	context->contextImg[context->nbImg].idLayer = context->nbLayer;
+	context->contextImg[context->nbImg].z_index = 1;
 
 	if (id != NULL) {
 		*id = (context->nbImg);
 		context->contextImg[context->nbImg].id = id;
 	}
 
-	SDL_addLayer(context, IMG, context->nbImg, 1);
+	SDL_addLayer(context, IMG, context->nbImg);
 
 	context->nbImg = (context->nbImg)+1;
 
@@ -1191,7 +1199,7 @@ int SDL_delImage(t_context * context, int idimg) {
 		}
 	}
 
-	SDL_delLayer(context, IMG, context->contextImg[idimg].idLayer);
+	SDL_delLayer(context, IMG, idimg, context->contextImg[idimg].z_index);
 
 	if (context->contextImg[idimg].buffer && !multipleLoad) {
 		SDL_FreeSurface(context->contextImg[idimg].buffer);
@@ -1206,8 +1214,11 @@ int SDL_delImage(t_context * context, int idimg) {
 	if (context->contextImg[idimg].id) *(context->contextImg[idimg].id) = -1;
 
 	for (i = idimg; i < (context->nbImg)-1; i++) {
+
+		SDL_updateLayer(context, IMG, i + 1, i, context->contextImg[i+1].z_index);
 		context->contextImg[i] = context->contextImg[i+1];
 		if (context->contextImg[i].id) *(context->contextImg[i].id) = *(context->contextImg[i].id) - 1;
+	
 	}
 
 	context->contextImg = (t_image*) realloc(context->contextImg, sizeof(t_image)*(context->nbImg));
@@ -1293,7 +1304,7 @@ int SDL_delObj(t_context * context, int obj) {
 	if(!SDL_isFullScreen() && SDL_getClip(context, context->contextObj[obj].type, obj, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
-	SDL_delLayer(context, context->contextObj[obj].type, context->contextObj[obj].idLayer);
+	SDL_delLayer(context, context->contextObj[obj].type, obj, context->contextObj[obj].z_index);
 
 	if (context->contextObj[obj].buffer_title) {
 		SDL_FreeSurface(context->contextObj[obj].buffer_title);
@@ -1311,6 +1322,7 @@ int SDL_delObj(t_context * context, int obj) {
 
 	for (i = obj; i < (context->nbObj)-1; i++) {
 
+		SDL_updateLayer(context, context->contextObj[obj].type, i + 1, i, context->contextObj[i+1].z_index);
 		context->contextObj[i] = context->contextObj[i+1];
 		if (context->contextObj[i].id) *(context->contextObj[i].id) = *(context->contextObj[i].id) - 1;
 
@@ -1621,7 +1633,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 
 	context->contextText[context->nbText].x = x;
 	context->contextText[context->nbText].y = y;
-	context->contextText[context->nbText].idLayer = context->nbLayer;
+	context->contextText[context->nbText].z_index = 1;
 
 	replaceinstring(content, '\n', ' ');
 	replaceinstring(content, '\t', ' ');
@@ -1635,7 +1647,7 @@ int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur
 		context->contextText[context->nbText].id = id;
 	}
 	
-	SDL_addLayer(context, TEXT, context->nbText, 1);
+	SDL_addLayer(context, TEXT, context->nbText);
 	
 	context->nbText = (context->nbText)+1;
 
@@ -1689,7 +1701,7 @@ int SDL_delText(t_context * context, int idtext) {
 	if(!SDL_isFullScreen() && SDL_getClip(context, TEXT, idtext, &tmpRect))
 		SDL_updateFrame(context, tmpRect);
 
-	SDL_delLayer(context, TEXT, context->contextText[idtext].idLayer);
+	SDL_delLayer(context, TEXT, idtext, context->contextText[idtext].z_index);
 
 	if (context->contextText[idtext].buffer) {
 		SDL_FreeSurface(context->contextText[idtext].buffer);
@@ -1700,6 +1712,7 @@ int SDL_delText(t_context * context, int idtext) {
 
 	for (i = idtext; i < (context->nbText)-1; i++) {
 
+		SDL_updateLayer(context, TEXT, i + 1, i, context->contextText[i+1].z_index);
 		context->contextText[i] = context->contextText[i+1];
 		if (context->contextText[i].id) *(context->contextText[i].id) = *(context->contextText[i].id) - 1;
 
@@ -1943,7 +1956,7 @@ void SDL_unload() {
 
 void SDL_generateFrame(t_context * context) {
 
-	int i = 0;
+	int i = 0, j = 0;
 	int currentObj;
 
 	SDL_Rect positionFond, spritePos;
@@ -1953,130 +1966,133 @@ void SDL_generateFrame(t_context * context) {
 
 	context->contextSurface = SDL_CreateRGBSurface(0, context->height, context->width, 16, 0, 0, 0, 0);
 
-	for (i = 0; i < (context->nbLayer); i++) {
+	for(i = 0; i < context->nbSet; i++){
+		for (j = 0; j < (context->nbLayer[i]); j++) {
 		
-		currentObj = context->contextLayer[i].idObj;
-		switch (context->contextLayer[i].type) {
-			
-			case BUTTON: //Simple btn
-
-				positionFond.x = context->contextObj[currentObj].x;
-				positionFond.y = context->contextObj[currentObj].y;
-
-				if (context->contextObj[currentObj].MouseOver == 1) {
-					SDL_BlitSurface(BTN_OVER, NULL, context->contextSurface, &positionFond);
-				}else{
-					SDL_BlitSurface(BTN_NOTOVER, NULL, context->contextSurface, &positionFond);
-				}
-
-				switch (context->contextObj[currentObj].align) {
-					case ALIGN_CENTER:
-						positionFond.x += ((BTN_OVER->w)/2)-((context->contextObj[currentObj].buffer_title->w)/2);
-						break;
-					case ALIGN_LEFT:
-						positionFond.x += 20;
-						break;
-					case ALIGN_RIGHT:
-						positionFond.x += ((BTN_OVER->w)-(context->contextObj[currentObj].buffer_title->w))-5;
-
-						break;
-				}
-
-
-				positionFond.y += 5;
-				SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
-
-				break;
-
-			case INPUT: //Form
-
-				memset (saisie_content, 0, sizeof (saisie_content));
-				if (context->contextObj[currentObj].MouseOver == 1) {
-
-					strcpy (saisie_content, context->contextObj[currentObj].dest);
-  					strcat (saisie_content,"|");
-
-				}else{
-
-					strcpy (saisie_content, context->contextObj[currentObj].dest);
-
-				}
-
-				positionFond.x = context->contextObj[currentObj].x;
-				positionFond.y = context->contextObj[currentObj].y;
-
-				SDL_BlitSurface(FORM, NULL, context->contextSurface, &positionFond);
-
-				if (context->contextObj[currentObj].buffer_content) {
-					SDL_FreeSurface(context->contextObj[currentObj].buffer_content);
-					context->contextObj[currentObj].buffer_content = NULL;
-				}
-
-				context->contextObj[currentObj].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
-
-				switch (context->contextObj[currentObj].align) {
-					case ALIGN_CENTER:
-						positionFond.x += ((FORM->w)/2)-((context->contextObj[currentObj].buffer_content->w)/2);
-						break;
-					case ALIGN_LEFT:
-						positionFond.x += 20;
-						break;
-					case ALIGN_RIGHT:
-						positionFond.x += 20;
-						break;
-				}
-
-				positionFond.y = (context->contextObj[currentObj].y)+5;
-				SDL_BlitSurface(context->contextObj[currentObj].buffer_content, NULL, context->contextSurface, &positionFond);
-
-				positionFond.x = (context->contextObj[currentObj].x)-55;
-				positionFond.y = (context->contextObj[currentObj].y)+5;
-				SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
-
-				break;
-
-			case RECTANGLE: //Scan for Rectangle to Blit
-				SDL_FillRect(context->contextSurface, &(context->contextRect[currentObj].def),
-				SDL_MapRGB(context->contextSurface->format, context->contextRect[currentObj].color.r, context->contextRect[currentObj].color.g, context->contextRect[currentObj].color.b));
+			currentObj = context->contextSet[i][j].idObj;
+			switch (context->contextSet[i][j].type) {
 				
-				break;
-			
-			case IMG: //Scan textures to Blit !
-				positionFond.x = context->contextImg[currentObj].x;
-				positionFond.y = context->contextImg[currentObj].y;
-				SDL_BlitSurface(context->contextImg[currentObj].buffer, NULL, context->contextSurface, &positionFond);
+				case BUTTON: //Simple btn
+
+					positionFond.x = context->contextObj[currentObj].x;
+					positionFond.y = context->contextObj[currentObj].y;
+
+					if (context->contextObj[currentObj].MouseOver == 1) {
+						SDL_BlitSurface(BTN_OVER, NULL, context->contextSurface, &positionFond);
+					}else{
+						SDL_BlitSurface(BTN_NOTOVER, NULL, context->contextSurface, &positionFond);
+					}
+
+					switch (context->contextObj[currentObj].align) {
+						case ALIGN_CENTER:
+							positionFond.x += ((BTN_OVER->w)/2)-((context->contextObj[currentObj].buffer_title->w)/2);
+							break;
+						case ALIGN_LEFT:
+							positionFond.x += 20;
+							break;
+						case ALIGN_RIGHT:
+							positionFond.x += ((BTN_OVER->w)-(context->contextObj[currentObj].buffer_title->w))-5;
+
+							break;
+					}
+
+
+					positionFond.y += 5;
+					SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
+
+					break;
+
+				case INPUT: //Form
+
+					memset (saisie_content, 0, sizeof (saisie_content));
+					if (context->contextObj[currentObj].MouseOver == 1) {
+
+						strcpy (saisie_content, context->contextObj[currentObj].dest);
+	  					strcat (saisie_content,"|");
+
+					}else{
+
+						strcpy (saisie_content, context->contextObj[currentObj].dest);
+
+					}
+
+					positionFond.x = context->contextObj[currentObj].x;
+					positionFond.y = context->contextObj[currentObj].y;
+
+					SDL_BlitSurface(FORM, NULL, context->contextSurface, &positionFond);
+
+					if (context->contextObj[currentObj].buffer_content) {
+						SDL_FreeSurface(context->contextObj[currentObj].buffer_content);
+						context->contextObj[currentObj].buffer_content = NULL;
+					}
+
+					context->contextObj[currentObj].buffer_content = TTF_RenderText_Blended(ttf_police, saisie_content, colorBlack);
+
+					switch (context->contextObj[currentObj].align) {
+						case ALIGN_CENTER:
+							positionFond.x += ((FORM->w)/2)-((context->contextObj[currentObj].buffer_content->w)/2);
+							break;
+						case ALIGN_LEFT:
+							positionFond.x += 20;
+							break;
+						case ALIGN_RIGHT:
+							positionFond.x += 20;
+							break;
+					}
+
+					positionFond.y = (context->contextObj[currentObj].y)+5;
+					SDL_BlitSurface(context->contextObj[currentObj].buffer_content, NULL, context->contextSurface, &positionFond);
+
+					positionFond.x = (context->contextObj[currentObj].x)-55;
+					positionFond.y = (context->contextObj[currentObj].y)+5;
+					SDL_BlitSurface(context->contextObj[currentObj].buffer_title, NULL, context->contextSurface, &positionFond);
+
+					break;
+
+				case RECTANGLE: //Scan for Rectangle to Blit
+					SDL_FillRect(context->contextSurface, &(context->contextRect[currentObj].def),
+					SDL_MapRGB(context->contextSurface->format, context->contextRect[currentObj].color.r, context->contextRect[currentObj].color.g, context->contextRect[currentObj].color.b));
+					
+					break;
 				
-				break;
+				case IMG: //Scan textures to Blit !
+					positionFond.x = context->contextImg[currentObj].x;
+					positionFond.y = context->contextImg[currentObj].y;
+					SDL_BlitSurface(context->contextImg[currentObj].buffer, NULL, context->contextSurface, &positionFond);
+					
+					break;
+				
+				case TEXT:
+					positionFond.x = context->contextText[currentObj].x;
+					positionFond.y = context->contextText[currentObj].y;
 			
-			case TEXT:
-				positionFond.x = context->contextText[currentObj].x;
-				positionFond.y = context->contextText[currentObj].y;
+					SDL_BlitSurface(context->contextText[currentObj].buffer, NULL, context->contextSurface, &positionFond);
+					
+					break;
+					
+				case SPRITE:
+				
+				if (!(context->contextSprite[currentObj].hide)) {
+					//Animation .. Orientation
+					spritePos.x = context->contextSprite[currentObj].animation  * context->contextSprite[currentObj].sp_width  - context->contextSprite[currentObj].sp_width;
+					spritePos.y = ((context->contextSprite[currentObj].position) * (context->contextSprite[currentObj].sp_height))-(context->contextSprite[currentObj].sp_height);
+					spritePos.w = context->contextSprite[currentObj].sp_width;
+					spritePos.h = context->contextSprite[currentObj].sp_height;
 		
-				SDL_BlitSurface(context->contextText[currentObj].buffer, NULL, context->contextSurface, &positionFond);
-				
+					positionFond.x = context->contextSprite[currentObj].x;
+					positionFond.y = context->contextSprite[currentObj].y;
+		
+					SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
+				}
+
 				break;
 				
-			case SPRITE:
-			
-			if (!(context->contextSprite[currentObj].hide)) {
-				//Animation .. Orientation
-				spritePos.x = context->contextSprite[currentObj].animation  * context->contextSprite[currentObj].sp_width  - context->contextSprite[currentObj].sp_width;
-				spritePos.y = ((context->contextSprite[currentObj].position) * (context->contextSprite[currentObj].sp_height))-(context->contextSprite[currentObj].sp_height);
-				spritePos.w = context->contextSprite[currentObj].sp_width;
-				spritePos.h = context->contextSprite[currentObj].sp_height;
-	
-				positionFond.x = context->contextSprite[currentObj].x;
-				positionFond.y = context->contextSprite[currentObj].y;
-	
-				SDL_BlitSurface(context->contextSprite[currentObj].buffer, &spritePos, context->contextSurface, &positionFond );
+				default:
+					break;
+				
 			}
-
-			break;
-			
-			default:
-				break;
-			
 		}
+
 	}
 
 	positionFond.w = 0;
@@ -2137,21 +2153,55 @@ int SDL_updateFrame(t_context * context, SDL_Rect newZone){
 
 }
 
-int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index ){
-	t_layer * n_Layer = NULL;
+int SDL_addLayer(t_context * context, t_typeData type, int idObj){
 	t_layer layer;
-	int i = 0, rank = -1;
+
+	if(!context) return 0;
+	if(idObj < 0) return 0;
 
 	layer.idObj = idObj;
-	layer.z_index = z_index;
+	layer.z_index = 1;
 	layer.type = type;
 
-	if(!(context->nbLayer)){
 
-		if (!(context->contextLayer)) {
+	if(!(context->nbSet)){
 
-			context->contextLayer = (t_layer*) malloc(sizeof(t_layer));
-			context->contextLayer[context->nbLayer] = layer;
+		if (!(context->contextSet)) {
+
+			SDL_addSet(context);
+			context->nbSet = 1; // Set number
+
+			context->nbLayer = (int*) malloc(sizeof(int) * 1);
+			context->nbLayer[0] = 0;
+
+		}else
+			return 0;
+
+	}else{
+
+		context->contextSet[0] = (t_layer*) realloc(context->contextSet[0], sizeof(t_layer) * (context->nbLayer[0] + 1) ); // New layer
+	}
+
+	context->contextSet[0][context->nbLayer[0]] = layer;
+	context->nbLayer[0] = context->nbLayer[0] + 1;
+
+	return 1;
+}
+
+int SDL_addSet(t_context * context){
+	t_layer ** s_realloc = NULL;
+	int * l_realloc = NULL;
+	int i = 0;
+
+
+	if(!context) return 0;
+
+	if(!context->nbSet){
+
+		if(!context->contextSet){
+
+			context->contextSet = (t_layer**)malloc(sizeof(t_layer*) * 1);
+			context->nbLayer    = (int*)malloc(sizeof(int) * 1);
 
 		}else{
 			return 0;
@@ -2159,164 +2209,157 @@ int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index ){
 
 	}else{
 
-		if(!context->contextLayer) return 0;
+		s_realloc = (t_layer**) realloc(context->contextSet, sizeof(t_layer*) * (context->nbSet + 1)); // Add set
+		l_realloc = (int*) realloc(context->nbLayer, sizeof(int) * (context->nbSet + 1)); // Add set
 
-		n_Layer = (t_layer*) realloc(context->contextLayer, sizeof(t_layer) * ((context->nbLayer)+1));
-
-		if (n_Layer) {
-			context->contextLayer = n_Layer;
-
-			for(i = 0; i < context->nbLayer && rank == -1; i++){
-
-				if(z_index < context->contextLayer[i].z_index) // Tri à la volée
-					rank = i;
-
+		if(!s_realloc){
+			
+			for(i = 0; i < context->nbSet; i++){
+				SDL_freeSet(context, i);
 			}
-
-			if(rank != -1){
-				
-				for (i = context->nbLayer; i > rank; i--) {
-
-					context->contextLayer[i] = context->contextLayer[i-1]; // Décale les indices si besoin
-
-				}
-
-			}else{
-				rank = context->nbLayer;
-			}
-
-			context->contextLayer[rank] = layer;
+			return 0;
 
 		}else{
-			return 0;
+			context->contextSet = s_realloc;
 		}
 
+		if(!l_realloc){
+			
+			free(l_realloc);
+			return 0;
+
+		}else{
+			context->nbLayer = l_realloc;
+		}
 	}
 
-	context->nbLayer = (context->nbLayer) + 1;
+	context->contextSet[context->nbSet] = (t_layer *) malloc(sizeof(t_layer) * 1); // Add a layer in new set
+
+	context->nbSet = context->nbSet + 1;
+
 	return 1;
 }
 
-int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int idLayer){
-	
-	if(!context || !context->contextLayer || !context->nbLayer) return 0;
 
-	switch(type){
-		
-		case BUTTON:
-			
-			context->contextObj[idObj].idLayer = idLayer;
-			break;
+int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int newId, int z_index){
+	int i = 0, set = -1, idLayer = -1;
 
-		case INPUT:
+	if(!context || !context->contextSet || !context->nbSet) return 0;
 
-			context->contextObj[idObj].idLayer = idLayer;
-			break;
+	if(newId < 0 ) return 0; // Check if nbObj is greater than newId
 
-		case RECTANGLE:
+	for(i = 0; i < context->nbSet && set == -1; i++)
+		if(context->contextSet[i][0].z_index == z_index) set = i; // Search set
 
-			context->contextRect[idObj].idLayer = idLayer;
-			break;
+	if(set == -1) return 0;
 
-		case IMG:
+	for(i = 0; i < context->nbLayer[set] && idLayer == -1; i++)
+		if(context->contextSet[set][i].idObj == idObj && context->contextSet[set][i].type == type) idLayer = i;
 
-			context->contextImg[idObj].idLayer = idLayer;
-			break;
+	if(idLayer == -1) return 0;
 
-		case SPRITE:
-
-			context->contextSprite[idObj].idLayer = idLayer;
-			break;
-
-		case TEXT:
-
-			context->contextText[idObj].idLayer = idLayer;
-			break;
-
-		default:
-
-			return 0;
-			break;
-	
-	}
+	context->contextSet[set][idLayer].idObj = newId;
 
 	return 1;
 }
 
 int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index){
 	t_layer tmpLayer;
-	int idLayer = -1, i = 0, rank = -1;
+	t_layer * l_realloc = NULL;
+	int idLayer = -1, i = 0, j = 0, set = -1;
 
-
-	if(!context || !context->contextLayer || !context->nbLayer) return 0;
+	if(!context || !context->contextSet || !context->nbSet	) return 0;
 
 	switch(type){
 		
 		case BUTTON:
 
-			if(idObj >= context->nbObj) return 0;
+			if(idObj >= context->nbObj || !context->contextSet) return 0;
 			
-			idLayer = context->contextObj[idObj].idLayer;
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
+			if(z_index == context->contextObj[idObj].z_index) return 0;
 
-			tmpLayer = context->contextLayer[idLayer];
-			
+			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index != context->contextObj[idObj].z_index) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextObj[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		case INPUT:
 
-			if(idObj >= context->nbObj) return 0;
-
-			idLayer = context->contextObj[idObj].idLayer;
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
-
-			tmpLayer = context->contextLayer[idLayer];
+			if(idObj >= context->nbObj || !context->contextSet) return 0;
 			
+			if(z_index == context->contextObj[idObj].z_index) return 0;
+
+			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index != context->contextObj[idObj].z_index) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextObj[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		case RECTANGLE:
 
-			if(idObj >= context->nbRect) return 0;
-
-			idLayer = context->contextRect[idObj].idLayer;
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
-
-			tmpLayer = context->contextLayer[idLayer];
+			if(idObj >= context->nbRect || !context->contextSet) return 0;
 			
+			if(z_index == context->contextRect[idObj].z_index) return 0;
+
+			for(i = 0; i < context->nbSet && set == - 1; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index == context->contextRect[idObj].z_index ) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextRect[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		case IMG:
 
-			if(idObj >= context->nbImg) return 0;
-
-			idLayer = context->contextImg[idObj].idLayer;
-
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
-
-			tmpLayer = context->contextLayer[idLayer];
+			if(idObj >= context->nbImg || !context->contextSet) return 0;
 			
+			if(z_index == context->contextImg[idObj].z_index) return 0;
+
+			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index == context->contextImg[idObj].z_index) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextImg[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		case SPRITE:
 
-			if(idObj >= context->nbSprite) return 0;
-
-			idLayer = context->contextSprite[idObj].idLayer;
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
-
-			tmpLayer = context->contextLayer[idLayer];
+			if(idObj >= context->nbSprite || !context->contextSet) return 0;
 			
+			if(z_index == context->contextSprite[idObj].z_index) return 0;
+
+			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index == context->contextSprite[idObj].z_index) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextSprite[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		case TEXT:
 
-			if(idObj >= context->nbText) return 0;
-
-			idLayer = context->contextText[idObj].idLayer;
-			if(idLayer < 0 || idLayer > context->nbLayer - 1) return 0;
-
-			tmpLayer = context->contextLayer[idLayer];
+			if(idObj >= context->nbText || !context->contextSet) return 0;
 			
+			if(z_index == context->contextText[idObj].z_index) return 0;
+
+			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
+				if(context->contextSet[i][0].z_index != context->contextText[idObj].z_index) set = i; // Current set
+
+			if( set == -1) return 0;
+
+			context->contextText[idObj].z_index = z_index; // Set new z_index
+
 			break;
 
 		default:
@@ -2326,71 +2369,169 @@ int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index)
 	
 	}
 
-	if(z_index > tmpLayer.z_index){
+	for(j = 0; j < context->nbLayer[set] && idLayer == -1; j++)
+		if(context->contextSet[set][j].type == type && context->contextSet[set][j].idObj == idObj) idLayer = j;
 
-		for(i = idLayer; i < context->nbLayer; i++){
+	if(idLayer == -1) return 0;
 
-			if(z_index <= context->contextLayer[i].z_index){
-				break;
+	tmpLayer = context->contextSet[set][idLayer];
+	tmpLayer.z_index = z_index;
+
+	for(i = idLayer; i < context->nbLayer[set] - 1; i++){
+		context->contextSet[set][i] = context->contextSet[set][i+1]; // Move object layer from set
+	}
+	
+
+	if(context->nbLayer[set] > 1){
+		
+		l_realloc = (t_layer*) realloc(context->contextSet[set], sizeof(t_layer) * (context->nbLayer[set] - 1)); // Shrink set
+		
+		if(!l_realloc){
+
+			for(i = 0; i < context->nbSet; i++){
+				SDL_freeSet(context, i); // Free all set
 			}
 
-			rank = i;
+			return 0;
+
+		}else{
+			context->contextSet[set] = l_realloc;
 		}
 
+	}
 
-		for(i = idLayer; i < rank; i++){
-			SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i - 1);
-			context->contextLayer[i] = context->contextLayer[i+1]; // Décale les indices -> Tri
-		}
+	context->nbLayer[set] = (context->nbLayer[set]) - 1;
 
-	}else if(z_index < tmpLayer.z_index){
+	if(context->nbLayer[set] == 0) SDL_freeSet(context, set); // Free current set
 
-		for(i = idLayer; i >= 0; i--){
-
-			if(z_index >= context->contextLayer[i].z_index)
-				break;
-
-			rank = i; // Position du calque
-		}
-
-		for(i = idLayer; i >= rank && i > 0 && rank != idLayer; i--){
-			SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i + 1);
-			context->contextLayer[i] = context->contextLayer[i-1]; // Décale les indices -> Tri
-		}
-
-	}else
-		return 0;
-
+	if(context->contextSet[context->nbSet - 1][0].z_index < z_index){
+		
+		SDL_addSet(context);
+		
+		context->contextSet[context->nbSet-1][0] = tmpLayer;
+		context->nbLayer[context->nbSet-1] = 1;
 	
-	context->contextLayer[rank] = tmpLayer;
-	context->contextLayer[rank].z_index = z_index;
+	}else{
 
-	SDL_updateLayer(context, type, idObj, rank);
+		set = -1;
+
+		for(i = 0; i < context->nbSet && set == -1 && set != -2; i++){
+			
+			if(context->contextSet[i][0].z_index == z_index) set = i; // Set existing
+			
+			else if(context->contextSet[i][0].z_index > z_index){ // No set existing for this z_index
+				
+				SDL_addSet(context); // Add a new set
+
+				for(j = context->nbSet - 1; j > i && j > 0; j--){
+					context->contextSet[j] = context->contextSet[j-1]; // Move all set
+					context->nbLayer[j] = context->nbLayer[j-1];
+				}
+
+				context->contextSet[i] = NULL;
+				context->contextSet[i] = (t_layer*)malloc(sizeof(t_layer) * 1);
+
+				context->contextSet[i][0] = tmpLayer;
+				context->nbLayer[i] = 1;
+
+				set = -2;
+
+			}
+		}
+		
+		if(set > 0){
+			
+			context->contextSet[set] = (t_layer*) realloc(context->contextSet[set], sizeof(t_layer) * (context->nbLayer[set] + 1)); // Add layer
+
+			context->contextSet[set][context->nbLayer[set]] = tmpLayer; // Add layer to existing set
+
+			context->nbLayer[set] = context->nbLayer[set] + 1;
+
+		}
+
+	}
 
 	return 1;
 }
 
-int SDL_delLayer(t_context * context, t_typeData type, int idLayer){
+void SDL_printLayer(t_context * context){
+	int i = 0, j = 0;
+
+	for(j = 0; j < context->nbSet; j++){
+
+		for(i = 0; i < context->nbLayer[j]; i++){
+			printf("Layer: %i z_index: %i idObj: %i type: %i\n", i, context->contextSet[j][i].z_index, context->contextSet[j][i].idObj, context->contextSet[j][i].type);
+		}
+		printf("\n\n");
+	}
+
+}
+
+void SDL_freeSet(t_context * context, int set){
 	int i = 0;
+	t_layer ** s_realloc = NULL;
+	int * l_realloc = NULL;
 
-	if(!context || !context->nbLayer || !context->contextLayer) return 0;
-	
-	for (i = idLayer; i < (context->nbLayer)-1; i++) {
+	if(!context->nbSet || set >= context->nbSet) return;
 
-		context->contextLayer[i] = context->contextLayer[i+1];
-		SDL_updateLayer(context, context->contextLayer[i].type, context->contextLayer[i].idObj, i);
-		if(type == context->contextLayer[i].type) context->contextLayer[i].idObj--;
-	}
-	
-	if(context->nbLayer == 0 && context->contextLayer){
-		free(context->contextLayer); 
-		context->contextLayer = NULL;
+	free(context->contextSet[set]);
+	context->contextSet[set] =  NULL;
 
-		return 1;
+	for(i= set; i < (context->nbSet - 1); i++){ // Move all set
+		context->contextSet[i] = context->contextSet[i+1];
+		context->nbLayer[i]    = context->nbLayer[i+1];
 	}
 
-	context->contextLayer = (t_layer*) realloc(context->contextLayer, sizeof(t_layer)*(context->nbLayer));
-	context->nbLayer = (context->nbLayer)-1;
+	s_realloc = (t_layer**)realloc(context->contextSet, sizeof(t_layer*) * (context->nbSet)); // Shrink set
+	l_realloc = (int*)realloc(context->nbLayer, sizeof(int) * (context->nbSet)); // Shrink set
+
+	if(!s_realloc){
+		return;
+	}else{
+		context->contextSet = s_realloc;
+	}
+
+
+	if(!l_realloc){
+		return;
+	}else{
+		context->nbLayer = l_realloc;
+	}
+
+	context->nbSet = context->nbSet - 1;
+	
+	if(context->nbSet == 0){
+		free(context->contextSet);
+		free(context->nbLayer);
+		context->contextSet = NULL;
+		context->nbLayer = NULL;
+	}
+}
+
+int SDL_delLayer(t_context * context, t_typeData type, int idObj, int z_index){
+	int i = 0, set = -1, idLayer = -1;
+
+	if(!context || !context->nbSet || !context->contextSet) return 0;
+
+	for(i = 0; i < context->nbSet && set == -1; i++)
+		if(context->contextSet[i][0].z_index == z_index) set = i; // Search set for wanted object
+
+	if(set == -1) return 0;
+
+	for(i = 0; i < context->nbLayer[set] && idLayer == -1; i++)
+		if(context->contextSet[set][i].idObj == idObj && context->contextSet[set][i].type == type) idLayer = i; // Search id layer for wanted object
+	
+	if(idLayer == -1) return 0;
+
+	for(i = idLayer; i < (context->nbLayer[set] - 1); i++)
+		context->contextSet[set][i] = context->contextSet[set][i+1]; // Move layers in current set
+
+	context->nbLayer[set] =  context->nbLayer[set] - 1;
+
+	if(context->nbLayer[set] == 0)
+		SDL_freeSet(context, set);
+	else
+		context->contextSet[set] = (t_layer*)realloc(context->contextSet[set], sizeof(t_layer) * context->nbLayer[set]); // Shrink set
 
 	return 1;
 }

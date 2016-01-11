@@ -67,7 +67,7 @@ typedef struct {
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	SDL_Surface *buffer_title, *buffer_content;
 	int * id;
-	int idLayer;
+	int z_index;
 
 } t_object;
 
@@ -82,7 +82,7 @@ typedef struct {
 	SDL_Rect def;
 	SDL_Color color;
 	int *id;
-	int idLayer;
+	int z_index;
 
 } t_rect;
 
@@ -100,7 +100,7 @@ typedef struct {
 	int y;
 	SDL_Surface *buffer;
 	int * id;
-	int idLayer;
+	int z_index;
 
 } t_text;
 
@@ -117,7 +117,7 @@ typedef struct {
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */
 	int * id;
-	int idLayer;
+	int z_index;
 	
 } t_image;
 
@@ -149,7 +149,7 @@ typedef struct {
 	int x, y;
 	int position, animation;
 	int hide; /*!< Indique si le sprite doit Ãªtre afficher */
-	int idLayer;
+	int z_index;
 
 } t_sprite;
 
@@ -199,8 +199,10 @@ typedef struct {
 	int x, y;
 	int height, width;
 
-	t_layer * contextLayer;
-	int nbLayer;
+	t_layer ** contextSet;
+	int nbSet;
+
+	int * nbLayer;
 
 } t_context;
 
@@ -313,6 +315,7 @@ int SDL_ismouseover(t_context * context, t_typeData type);
  */
 int SDL_isFullScreen();
 
+void SDL_printLayer(t_context * context);
 /**
  * Ajoute un calque
  * \param  context Contexte concerné
@@ -321,7 +324,7 @@ int SDL_isFullScreen();
  * \param  z_index Numéro de calque
  * \return         Retourne 1 si réussi sinon 0
  */
-int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index);
+int SDL_addLayer(t_context * context, t_typeData type, int idObj);
 
 /**
  * Définis le calque d'un objet
@@ -334,13 +337,24 @@ int SDL_addLayer(t_context * context, t_typeData type, int idObj, int z_index);
 int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index);
 
 /**
+ * Met à jour le calque d'un objet
+ * \param  context Contexte concerné
+ * \param  type    Type de donnée
+ * \param  idObj   Identifiant de l'objet
+ * \param  newId   Nouvel identifiant
+ * \param  z_index Calque
+ * \return         Retourne 1 si succès sinon 0
+ */
+int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int newId, int z_index);
+
+/**
  * Supprime un calque
  * \param  context Contexte concerné
  * \param  type    Type de donnée
  * \param  idLayer Identifiant du calque
  * \return         Retourne 1 en cas de succès sinon 0
  */
-int SDL_delLayer(t_context * context, t_typeData type, int idLayer);
+int SDL_delLayer(t_context * context, t_typeData type, int idObj, int z_index);
 
 /**
 * \fn void SDL_generateFrame(t_context * context)
@@ -650,6 +664,20 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width);
 * \return void
 */
 void SDL_freeContext(t_context * context);
+
+/**
+ * Ajoute une couche au contexte
+ * @param  context Contexte concerné
+ * @return         Retourne 1 si succès sinon 0
+ */
+int SDL_addSet(t_context * context);
+
+/**
+ * Libère la mémoire d'une couche
+ * \param context Contexte concerné
+ * \param set     Couche à libérer
+ */
+void SDL_freeSet(t_context * context, int set);
 
 /**
 * \fn void SDL_loadRessources()

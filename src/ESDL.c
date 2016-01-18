@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "ESDL.h"
 
 /* SDL */
@@ -660,7 +659,7 @@ void SDL_freeContext(t_context * context) {
 		free (context->contextRect);
 	}
 
-	if(context->updatedZones){
+	if (context->updatedZones) {
 		free (context->updatedZones);
 	}
 
@@ -668,9 +667,11 @@ void SDL_freeContext(t_context * context) {
 
 		if(context->nbSet){
 
-			for(i = 0; i < context->nbSet; i++){
-				SDL_freeSet(context, i);
-			}
+			for(i = 0; i < context->nbSet; i++)
+				free(context->contextSet[i]);
+
+			free(context->contextSet);
+			free(context->nbLayer);
 
 		}
 
@@ -682,8 +683,6 @@ void SDL_freeContext(t_context * context) {
 
 int SDL_newRect(t_context *context, int * idrect, SDL_Color color, int height, int width, int x, int y) {
 	SDL_Rect tmpRect;
-
-	// Add SDL Surface to get multiple layer access, actually draw on foreground, it should be possible to draw on background
 
 	t_rect *n_realloc = NULL;
 
@@ -866,7 +865,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	return 1;
 }
 
-int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) {
+int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position, int animation, int hide) { 
 	SDL_Rect tmpRect;
 	int greatMove = 0;
 	int oldX = 0, oldY = 0;
@@ -912,7 +911,7 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 				tmpRect.h += oldY - y;
 			}
 
-			SDL_correctClipping(&tmpRect);
+			SDL_clamping(&tmpRect);
 		}
 		SDL_updateFrame(context, tmpRect);
 	}
@@ -1340,7 +1339,7 @@ int SDL_delObj(t_context * context, int obj) {
 
 }
 
-void SDL_correctClipping(SDL_Rect * clip){
+void SDL_clamping(SDL_Rect * clip){
 
 	if(clip == NULL) return;
 
@@ -1434,7 +1433,7 @@ int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * cl
 			break;
 	}
 
-	SDL_correctClipping(clip);
+	SDL_clamping(clip);
 
 	return 1;
 
@@ -2166,15 +2165,9 @@ int SDL_addLayer(t_context * context, t_typeData type, int idObj){
 
 	if(!(context->nbSet)){
 
-		if (!(context->contextSet)) {
-
+		if (!(context->contextSet))
 			SDL_addSet(context);
-			context->nbSet = 1; // Set number
-
-			context->nbLayer = (int*) malloc(sizeof(int) * 1);
-			context->nbLayer[0] = 0;
-
-		}else
+		else
 			return 0;
 
 	}else{
@@ -2200,8 +2193,8 @@ int SDL_addSet(t_context * context){
 
 		if(!context->contextSet){
 
-			context->contextSet = (t_layer**)malloc(sizeof(t_layer*) * 1);
-			context->nbLayer    = (int*)malloc(sizeof(int) * 1);
+			context->contextSet = (t_layer**) malloc(sizeof(t_layer*));
+			context->nbLayer    = (int*) malloc(sizeof(int));
 
 		}else{
 			return 0;
@@ -2214,9 +2207,12 @@ int SDL_addSet(t_context * context){
 
 		if(!s_realloc){
 			
-			for(i = 0; i < context->nbSet; i++){
-				SDL_freeSet(context, i);
+			for(i = 0; i < context->nbSet + 1; i++){
+				free(s_realloc[i]);
 			}
+
+			free(s_realloc);
+
 			return 0;
 
 		}else{
@@ -2231,9 +2227,11 @@ int SDL_addSet(t_context * context){
 		}else{
 			context->nbLayer = l_realloc;
 		}
+
 	}
 
-	context->contextSet[context->nbSet] = (t_layer *) malloc(sizeof(t_layer) * 1); // Add a layer in new set
+	context->contextSet[context->nbSet] = (t_layer *) malloc(sizeof(t_layer)); // Add a layer in new set
+	context->nbLayer[context->nbSet]    = 0;
 
 	context->nbSet = context->nbSet + 1;
 
@@ -2266,6 +2264,7 @@ int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int newId, 
 int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index){
 	t_layer tmpLayer;
 	t_layer * l_realloc = NULL;
+	t_layer * temp = NULL;
 	int idLayer = -1, i = 0, j = 0, set = -1;
 
 	if(!context || !context->contextSet || !context->nbSet	) return 0;
@@ -2279,7 +2278,7 @@ int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index)
 			if(z_index == context->contextObj[idObj].z_index) return 0;
 
 			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
-				if(context->contextSet[i][0].z_index != context->contextObj[idObj].z_index) set = i; // Current set
+				if(context->contextSet[i][0].z_index == context->contextObj[idObj].z_index) set = i; // Current set
 
 			if( set == -1) return 0;
 
@@ -2294,7 +2293,7 @@ int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index)
 			if(z_index == context->contextObj[idObj].z_index) return 0;
 
 			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
-				if(context->contextSet[i][0].z_index != context->contextObj[idObj].z_index) set = i; // Current set
+				if(context->contextSet[i][0].z_index == context->contextObj[idObj].z_index) set = i; // Current set
 
 			if( set == -1) return 0;
 
@@ -2354,7 +2353,7 @@ int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index)
 			if(z_index == context->contextText[idObj].z_index) return 0;
 
 			for(i = 0; i < context->nbSet && set == -1 ; i++) // Find set by looking first layer
-				if(context->contextSet[i][0].z_index != context->contextText[idObj].z_index) set = i; // Current set
+				if(context->contextSet[i][0].z_index == context->contextText[idObj].z_index) set = i; // Current set
 
 			if( set == -1) return 0;
 
@@ -2423,13 +2422,14 @@ int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index)
 				
 				SDL_addSet(context); // Add a new set
 
+				temp = context->contextSet[context->nbSet - 1]; // Keep pointer on last set
+
 				for(j = context->nbSet - 1; j > i && j > 0; j--){
 					context->contextSet[j] = context->contextSet[j-1]; // Move all set
 					context->nbLayer[j] = context->nbLayer[j-1];
 				}
 
-				context->contextSet[i] = NULL;
-				context->contextSet[i] = (t_layer*)malloc(sizeof(t_layer) * 1);
+				context->contextSet[i] = temp;
 
 				context->contextSet[i][0] = tmpLayer;
 				context->nbLayer[i] = 1;
@@ -2467,7 +2467,7 @@ void SDL_printLayer(t_context * context){
 
 }
 
-void SDL_freeSet(t_context * context, int set){
+void SDL_freeSet(t_context * context, int set){ // Free set doesn't work properly
 	int i = 0;
 	t_layer ** s_realloc = NULL;
 	int * l_realloc = NULL;
@@ -2477,13 +2477,24 @@ void SDL_freeSet(t_context * context, int set){
 	free(context->contextSet[set]);
 	context->contextSet[set] =  NULL;
 
-	for(i= set; i < (context->nbSet - 1); i++){ // Move all set
+	context->nbSet = (context->nbSet) - 1;
+
+	for(i= set; i < context->nbSet; i++){ // Move all set
 		context->contextSet[i] = context->contextSet[i+1];
 		context->nbLayer[i]    = context->nbLayer[i+1];
 	}
 
 	s_realloc = (t_layer**)realloc(context->contextSet, sizeof(t_layer*) * (context->nbSet)); // Shrink set
 	l_realloc = (int*)realloc(context->nbLayer, sizeof(int) * (context->nbSet)); // Shrink set
+
+	if(context->nbSet == 0){
+		free(context->contextSet);
+		free(context->nbLayer);
+		context->contextSet = NULL;
+		context->nbLayer = NULL;
+
+		return;
+	}
 
 	if(!s_realloc){
 		return;
@@ -2498,14 +2509,6 @@ void SDL_freeSet(t_context * context, int set){
 		context->nbLayer = l_realloc;
 	}
 
-	context->nbSet = context->nbSet - 1;
-	
-	if(context->nbSet == 0){
-		free(context->contextSet);
-		free(context->nbLayer);
-		context->contextSet = NULL;
-		context->nbLayer = NULL;
-	}
 }
 
 int SDL_delLayer(t_context * context, t_typeData type, int idObj, int z_index){
@@ -2646,7 +2649,7 @@ int SDL_generate(t_context * context) {
 
 			}
 
-			SDL_FreeSurface(screen);
+			SDL_FreeSurface(screen); // Unnecessary action
 			forceFrame = 0;
 
 			if (uniqueFrame == 1) {

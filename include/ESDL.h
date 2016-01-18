@@ -856,7 +856,7 @@ int SDL_isInArea(SDL_Rect Rect1, SDL_Rect Rect2);
  * @param context Contexte concerné
  * @param clip    Clipping à corriger
  */
-void SDL_correctClipping(SDL_Rect * clip);
+void SDL_clamping(SDL_Rect * clip);
 
 /**
  * Récupère le clipping

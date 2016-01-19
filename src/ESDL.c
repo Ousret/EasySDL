@@ -408,7 +408,7 @@ void SDL_initWindow(int width, int height, int fullscreen, char * title, char * 
 	SDL_WM_SetCaption (title, NULL);
 
 	if (icon_name) {
-		SDL_WM_SetIcon(IMG_Load(icon_name), NULL);
+		SDL_WM_SetIcon(SDL_loadImage(icon_name), NULL);
 	}
 
 	if (audio_support == 1) {
@@ -545,6 +545,38 @@ int SDL_captureInput(t_context * context, int obj) {
 		return 0;
 	}
 
+}
+
+SDL_Surface * SDL_loadImage(char filePath[]){
+
+	SDL_Surface * loaded = NULL;
+	SDL_Surface * optimized = NULL;
+	const char *dot;
+
+	if(strlen(filePath) == 0) return NULL;
+
+	dot = strrchr(filePath, '.');
+
+	if(!dot || dot == filePath) return NULL;
+
+	loaded = IMG_Load(filePath);
+
+	if(loaded){
+
+		if(strcmp(dot + 1, "png") == 0 || strcmp(dot + 1, "tiff") == 0)
+			optimized = SDL_DisplayFormatAlpha(loaded); // Load image w/ alpha with same format as screen
+		else
+			optimized = SDL_DisplayFormat(loaded); // Load image w/o alpha with same format as screen
+		
+		SDL_FreeSurface(loaded); // Free loaded image
+
+		return optimized;
+
+	}
+	
+	fprintf(stderr, "<! Warning> EasySDL: %s couldn't be loaded.\n", filePath);
+
+	return NULL;
 }
 
 t_context * SDL_newContext(char * title, int x, int y, int height, int width) {
@@ -813,7 +845,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	if (alreadyLoaded != -1) {
 		tmp = context->contextSprite[alreadyLoaded].buffer;
 	}else{
-		tmp = IMG_Load(texturePath);
+		tmp = SDL_loadImage(texturePath); // Optimized image TO DO
 	}
 
 	if (!tmp) {
@@ -841,7 +873,7 @@ int SDL_newSprite(t_context *context, char * filename, SDL_Color transparancy, i
 	context->contextSprite[context->nbSprite].file = malloc(sizeof(char)*(strlen(filename)+1));
 	strcpy(context->contextSprite[context->nbSprite].file, filename);
 
-	/* Does not work for now.. need help for this one */
+	// Works now for every sprite which are not in .png or .tiff, blit can't draw surface with multiple transparancy (alpha from SDL_DisplayFormatAlpha and colorKeying)
 	SDL_SetColorKey( context->contextSprite[context->nbSprite].buffer, SDL_SRCCOLORKEY, SDL_MapRGB( context->contextSprite[context->nbSprite].buffer->format, transparancy.r, transparancy.g, transparancy.b ) );
 
 	context->contextSprite[context->nbSprite].sp_height = sp_height;
@@ -1080,7 +1112,8 @@ int SDL_newImage(t_context * context, int * id, char * file, int x, int y) {
 	if (alreadyLoaded != -1) {
 		tmp = context->contextImg[alreadyLoaded].buffer;
 	}else{
-		tmp = IMG_Load(texturePath);
+		tmp = SDL_loadImage(texturePath); // Optimized image TO DO
+
 	}
 
 	if (!tmp) {
@@ -1893,11 +1926,11 @@ void SDL_loadRessources() {
 	char filePath[256];
 
 	sprintf(filePath, "%s%s", resIMG, "m_bg_s1.png");
-	BTN_OVER = IMG_Load(filePath);
+	BTN_OVER = SDL_loadImage(filePath);
 	sprintf(filePath, "%s%s", resIMG, "m_bg_s0.png");
-	BTN_NOTOVER = IMG_Load(filePath);
+	BTN_NOTOVER = SDL_loadImage(filePath);
 	sprintf(filePath, "%s%s", resIMG, "ch_saisie_actif.png");
-	FORM = IMG_Load(filePath);
+	FORM = SDL_loadImage(filePath);
 
 	if (!BTN_OVER || !BTN_NOTOVER || !FORM) {
 		fprintf(stderr, "<! Fatal> EasySDL: Missing image ressources in %s please check for m_bg_s1.png, m_bg_s0.png and ch_saisie_actif.png !\n", resIMG);
@@ -2467,7 +2500,7 @@ void SDL_printLayer(t_context * context){
 
 }
 
-void SDL_freeSet(t_context * context, int set){ // Free set doesn't work properly
+void SDL_freeSet(t_context * context, int set){
 	int i = 0;
 	t_layer ** s_realloc = NULL;
 	int * l_realloc = NULL;

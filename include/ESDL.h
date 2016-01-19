@@ -644,6 +644,13 @@ int SDL_nbSprite(t_context * context);
 int SDL_contextEmpty(t_context * context);
 
 /**
+ * Charge une image au même format que celui de l'écran
+ * \param  filePath Chemin de l'image à charger
+ * \return          Retourne un pointeur sur l'image chargée sinon NULL
+ */
+SDL_Surface * SDL_loadImage(char filePath[]);
+
+/**
 * \fn t_context * SDL_newContext(char * title, int x, int y, int height, int width)
 * \brief CrÃ©ation d'un nouveau contexte
 *

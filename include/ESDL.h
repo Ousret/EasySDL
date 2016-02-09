@@ -24,17 +24,17 @@ typedef enum {
 	ALIGN_CENTER = 1, /*!< Texte alignÃ© au centre */
 	ALIGN_LEFT, /*!< Texte alignÃ© Ã  gauche */
 	ALIGN_RIGHT /*!< Texte alignÃ© Ã  droite */
-	
+
 } t_typeAlign;
 
 typedef enum {
-	
+
 	NUMERIC, /*!< Capture uniquement les chiffres de 0 Ã  9 */
 	ALPHA, /*!< Capture uniquement les caractÃ¨res de A Ã  Z */
 	ALPHANUMERIC, /*!< Capture uniquement les caractÃ¨res alphanumÃ©riques */
 	NOMASK, /*!< Capture tout, aucun masque de saisie */
 	NONE /*!< Lorsqu'il ne s'agit pas d'un champ de saisie */
-	
+
 } t_typeForm;
 
 typedef enum {
@@ -45,18 +45,18 @@ typedef enum {
 	SPRITE, /*!< Les sprites */
 	TEXT, /*!< Le texte */
 	RECTANGLE /*!< Rectangles */
-	
+
 } t_typeData;
 
 /**
  * \struct t_object
  * \brief DÃ©crit de quoi est fait un objet
- *
+ * 
  * t_object dÃ©crit un bouton ou un champs de saisie
  */
 
 typedef struct {
-	
+
 	t_typeData type;
 	int x;
 	int y;
@@ -67,7 +67,8 @@ typedef struct {
 	int MouseOver; // 1 = Mouse is over, 0 = Not over..
 	SDL_Surface *buffer_title, *buffer_content;
 	int * id;
-	
+	int z_index;
+
 } t_object;
 
 /**
@@ -81,7 +82,8 @@ typedef struct {
 	SDL_Rect def;
 	SDL_Color color;
 	int *id;
-	
+	int z_index;
+
 } t_rect;
 
 /**
@@ -91,14 +93,15 @@ typedef struct {
  * t_text dÃ©crit une chaine de caractÃ¨re Ã  transformer en SDL_Surface, ne supporte pas les caractÃ¨res de type '\\x' !
  */
 typedef struct {
-	
+
 	SDL_Color couleur;
 	char * content;
 	int x;
 	int y;
 	SDL_Surface *buffer;
 	int * id;
-	
+	int z_index;
+
 } t_text;
 
 /**
@@ -108,12 +111,13 @@ typedef struct {
  * t_image contient la SDL_Surface de une image ainsi que ses paramÃ¨tres pour le rendu.
  */
 typedef struct {
-	
+
 	char * file;
 	int x; /*!< Position x relative au contexte parent */
 	int y; /*!< Position y relative au contexte parent */
 	SDL_Surface *buffer; /*!< La surface SDL de l'image */
 	int * id;
+	int z_index;
 	
 } t_image;
 
@@ -124,10 +128,10 @@ typedef struct {
  * t_audio contient un son chargÃ© et le nom de fichier associÃ© Ã  celui-ci
  */
 typedef struct {
-	
+
 	char * file; /*!< Nom du fichier audio associÃ© */
 	FMOD_SOUND * buffer; /*!< Buffer du fichier audio chargÃ© */
-	
+
 } t_audio;
 
 /**
@@ -138,14 +142,30 @@ typedef struct {
  */
 typedef struct {
 
+	char * file;
 	SDL_Surface *buffer; /*!< Buffer de l'image sprite utile */
 	SDL_Color transparancy; /*!< Couleur clÃ© pour la transparence */
-	int sp_height, sp_width; 
+	int sp_height, sp_width;
 	int x, y;
 	int position, animation;
 	int hide; /*!< Indique si le sprite doit Ãªtre afficher */
-	
+	int z_index;
+
 } t_sprite;
+
+/**
+ * \struct t_layer
+ * \brief gestion des calques
+ *
+ * t_layer contient la position d'un t_typeData dans la profondeure.
+ */
+typedef struct {
+
+	t_typeData type;
+	int idObj;
+	int z_index;
+
+}t_layer;
 
 /**
  * \struct t_context
@@ -157,25 +177,33 @@ typedef struct {
 
 	char * title;
 	SDL_Surface * contextSurface;
-	
+
 	t_object * contextObj;
 	int nbObj;
-	
+
 	t_text * contextText;
 	int nbText;
-	
+
 	t_image * contextImg;
 	int nbImg;
-	
+
 	t_sprite * contextSprite;
 	int nbSprite;
-	
+
 	t_rect * contextRect;
 	int nbRect;
-	
+
+	SDL_Rect * updatedZones;
+	int nbZone;
+
 	int x, y;
 	int height, width;
-	
+
+	t_layer ** contextSet;
+	int nbSet;
+
+	int * nbLayer;
+
 } t_context;
 
 /**
@@ -186,13 +214,13 @@ typedef struct {
  */
 typedef struct
 {
-	
+
 	char key[SDLK_LAST];
 	int mousex,mousey;
 	int mousexrel,mouseyrel;
 	char mousebuttons[8];
     char quit;
-    
+
 } Input;
 
 /**
@@ -202,10 +230,10 @@ typedef struct
  * Un couple indisociable dont la valeur est cryptÃ©
  */
 typedef struct {
-	
+
 	char *param;
 	unsigned char *value;
-	
+
 } d_param;
 
 /**
@@ -215,11 +243,11 @@ typedef struct {
  * Contient les couples (paramÃ¨tre, valeur) et le nom du fichier Ã  manipuler.
  */
 typedef struct {
-	
+
 	char * filename;
 	d_param * data;
 	int elem;
-	
+
 } d_save;
 
 /**
@@ -256,7 +284,7 @@ void SDL_unload();
 * \param captions Contient le texte associÃ©s au(x) bouton(s) (matrice **char)
 * \return Identifiant du bouton choisis
 */
-int SDL_generateMenu(char * backgroundPic, int nbEntries, char ** captions);
+int SDL_generateMenu(t_context * menu, char * backgroundPic, int nbEntries, char ** captions);
 
 /**
 * \fn int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y)
@@ -282,6 +310,53 @@ int SDL_ismouseoverArea(t_context * context, int height, int width, int x, int y
 int SDL_ismouseover(t_context * context, t_typeData type);
 
 /**
+ * Détermine si en plein écran ou non
+ * @return Retourne 1 si en plein écran sinon 0
+ */
+int SDL_isFullScreen();
+
+void SDL_printLayer(t_context * context);
+/**
+ * Ajoute un calque
+ * \param  context Contexte concerné
+ * \param  type    Type de l'objet
+ * \param  idObj   Identifiant de l'objet
+ * \param  z_index Numéro de calque
+ * \return         Retourne 1 si réussi sinon 0
+ */
+int SDL_addLayer(t_context * context, t_typeData type, int idObj);
+
+/**
+ * Définis le calque d'un objet
+ * \param  context Contexte concerné
+ * \param  type    Type de l'objet
+ * \param  idObj   Identifiant de l'objet
+ * \param  z_index Calque
+ * \return         Retourne 1 si succès sinon 0
+ */
+int SDL_setOnLayer(t_context * context, t_typeData type, int idObj, int z_index);
+
+/**
+ * Met à jour le calque d'un objet
+ * \param  context Contexte concerné
+ * \param  type    Type de donnée
+ * \param  idObj   Identifiant de l'objet
+ * \param  newId   Nouvel identifiant
+ * \param  z_index Calque
+ * \return         Retourne 1 si succès sinon 0
+ */
+int SDL_updateLayer(t_context * context, t_typeData type, int idObj, int newId, int z_index);
+
+/**
+ * Supprime un calque
+ * \param  context Contexte concerné
+ * \param  type    Type de donnée
+ * \param  idLayer Identifiant du calque
+ * \return         Retourne 1 en cas de succès sinon 0
+ */
+int SDL_delLayer(t_context * context, t_typeData type, int idObj, int z_index);
+
+/**
 * \fn void SDL_generateFrame(t_context * context)
 * \brief Construit une frame pour un contexte donnÃ©e et la stocke dans la surface principale en attente de rafraichissement.
 *
@@ -289,6 +364,14 @@ int SDL_ismouseover(t_context * context, t_typeData type);
 * \return void
 */
 void SDL_generateFrame(t_context * context);
+
+/**
+ * Met à jour une image
+ * \param  context Contexte dans lequel dessiner
+ * \param  newZone Zone à mettre à jour
+ * \return         Retourne 1 en cas de succès sinon 0
+ */
+int SDL_updateFrame(t_context * context, SDL_Rect newZone);
 
 /**
 * \fn void SDL_UpdateEvents(Input* in)
@@ -353,7 +436,7 @@ int SDL_delObj(t_context * context, int obj);
 
 /**
 * \fn int SDL_newText(t_context * context, int * id, char * content, SDL_Color couleur, int x, int y)
-* \brief CrÃ©er une ligne de texte Ã  afficher pour un contexte 
+* \brief CrÃ©er une ligne de texte Ã  afficher pour un contexte
 *
 * \param context Contexte concernÃ©
 * \param id Retourne l'identifiant de l'objet texte crÃ©e mettre Ã  NULL si vous ne souhaitez pas rÃ©cupÃ©rer son identifiant.
@@ -426,7 +509,7 @@ int SDL_delImage(t_context * context, int idimg);
 *
 * \param context Contexte concernÃ©
 * \param filename Fichier image du sprite (transparence png recommandÃ©)
-* \param transparancy Couleur de transparence 
+* \param transparancy Couleur de transparence
 * \param sp_height Hauteur d'une partie (souvent le personnage)
 * \param sp_width Largeur d'une partie (souvent le personnage)
 * \param x Position x relative au contexte
@@ -460,6 +543,15 @@ int SDL_editSprite(t_context *context, int idSprite, int x, int y, int position,
 * \return bool
 */
 int SDL_delSprite(t_context *context, int idSprite);
+
+/**
+ * Libère le sprite de la mémoire
+*
+* \param context Contexte concernÃ©
+* \param idSprite Identifiant du sprite Ã  supprimer
+*
+ */
+void SDL_freeSprite(t_context *context, int idSprite);
 
 /**
 * \fn int SDL_newRect(t_context *context, int * idrect , SDL_Color color, int height, int width, int x, int y)
@@ -552,6 +644,13 @@ int SDL_nbSprite(t_context * context);
 int SDL_contextEmpty(t_context * context);
 
 /**
+ * Charge une image au même format que celui de l'écran
+ * \param  filePath Chemin de l'image à charger
+ * \return          Retourne un pointeur sur l'image chargée sinon NULL
+ */
+SDL_Surface * SDL_loadImage(char filePath[]);
+
+/**
 * \fn t_context * SDL_newContext(char * title, int x, int y, int height, int width)
 * \brief CrÃ©ation d'un nouveau contexte
 *
@@ -572,6 +671,20 @@ t_context * SDL_newContext(char * title, int x, int y, int height, int width);
 * \return void
 */
 void SDL_freeContext(t_context * context);
+
+/**
+ * Ajoute une couche au contexte
+ * @param  context Contexte concerné
+ * @return         Retourne 1 si succès sinon 0
+ */
+int SDL_addSet(t_context * context);
+
+/**
+ * Libère la mémoire d'une couche
+ * \param context Contexte concerné
+ * \param set     Couche à libérer
+ */
+void SDL_freeSet(t_context * context, int set);
 
 /**
 * \fn void SDL_loadRessources()
@@ -649,7 +762,7 @@ int SDL_loadMusic(const char * musicfile);
 
 /**
 * \fn void SDL_setmaxChannel(unsigned int nbch)
-* \brief Modifie le nombre de son joué simultanément 
+* \brief Modifie le nombre de son joué simultanément
 *
 * \param nbch Nombre de canaux audio maximal
 * \return void
@@ -726,6 +839,51 @@ int SDL_getposx(t_context * context, int id, t_typeData type);
 * \return Position y, pixel (entier).
 */
 int SDL_getposy(t_context * context, int id, t_typeData type);
+
+/**
+ * Glisse un objet
+ * \param  context Contexte dans lequel glisser
+ * \param  typeObj Type de l'objet à glisser
+ * \param  idObj   Identifiant de l'objet
+ * \return         Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int SDL_drag(t_context * context, t_typeData typeObj, int idObj);
+
+/**
+ * Définis si deux rectangles se chevauchent
+ * \param  context Contexte dans lequel dessiner
+ * \param  Rect1   Rectangle 1
+ * \param  Rect2   Rectangle 2
+ * \return         Retourne 2 si Rect 2 dans Rect1, 1 si collision, 0 sinon
+ */
+int SDL_isInArea(SDL_Rect Rect1, SDL_Rect Rect2);
+
+/**
+ * Corrige le clipping
+ * @param context Contexte concerné
+ * @param clip    Clipping à corriger
+ */
+void SDL_clamping(SDL_Rect * clip);
+
+/**
+ * Récupère le clipping
+ * \param  context  Contexte dans lequel dessiner
+ * \param  idSprite Identifiant de l'objet
+ * \param  clip     Clipping à remplir
+ * \return          Retourne 1 en cas de succès sinon 0
+ */
+int SDL_getClip(t_context * context, t_typeData object, int idObj, SDL_Rect * clip);
+
+/**
+ * Dépose un objet
+ * \param context Contexte dans lequel déposer
+ * \param typeObj Type de l'objet
+ * \param idObj   Identifiant de l'objet
+ * \param posX    Position X où déposer l'objet
+ * \param posY    Position Y où déposer l'objet
+ * \return 		  Retourne 1 en cas de succés, -1 le cas échéant
+ */
+int SDL_drop(t_context * context, t_typeData typeObj, int idObj, int posX, int posY);
 
 /**
 * \fn void SDL_setSNDFolder(char * newFolder)

@@ -1,3 +1,4 @@
+set (CMAKE_POSITION_INDEPENDENT_CODE TRUE)
 cmake_minimum_required(VERSION 2.6)
 project(libESDL)
 
@@ -93,7 +94,7 @@ message("FMOD by Firelight Technologies")
 EXEC_PROGRAM("uname -m" OUTPUT_VARIABLE UNAME_MACHINE)
 MESSAGE(${UNAME_MACHINE})
 
-if (ForceAMD64) 
+if (ForceAMD64)
 	set(FMODEXAMD_DIR "${CMAKE_SOURCE_DIR}/cmake_modules")
 	find_package(FMODEXAMD REQUIRED)
 else()
@@ -106,17 +107,17 @@ if (NOT LIBFMODEX_FOUND)
 endif()
 
 target_link_libraries(
-		
+
         ESDL
         ${SDL_LIBRARY}
         ${SDLTTF_LIBRARY}
         ${SDLIMAGE_LIBRARY}
         ${LIBFMODEX_LIBRARIES}
-		
+
 )
 
 INSTALL_TARGETS(/lib ESDL)
-INSTALL(FILES include/ESDL.h 
+INSTALL(FILES include/ESDL.h
   DESTINATION include)
 
 INSTALL(FILES ${LIBFMODEX_LIBRARIES} DESTINATION lib)

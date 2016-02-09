@@ -12,7 +12,7 @@ If you wish to make target for arch AMD64 (FMODex), please run cmake with :
 $ cmake -G"Unix Makefiles" -DForceAMD64=ON
 ```
 
-Author(s): 
+Author(s):
 - TAHRI Ahmed @Ousret
 
 What new in 0.7.1 ?
@@ -26,11 +26,12 @@ CMake is needed.
 Install included.
 
 ```
-$ git clone https://github.com/Ousret/EasySDL/
+$ git clone https://github.com/DanAurea/EasySDL
 $ cd EasySDL
 $ cmake -G"Unix Makefiles"
 $ make
 $ sudo make install
+$ ldconfig /usr/local/lib
 ```
 
 ```objc
@@ -60,7 +61,7 @@ fmodex license: http://www.fmod.com/files/public/LICENSE.TXT (NO COMMERCIAL USE)
 
 ### OpenSSL, libCrypto, libSSL
 
-OpenSSL license: 
+OpenSSL license:
 The OpenSSL toolkit stays under a dual license, i.e. both the conditions of
 the OpenSSL License and the original SSLeay license apply to the toolkit.
 See below for the actual license texts. Actually both licenses are BSD-style
